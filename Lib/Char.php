@@ -1,0 +1,65 @@
+<?php
+
+
+/**
+ * Char
+ *
+ * Parith :: a compact PHP framework
+ * http://www.parith.org/
+ *
+ * @package Parith
+ * @author Zephyr Sun
+ * @copyright 2009-2011 Zephyr Sun
+ * @license http://www.parith.org/license
+ * @version 0.3
+ * @link http://www.parith.org/
+ */
+
+namespace Parith\Lib;
+
+abstract class Char
+{
+    /**
+     * Based on BKDR (Brian Kernighan and Dennis Ritchie) hash function,
+     * not DJBX33A (Daniel J. Bernstein, Times 33 with Addition) hash function
+     *
+     * @static
+     * @param string $str
+     * @param int $s In my test, number 5381 distributes better than number 131
+     * @param int $hash
+     * @return int
+     */
+    public static function hash($str, $s = 5381, $hash = 0)
+    {
+        foreach (str_split($str) as $v)
+            $hash = ($hash * $s + ord($v)) & 0x7FFFFFFF;
+
+        return $hash;
+    }
+
+    /**
+     * @static
+     * @param $str
+     * @return string
+     */
+    public static function sanitize($str)
+    {
+        return \htmlspecialchars($str, ENT_QUOTES);
+    }
+
+    /**
+     * @static
+     * @param $str
+     * @param string $delimiter
+     * @param function $filter
+     * @return array
+     */
+    public static function toArray($str, $delimiter = ',', $filter = null)
+    {
+        $arr = \explode($delimiter, $str);
+
+        $filter and $arr = \array_map($filter, $arr);
+
+        return $arr;
+    }
+}

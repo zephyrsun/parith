@@ -1,0 +1,125 @@
+<?php
+
+/**
+ * File
+ *
+ * Parith :: a compact PHP framework
+ *
+ * @package Parith
+ * @author Zephyr Sun
+ * @copyright 2009-2011 Zephyr Sun
+ * @license http://www.parith.org/license
+ * @version 0.3
+ * @link http://www.parith.org/
+ */
+
+namespace Parith\Lib;
+
+abstract class File extends \Parith\Object
+{
+    /**
+     * @static
+     * @param $dir
+     * @param string $mode
+     * @return bool
+     */
+    public static function mkdir($dir, $mode = '0777')
+    {
+        if (\is_dir($dir))
+            return true;
+
+        if (self::mkdir(\dirname($dir), $mode))
+            return \mkdir($dir, $mode) or \Parith\Monitor::addLog('Failed to make directory: ' . $dir);
+    }
+
+    /**
+     * @static
+     * @param $filename
+     * @return bool
+     */
+    public static function rm($filename)
+    {
+        if (\is_dir($filename) && $dh = \opendir($filename)) {
+            while (false !== ($file = \readdir($dh)))
+                if ($file !== '.' && $file !== '..')
+                    self::rm($filename . DS . $file);
+
+            \closedir($dh);
+
+            return @\rmdir($filename);
+        }
+
+        return @\unlink($filename);
+    }
+
+    /**
+     * @static
+     * @param $dir
+     * @param bool $r
+     * @return array|bool
+     */
+    public static function ls($dir, $r = false)
+    {
+        if (\is_dir($dir) && $dh = \opendir($dir)) {
+            $out = array();
+            while (false !== ($file = \readdir($dh)))
+            {
+                if ($file != '.' && $file != '..') {
+                    $file = $dir . DS . $file;
+
+                    if (\is_file($file))
+                        $out[] = $file;
+                    elseif ($r && $sub = self::ls($file, $r))
+                        $out = $sub + $out;
+                }
+            }
+
+            return $out;
+        }
+
+        return false;
+    }
+
+    /**
+     * @static
+     * @param $filename
+     * @param null $var
+     * @param int $script
+     * @return int
+     */
+    public static function touch($filename, $var = null, $script = 0)
+    {
+        static $start = "<?php ", $end = ';?>';
+
+        if (\is_array($var) || \is_object($var))
+            $var = $start . 'return ' . \var_export($var, true) . $end;
+        elseif ($script)
+            $var = $start . 'return "' . \addslashes($var) . '"' . $end;
+
+        return \file_put_contents($filename, $var);
+    }
+
+    /**
+     * @static
+     * @param $filename
+     * @return bool|string
+     */
+    public static function get($filename)
+    {
+        if (\is_file($filename))
+            return \file_get_contents($filename);
+
+        return false;
+    }
+
+    /**
+     * @static
+     * @param $file1
+     * @param $file2
+     * @return bool
+     */
+    public static function isNewer($file1, $file2)
+    {
+        return !\is_file($file2) || \filemtime($file1) > \filemtime($file2);
+    }
+}
