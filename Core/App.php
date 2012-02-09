@@ -263,7 +263,7 @@ class Router
     public function parse($route = null, array &$arr = array())
     {
         $options = $this->options;
-        var_dump($_SERVER, $arr);
+
         # parse route
         $route === null and $route = &$_SERVER[$options['path_info']] and $route = \trim($route, '/');
         if ($route) {
