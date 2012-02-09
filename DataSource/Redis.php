@@ -26,9 +26,14 @@ class Redis extends DataSource
      */
     public function __construct()
     {
-        parent::option('Redis');
+        $this->option('Redis');
 
-        $this->redis = new \Redis();
+        $this->redis = $this->getBaseClass();
+    }
+
+    public function getBaseClass()
+    {
+        return new \Redis();
     }
 
     /**

@@ -19,7 +19,7 @@ abstract class File extends \Parith\Object
 {
     /**
      * @static
-     * @param $dir
+     * @param string $dir
      * @param string $mode
      * @return bool
      */
@@ -34,7 +34,7 @@ abstract class File extends \Parith\Object
 
     /**
      * @static
-     * @param $filename
+     * @param string $filename
      * @return bool
      */
     public static function rm($filename)
@@ -54,7 +54,7 @@ abstract class File extends \Parith\Object
 
     /**
      * @static
-     * @param $dir
+     * @param string $dir
      * @param bool $r
      * @return array|bool
      */
@@ -83,7 +83,7 @@ abstract class File extends \Parith\Object
     /**
      * @static
      * @param $filename
-     * @param null $var
+     * @param mixed $var
      * @param int $script
      * @return int
      */
@@ -101,7 +101,7 @@ abstract class File extends \Parith\Object
 
     /**
      * @static
-     * @param $filename
+     * @param string $filename
      * @return bool|string
      */
     public static function get($filename)
@@ -114,8 +114,8 @@ abstract class File extends \Parith\Object
 
     /**
      * @static
-     * @param $file1
-     * @param $file2
+     * @param string $file1
+     * @param string $file2
      * @return bool
      */
     public static function isNewer($file1, $file2)

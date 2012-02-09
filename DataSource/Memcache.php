@@ -24,14 +24,21 @@ class Memcache extends DataSource
     );
 
     /**
-     * @param string $cfg_name
+     * @param string $option_name
      * @return Memcache
      */
-    public function __construct($cfg_name = 'Memcache')
+    public function __construct($option_name = 'Memcache')
     {
-        parent::option($cfg_name);
-        $this->memcache = new \Memcache();
+        $this->option($option_name);
+
+        $this->memcache = $this->getBaseClass();
+
         $this->cache = new \Parith\Cache\Cache();
+    }
+
+    public function getBaseClass()
+    {
+        return new \Memcache();
     }
 
     /**

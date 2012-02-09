@@ -18,7 +18,6 @@ namespace Parith\View;
 class View extends \Parith\Result
 {
     public $options = array('source_dir' => null, 'source_ext' => 'php');
-    public $cache;
 
     /**
      * @param array $options

@@ -36,7 +36,7 @@ class Template extends View
 
     /**
      * @param $name
-     * @param null $ext
+     * @param null|string $ext
      */
     public function render($name, $ext = null)
     {
@@ -144,7 +144,7 @@ class Template extends View
         $r[] = "['\\1']";
 
         // replace to $this->var
-        $p[] = '/\$(\w+)/';
+        $p[] = '/\$(?!this->)(\w+)/';
         $r[] = '$this->\\1'; //$r[] = '$this->_data["\\1"]';
 
         return \preg_replace($p, $r, $str[0]);

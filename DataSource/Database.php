@@ -30,7 +30,7 @@ class Database extends DataSource
      */
     public function __construct()
     {
-        parent::option('Database');
+        $this->option('Database');
     }
 
     /**
