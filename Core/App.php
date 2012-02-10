@@ -8,9 +8,9 @@
  * @package Parith
  * @author Zephyr Sun
  * @copyright 2009-2011 Zephyr Sun
- * @license http://www.parith.org/license
+ * @license http://www.parith.net/license
  * @version 0.3
- * @link http://www.parith.org/
+ * @link http://www.parith.net/
  */
 
 namespace Parith;
@@ -200,15 +200,18 @@ class App
  * @package Parith
  * @author Zephyr Sun
  * @copyright 2009-2011 Zephyr Sun
- * @license http://www.parith.org/license
+ * @license http://www.parith.net/license
  * @version 0.3
- * @link http://www.parith.org/
+ * @link http://www.parith.net/
  */
 class Router
 {
     public $options = array(
-        'path_info' => 'PATH_INFO', 'delimiter' => '/', 'rules' => array(),
-        'default' => array('controller' => 'Index', 'action' => 'index')
+        'path_info' => 'PATH_INFO', //depends on your server
+        'delimiter' => '/',
+        'rules' => array(),
+        // 'default' could be array('c' => 'Default', 'a' => 'home'), it's up to you, but 'controller' must before 'action'
+        'default' => array('controller' => 'Index', 'action' => 'index'),
     );
 
     private $_arr = array(), $_ca = array();
@@ -265,20 +268,15 @@ class Router
         $options = $this->options;
 
         # parse route
-        $route === null and $route = &$_SERVER[$options['path_info']] and $route = \trim($route, '/');
+        $route === null and isset($_SERVER[$options['path_info']]) and $route = \trim($_SERVER[$options['path_info']], '/');
         if ($route) {
             $arr = $this->parsePath($route, $options) + $arr;
         }
         else {
-            $ca = array();
-            foreach ($options['default'] as $key => $val) {
-                $v = &$arr[$key] or $v = $val;
-                $ca[] = $v;
-                unset($arr[$key]);
-            }
+            foreach ($options['default'] as $key => $val)
+                $this->_ca[] = isset($arr[$key]) ? $arr[$key] : $val;
 
-            $ca[0] = \ucfirst($ca[0]);
-            $this->_ca = $ca;
+            $this->_ca[0] = \ucfirst($this->_ca[0]);
         }
 
         return $this->_arr = $arr;
@@ -301,12 +299,13 @@ class Router
         }
 
         $arr = \explode($options['delimiter'], $uri);
-        $ret = \array_splice($arr, 2);
 
-        $arr += \array_values($options['default']);
-        $arr[0] = \ucfirst($arr[0]);
-        $this->_ca = $arr;
+        // controller
+        $this->_ca[0] = \ucfirst($arr[0]);
 
-        return $ret;
+        // action
+        $this->_ca[1] = \next($arr) or $this->_ca[1] = \end($options['default']);
+
+        return $arr;
     }
 }

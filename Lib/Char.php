@@ -5,14 +5,14 @@
  * Char
  *
  * Parith :: a compact PHP framework
- * http://www.parith.org/
+ * http://www.parith.net/
  *
  * @package Parith
  * @author Zephyr Sun
  * @copyright 2009-2011 Zephyr Sun
- * @license http://www.parith.org/license
+ * @license http://www.parith.net/license
  * @version 0.3
- * @link http://www.parith.org/
+ * @link http://www.parith.net/
  */
 
 namespace Parith\Lib;
