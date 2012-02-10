@@ -7,7 +7,7 @@
  *
  * @package Parith
  * @author Zephyr Sun
- * @copyright 2009-2011 Zephyr Sun
+ * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
  * @version 0.3
  * @link http://www.parith.net/
@@ -199,7 +199,7 @@ class App
  *
  * @package Parith
  * @author Zephyr Sun
- * @copyright 2009-2011 Zephyr Sun
+ * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
  * @version 0.3
  * @link http://www.parith.net/
@@ -207,7 +207,7 @@ class App
 class Router
 {
     public $options = array(
-        'path_info' => 'PATH_INFO', //depends on your server
+        'request_uri' => 'REQUEST_URI', //depends on your server
         'delimiter' => '/',
         'rules' => array(),
         // 'default' could be array('c' => 'Default', 'a' => 'home'), it's up to you, but 'controller' must before 'action'
@@ -268,7 +268,7 @@ class Router
         $options = $this->options;
 
         # parse route
-        $route === null and isset($_SERVER[$options['path_info']]) and $route = \trim($_SERVER[$options['path_info']], '/');
+        $route === null and isset($_SERVER[$options['request_uri']]) and $route = \trim($_SERVER[$options['request_uri']], '/');
         if ($route) {
             $arr = $this->parsePath($route, $options) + $arr;
         }
