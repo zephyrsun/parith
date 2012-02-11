@@ -108,7 +108,7 @@ class App
 
     /**
      * @static
-     *
+     * @return array
      */
     private static function _init()
     {
@@ -117,15 +117,15 @@ class App
         # initial options
         self::$options = $options = self::option('App', array(), array('timezone' => 'UTC'));
 
-        # Parith Exception handler
-        \set_error_handler('\Parith\Exception::error');
-        \set_exception_handler('\Parith\Exception::handler');
-
         # timezone setup
         \date_default_timezone_set($options['timezone']);
 
         # now time
         define('APP_TIME', \time());
+
+        # Parith Exception handler
+        \set_error_handler('\Parith\Exception::error');
+        \set_exception_handler('\Parith\Exception::handler');
 
         return $options;
     }
@@ -210,7 +210,7 @@ class Router
         'request_uri' => 'REQUEST_URI', //depends on your server
         'delimiter' => '/',
         'rules' => array(),
-        // 'default' could be array('c' => 'Default', 'a' => 'home'), it's up to you, but 'controller' must before 'action'
+        // 'default' could be array('c' => 'Home', 'a' => 'index'), it's up to you, but 'controller' must before 'action'
         'default' => array('controller' => 'Index', 'action' => 'index'),
     );
 

@@ -153,8 +153,8 @@ class Exception extends \Exception
         {
             $class = APP_NS . 'Controller\Error';
             $handler = \class_exists($class) ? new $class($e) : new \Parith\Controller\Error($e);
-            $message = self::log($e);
-            $handler->index($message);
+            self::log($e);
+            $handler->index();
         }
         catch (\Exception $e)
         {
@@ -187,11 +187,12 @@ class Exception extends \Exception
 
     /**
      * @param \Exception $e
+     * @param string $format
      * @return string
      */
-    public static function text(\Exception $e)
+    public static function text(\Exception $e, $format = '[%s] [%s] %s: %d')
     {
-        return \sprintf('[%s] [%s] %s: %d', self::getCodeValue($e->getCode()), strip_tags($e->getMessage()), $e->getFile(), $e->getLine());
+        return \sprintf($format, self::getCodeValue($e->getCode()), $e->getMessage(), $e->getFile(), $e->getLine());
     }
 
     /**

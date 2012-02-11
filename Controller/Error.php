@@ -28,46 +28,51 @@ class Error extends Controller
         $this->exception = $e;
     }
 
+    public function getText()
+    {
+        return \Parith\Exception::text($this->exception);
+    }
+
     /**
-     * @param string $message
      * @return void
      */
-    public function index($message = 'error')
+    public function index()
     {
+        $text = $this->getText();
         if (\Parith\App::$is_cli) {
-            $this->cli($message);
+            $this->cli($text);
         }
         else {
             static::httpStatus($this->exception->getCode());
-            $this->web($message);
+            $this->web($text);
         }
     }
 
     /**
-     * @param string $message
+     * @param string $text
      * @return void
      */
-    protected function web($message = 'error')
+    public function web($text = 'error')
     {
         echo '<pre>';
-        $this->cli($message);
+        $this->cli($text);
         echo '</pre>';
     }
 
     /**
-     * @param string $message
+     * @param string $text
      * @return void
      */
-    protected function cli($message = 'error')
+    public function cli($text = 'error')
     {
-        echo PHP_EOL . $message . PHP_EOL . $this->exception->getTraceAsString() . PHP_EOL;
+        echo PHP_EOL . $text . PHP_EOL . $this->exception->getTraceAsString() . PHP_EOL;
     }
 
     /**
      * @param int $code
      * @return bool
      */
-    protected static function httpStatus($code)
+    public static function httpStatus($code)
     {
         return \Parith\Lib\Response::httpStatus($code);
     }
