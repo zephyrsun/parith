@@ -207,7 +207,6 @@ class App
 class Router
 {
     public $options = array(
-        'request_uri' => 'REQUEST_URI', //depends on your server
         'delimiter' => '/',
         'rules' => array(),
         // 'default' could be array('c' => 'Home', 'a' => 'index'), it's up to you, but 'controller' must before 'action'
@@ -258,6 +257,11 @@ class Router
         return \Parith\Arr::get($this->_arr, $key);
     }
 
+    public static function getPathInfo($arr)
+    {
+        return isset($arr['PATH_INFO']) ? \ltrim($arr['PATH_INFO'], '/') : null;
+    }
+
     /**
      * @param null|string $route
      * @param array $arr
@@ -268,9 +272,9 @@ class Router
         $options = $this->options;
 
         # parse route
-        $route === null and isset($_SERVER[$options['request_uri']]) and $route = \trim($_SERVER[$options['request_uri']], '/');
+        $route === null and $route = self::getPathInfo($arr);
         if ($route) {
-            $arr = $this->parsePath($route, $options) + $arr;
+            $this->parsePath($route, $options);
         }
         else {
             foreach ($options['default'] as $key => $val)
