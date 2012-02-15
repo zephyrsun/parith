@@ -12,7 +12,7 @@ It is licenced under the MIT License so you can use it for any personal or corpo
 
 ##Installation
 
-Your directory structure could like this:
+Your directory structure could be:
 
     ├─Parith
     │  ├─Controller
@@ -20,18 +20,19 @@ Your directory structure could like this:
     │  ├─Model
     │  ├─View
     │  ...
-    └─YOURAPP
+    └─Yourapp
         ├─Config
         │      Router.php
         │
         ├─Controller
         │      Home.php
+        │      Error.php
         │
         ...
 
 ###How to use in PHP 5.3.0 to PHP 5.3.2
 
-if you use PHP 5.3.0 to PHP 5.3.2, you must config Config/Router.php like this:
+if you use PHP 5.3.0 to PHP 5.3.2, you must config Yourapp/Config/Router.php like this:
 
     <?php
         return array('default' => array('controller' => 'Home', 'action' => 'index'));
@@ -41,7 +42,7 @@ if you use PHP 5.3.0 to PHP 5.3.2, you must config Config/Router.php like this:
 config 'Home' as default controller, will prevent PHP treat 'index' as __construct. there is 'Home.php':
 
     <?php
-    namespace Website\Controller;
+    namespace Yourapp\Controller;
     
     class Home
     {
@@ -64,4 +65,25 @@ Nginx:
 
     try_files $uri $uri/ /index.php?PATH_INFO=$uri&$query_string;
 
+###How to customize error pages
+
+Below is an example. getText() returns what error messages to be showed by cli().
+Web applications can use web() to instead of cli(). You can invoke module \Parith\View to customize it.
+
+    <?php
+    namespace Yourapp\Controller;
+
+    class Error extends \Parith\Controller\Error
+    {
+        public function cli($text = 'error')
+        {
+            echo PHP_EOL . $text . PHP_EOL;
+        }
+
+        public function getText()
+        {
+            return \Parith\Exception::text($this->exception, '[%s] [%s]');
+        }
+    }
+    ?>
 
