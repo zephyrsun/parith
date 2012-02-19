@@ -206,7 +206,7 @@ abstract class Arr
      * @param $num
      * @return array
      */
-    public static function multiRand($min, $max, $num)
+    public static function rand($min, $max, $num)
     {
         $t = array();
         do {
