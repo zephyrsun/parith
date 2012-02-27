@@ -46,7 +46,10 @@ config 'Home' as default controller, will prevent PHP treat 'index' as __constru
     
     class Home
     {
-        public function index(){}
+        public function index()
+        {
+            ....
+        }
     }
     ?>
 
