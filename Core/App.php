@@ -15,6 +15,7 @@
 
 namespace Parith;
 \spl_autoload_register('\Parith\App::autoload');
+
 class App
 {
     public static $tr_pairs = array(), $configs = array(), $options = array(), $is_cli = false, $file_ext = '.php', $config_dir;
@@ -66,13 +67,18 @@ class App
     {
         $argv = $_SERVER['argv'];
 
-        $method = isset($argv[1]) ? \explode('?', $argv[1]) : array('');
+        if (isset($argv[1]))
+            $method = \explode('?', $argv[1]);
+        else
+            $method = array('');
 
-        # treated as $_GET
-        isset($method[1]) and \parse_str($method[1], $_GET);
+        // treated as $_GET
+        if (isset($method[1]))
+            \parse_str($method[1], $_GET);
 
-        # treated as $_POST
-        isset($argv[2]) and \parse_str($argv[2], $_POST);
+        // treated as $_POST
+        if (isset($argv[2]))
+            \parse_str($argv[2], $_POST);
 
         self::$is_cli = true;
         return $this->run($method[0]);
@@ -114,16 +120,16 @@ class App
     {
         self::$tr_pairs = array(APP_NS => APP_DIR, 'Parith\\' => PARITH_DIR, '\\' => DS);
 
-        # initial options
+        // initial options
         self::$options = $options = self::option('App', array(), array('timezone' => 'UTC'));
 
-        # timezone setup
+        // timezone setup
         \date_default_timezone_set($options['timezone']);
 
-        # now time
+        // now time
         define('APP_TIME', \time());
 
-        # Parith Exception handler
+        // Parith Exception handler
         \set_error_handler('\Parith\Exception::error');
         \set_exception_handler('\Parith\Exception::handler');
 
@@ -167,7 +173,9 @@ class App
         if (\is_file($name))
             return include $name;
 
-        $log and  Monitor::addLog('File "' . $name . '" not found');
+        if ($log)
+            Monitor::addLog('File "' . $name . '" not found');
+
         return $default;
     }
 
@@ -271,8 +279,10 @@ class Router
     {
         $options = $this->options;
 
-        # parse route
-        $route === null and $route = self::getPathInfo($arr);
+        // parse route
+        if ($route === null)
+            $route = self::getPathInfo($arr);
+
         if ($route) {
             $this->parsePath($route, $options);
         }

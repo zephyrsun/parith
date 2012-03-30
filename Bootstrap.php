@@ -18,7 +18,7 @@ namespace Parith;
 \define('DS', \DIRECTORY_SEPARATOR);
 \define('PARITH_DIR', \dirname(__FILE__) . DS);
 
-# load core class
+// load core class
 require 'Core/Common.php';
 require 'Core/Monitor.php';
 require 'Core/Result.php';

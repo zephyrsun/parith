@@ -58,7 +58,8 @@ abstract class Char
     {
         $arr = \explode($delimiter, $str);
 
-        $filter and $arr = \array_map($filter, $arr);
+        if ($filter)
+            $arr = \array_map($filter, $arr);
 
         return $arr;
     }

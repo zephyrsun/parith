@@ -25,7 +25,8 @@ class XXTEA extends \Parith\Object
      */
     public function __construct($key = '')
     {
-        $key and $this->setKey($key);
+        if ($key)
+            $this->setKey($key);
     }
 
     /**
@@ -39,7 +40,8 @@ class XXTEA extends \Parith\Object
         elseif (!\is_array($key))
             throw new \Parith\Exception('XXTEA key must be String or Array');
 
-        \count($key) < 4 and $this->key = $key + $this->key;
+        if (\count($key) < 4)
+            $this->key = $key + $this->key;
 
         return $this;
     }
@@ -156,7 +158,8 @@ class XXTEA extends \Parith\Object
     private static function _str2long($s, $w = false)
     {
         $v = \array_values(\unpack('V*', $s . \str_repeat("\0", (4 - \strlen($s) % 4) & 3)));
-        $w and $v[] = \strlen($s);
+        if ($w)
+            $v[] = \strlen($s);
 
         return $v;
     }

@@ -87,7 +87,9 @@ class Redis extends DataSource
      */
     public function close()
     {
-        $this->link and $this->redis->close();
+        if ($this->link)
+            $this->redis->close();
+
         return $this;
     }
 }

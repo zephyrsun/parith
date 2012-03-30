@@ -94,7 +94,8 @@ abstract class Model extends \Parith\Result
 
         $ret = array();
         while ($row = $stmt->fetch())
-            $row and $ret[] = clone $row;
+            if ($row)
+                $ret[] = clone $row;
 
         $this->clear();
 
@@ -116,7 +117,10 @@ abstract class Model extends \Parith\Result
      */
     public function update(array $var = array())
     {
-        $var and $this->resultSet($var); # push new data into class
+        // push new data into class
+        if ($var)
+            $this->resultSet($var);
+
         $var = $this->resultGet();
 
         $value = $comma = '';
@@ -148,7 +152,10 @@ abstract class Model extends \Parith\Result
      */
     public function insert(array $var = array())
     {
-        $var and $this->resultSet($var); # push new data into class
+        // push new data into class
+        if ($var)
+            $this->resultSet($var);
+
         $var = $this->resultGet();
 
         $field = $value = $comma = '';
@@ -179,7 +186,8 @@ abstract class Model extends \Parith\Result
      */
     public function delete($id = null)
     {
-        $id === null and $id = $this->resultGet($this->primary);
+        if ($id === null)
+            $id = $this->resultGet($this->primary);
 
         $this->where($this->primary, $id);
 
@@ -208,7 +216,8 @@ abstract class Model extends \Parith\Result
      */
     public function findRelation($id = null, $ref = null)
     {
-        $id === null and $id = $this->resultGet($this->primary);
+        if ($id === null)
+            $id = $this->resultGet($this->primary);
 
         $refs = $this->getRelation();
 
@@ -260,7 +269,8 @@ abstract class Model extends \Parith\Result
     private function _initQuery(array $query)
     {
         foreach ($query as $method => $val)
-            \method_exists($this, $method) and $this->$method($val);
+            if (\method_exists($this, $method))
+                $this->$method($val);
 
         return $this->qc;
     }

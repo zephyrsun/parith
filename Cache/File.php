@@ -26,7 +26,8 @@ class File extends Cache
     {
         $this->options or parent::option('Cache_File', $options);
 
-        $this->options['dir'] === null and $this->options['dir'] = APP_DIR . 'tmp' . DS . 'File';
+        if ($this->options['dir'] === null)
+            $this->options['dir'] = APP_DIR . 'tmp' . DS . 'File';
 
         \Parith\Lib\File::mkdir($this->options['dir']);
     }

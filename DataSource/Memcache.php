@@ -103,7 +103,9 @@ class Memcache extends DataSource
      */
     public function close()
     {
-        $this->link and $this->memcache->close();
+        if ($this->link)
+            $this->memcache->close();
+
         return $this;
     }
 
@@ -245,7 +247,8 @@ class Memcache extends DataSource
         $pk = $this->getKey($key);
 
         $ret = $this->memcache->delete($pk);
-        $ret and $this->cache->delete($pk);
+        if ($ret)
+            $this->cache->delete($pk);
 
         return $ret;
     }
@@ -257,10 +260,11 @@ class Memcache extends DataSource
     {
         $ret = $this->memcache->flush();
 
-        # wait a second, this is necessary, or Memcached::set() will return 1, although your data is in fact not saved.
+        // wait a second, this is necessary, or Memcached::set() will return 1, although your data is in fact not saved.
         sleep(1);
 
-        $ret and $this->cache->flush();
+        if ($ret)
+            $this->cache->flush();
 
         return $ret;
     }

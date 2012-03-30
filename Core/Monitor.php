@@ -100,21 +100,21 @@ class Monitor
 class Exception extends \Exception
 {
     public static $php_errors = array(
-        \E_ERROR => 'Error', #
-        \E_WARNING => 'Warning', #
-        \E_PARSE => 'Parse Error', #
-        \E_NOTICE => 'Notice', #
-        \E_CORE_ERROR => 'Core Error', # since PHP 4
-        \E_CORE_WARNING => 'Core Warning', # since PHP 4
-        \E_COMPILE_ERROR => 'Compile Error', # since PHP 4
-        \E_COMPILE_WARNING => 'Compile Warning', # since PHP 4
-        \E_USER_ERROR => 'User Error', # since PHP 4
-        \E_USER_WARNING => 'User Warning', # since PHP 4Parse Error
-        \E_USER_NOTICE => 'User Notice', # since PHP 4
-        \E_STRICT => 'Strict Notice', # since PHP 5
-        \E_RECOVERABLE_ERROR => 'Recoverable Error', # since PHP 5.2.0
-        \E_DEPRECATED => 'Deprecated', # Since PHP 5.3.0
-        \E_USER_DEPRECATED => 'User Deprecated', # Since PHP 5.3.0
+        \E_ERROR => 'Error',
+        \E_WARNING => 'Warning',
+        \E_PARSE => 'Parse Error',
+        \E_NOTICE => 'Notice',
+        \E_CORE_ERROR => 'Core Error', // since PHP 4
+        \E_CORE_WARNING => 'Core Warning', // since PHP 4
+        \E_COMPILE_ERROR => 'Compile Error', // since PHP 4
+        \E_COMPILE_WARNING => 'Compile Warning', // since PHP 4
+        \E_USER_ERROR => 'User Error', // since PHP 4
+        \E_USER_WARNING => 'User Warning', // since PHP 4Parse Error
+        \E_USER_NOTICE => 'User Notice', // since PHP 4
+        \E_STRICT => 'Strict Notice', // since PHP 5
+        \E_RECOVERABLE_ERROR => 'Recoverable Error', // since PHP 5.2.0
+        \E_DEPRECATED => 'Deprecated', // Since PHP 5.3.0
+        \E_USER_DEPRECATED => 'User Deprecated', // Since PHP 5.3.0
     );
 
     /**

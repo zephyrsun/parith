@@ -44,8 +44,8 @@ class Template extends View
 
         $cache = $this->cache->filename(\rawurlencode($name));
 
-        \Parith\Lib\File::isNewer($source, $cache)
-            and \Parith\Lib\File::touch($cache, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']));
+        if (\Parith\Lib\File::isNewer($source, $cache))
+            \Parith\Lib\File::touch($cache, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']));
 
         include $cache;
     }
@@ -60,7 +60,7 @@ class Template extends View
     public static function parse($tag, $ldelim, $rdelim)
     {
         return \preg_replace_callback(
-            '/' . $ldelim . '([^' . $ldelim . $rdelim . ']+)' . $rdelim . '/', # '/{([^{}]+)}/'
+            '/' . $ldelim . '([^' . $ldelim . $rdelim . ']+)' . $rdelim . '/', //  '/{([^{}]+)}/'
             '\Parith\View\Template::parseBrace', \stripslashes($tag)
         );
     }
@@ -127,7 +127,8 @@ class Template extends View
         $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::parseInclude', $s);
 
         // for js, css
-        $s === $str[1] and $s = '{' . $s . '}';
+        if ($s === $str[1])
+            $s = '{' . $s . '}';
 
         return $s;
     }
