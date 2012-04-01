@@ -15,7 +15,7 @@
 
 namespace Parith;
 
-abstract class Result extends Object implements \Iterator, \ArrayAccess, \Countable
+abstract class Result implements \Iterator, \ArrayAccess, \Countable
 {
     protected $_rs = array();
 

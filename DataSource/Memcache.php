@@ -17,7 +17,7 @@ namespace Parith\DataSource;
 
 class Memcache extends DataSource
 {
-    public $prefix = '', $key, $link, $memcache, $cache, $expire = 2592000, $compress = 0, $default = array(
+    public $link, $memcache, $compress = 0, $defaults = array(
         'host' => '127.0.0.1', 'port' => 11211, 'timeout' => 1, 'compress' => 0,
         'persistent' => true, 'weight' => 1,
         'retry_interval' => 15, 'status' => true, 'failure_callback' => null,
@@ -31,14 +31,7 @@ class Memcache extends DataSource
     {
         $this->option($option_name);
 
-        $this->memcache = $this->getBaseClass();
-
-        $this->cache = new \Parith\Cache\Cache();
-    }
-
-    public function getBaseClass()
-    {
-        return new \Memcache();
+        $this->memcache = new \Memcache();
     }
 
     /**
@@ -48,9 +41,7 @@ class Memcache extends DataSource
      */
     public function connectById($id, $add_server = false)
     {
-        $options = $this->initServer($id);
-
-        $this->setCompress($options['compress']);
+        $options = $this->drawOption($id);
 
         return $add_server ? $this->addServer($options) : $this->connect($options);
     }
@@ -62,6 +53,10 @@ class Memcache extends DataSource
      */
     public function connect($options)
     {
+        $options = $this->normalizeOption($options);
+
+        $this->setCompress($options['compress']);
+
         $link = $this->memcache->connect($options['host'], $options['port'], $options['timeout']);
         if ($link === false)
             throw new \Parith\Exception('Memcache could not connect to ' . $options['host'] . ':' . $options['port']);
@@ -77,6 +72,10 @@ class Memcache extends DataSource
      */
     public function addServer($options)
     {
+        $options = $this->normalizeOption($options);
+
+        $this->setCompress($options['compress']);
+
         $link = $this->memcache->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
             $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
 
@@ -92,7 +91,7 @@ class Memcache extends DataSource
      */
     public function connectAll()
     {
-        foreach ($this->servers as &$cfg)
+        foreach ($this->options as &$cfg)
             $this->addServer($cfg);
 
         return $this;
@@ -120,16 +119,6 @@ class Memcache extends DataSource
     }
 
     /**
-     * @param $expire
-     * @return Memcache
-     */
-    public function setExpire($expire)
-    {
-        $this->expire = (int)$expire;
-        return $this;
-    }
-
-    /**
      * @return int
      */
     public function getCompress()
@@ -144,16 +133,7 @@ class Memcache extends DataSource
      */
     public function get($key)
     {
-        $pk = $this->getKey($key);
-
-        $ret = $this->cache->get($pk);
-
-        if ($ret === null) {
-            $ret = $this->memcache->get($pk, $this->getCompress());
-            $ret === false or $this->cache->set($pk, $ret);
-        }
-
-        return $ret;
+        return $this->memcache->get($key, $this->getCompress());
     }
 
     /**
@@ -164,14 +144,7 @@ class Memcache extends DataSource
      */
     public function set($key, $var, $expire = 0)
     {
-        $expire or $expire = $this->expire;
-
-        $pk = $this->getKey($key);
-
-        $ret = $this->memcache->set($pk, $var, $this->getCompress(), $expire);
-        $ret === false or $this->cache->set($pk, $var);
-
-        return $ret;
+        return $this->memcache->set($key, $var, $this->getCompress(), $expire);
     }
 
     /**
@@ -182,14 +155,7 @@ class Memcache extends DataSource
      */
     public function add($key, $var, $expire = 0)
     {
-        $expire or $expire = $this->expire;
-
-        $pk = $this->getKey($key);
-
-        $ret = $this->memcache->add($pk, $var, $this->getCompress(), $expire);
-        $ret === false or $this->cache->set($pk, $var);
-
-        return $ret;
+        return $this->memcache->add($key, $var, $this->getCompress(), $expire);
     }
 
     /**
@@ -200,12 +166,7 @@ class Memcache extends DataSource
      */
     public function replace($key, $var, $expire = 0)
     {
-        $pk = $this->getKey($key);
-
-        $ret = $this->memcache->replace($pk, $var, $this->getCompress(), $expire);
-        $ret === false or $this->cache->set($pk, $var);
-
-        return $ret;
+        return $this->memcache->replace($key, $var, $this->getCompress(), $expire);
     }
 
     /**
@@ -215,12 +176,7 @@ class Memcache extends DataSource
      */
     public function increment($key, $int = 1)
     {
-        $pk = $this->getKey($key);
-
-        $ret = $this->memcache->increment($pk, $int);
-        $ret === false or $this->cache->set($pk, $ret);
-
-        return $ret;
+        return $this->memcache->increment($key, $int);
     }
 
     /**
@@ -230,12 +186,7 @@ class Memcache extends DataSource
      */
     public function decrement($key, $int = 1)
     {
-        $pk = $this->getKey($key);
-
-        $ret = $this->memcache->decrement($pk, $int);
-        $ret === false or $this->cache->set($pk, $ret);
-
-        return $ret;
+        return $this->memcache->decrement($key, $int);
     }
 
     /**
@@ -244,13 +195,7 @@ class Memcache extends DataSource
      */
     public function delete($key)
     {
-        $pk = $this->getKey($key);
-
-        $ret = $this->memcache->delete($pk);
-        if ($ret)
-            $this->cache->delete($pk);
-
-        return $ret;
+        return $this->memcache->delete($key);
     }
 
     /**
@@ -263,18 +208,6 @@ class Memcache extends DataSource
         // wait a second, this is necessary, or Memcached::set() will return 1, although your data is in fact not saved.
         sleep(1);
 
-        if ($ret)
-            $this->cache->flush();
-
         return $ret;
-    }
-
-    /**
-     * @param $key
-     * @return string
-     */
-    public function getKey($key)
-    {
-        return $this->key = $this->prefix . $key;
     }
 }

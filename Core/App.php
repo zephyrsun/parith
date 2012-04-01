@@ -156,7 +156,9 @@ class App
     public static function loadConfig($name)
     {
         $cfg = &self::$configs;
+
         isset($cfg[$name]) or $cfg[$name] = self::import(self::$config_dir . $name . self::$file_ext, array(), false);
+
         return $cfg[$name];
     }
 

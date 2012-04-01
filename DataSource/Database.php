@@ -17,7 +17,7 @@ namespace Parith\DataSource;
 
 class Database extends DataSource
 {
-    public $link, $default = array(
+    public $link, $defaults = array(
         'username' => 'root', 'password' => null,
         'driver' => 'mysql', 'host' => null, 'port' => 3306, 'dbname' => null,
         'charset' => 'utf8', 'options' => null,
@@ -35,13 +35,11 @@ class Database extends DataSource
 
     /**
      * @param $id
-     * @param array $options
      * @return Database
      */
-    public function connectById($id, array $options = array())
+    public function connectById($id)
     {
-        $options += $this->initServer($id, $options);
-        return $this->connect($options);
+        return $this->connect($this->drawOption($id));
     }
 
     /**
@@ -50,6 +48,8 @@ class Database extends DataSource
      */
     public function connect(array $options)
     {
+        $options = $this->normalizeOption($options);
+
         try
         {
             $dsn = "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['dbname']}";

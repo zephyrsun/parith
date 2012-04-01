@@ -17,33 +17,31 @@ namespace Parith;
 
 abstract class Object
 {
+    private static $_cache = array();
+
     /**
-     * @param $name
+     * @param $class
      * @return object
      */
-    public static function getInstance($name = null)
+    public static function getInstance($class)
     {
-        static $cache = array();
-
-        $name or $name = get_called_class();
-
-        $obj = &$cache[$name];
+        $obj = &self::$_cache[$class];
         if ($obj)
             return $obj;
 
         $args = func_get_args();
-        switch (count($args))
+        switch (count($args) - 1)
         {
             case 1:
-                return $obj = new $name($args[0]);
+                return $obj = new $class($args[1]);
             case 2:
-                return $obj = new $name($args[0], $args[1]);
+                return $obj = new $class($args[1], $args[2]);
             case 3:
-                return $obj = new $name($args[0], $args[1], $args[2]);
+                return $obj = new $class($args[1], $args[2], $args[3]);
             case 4:
-                return $obj = new $name($args[0], $args[1], $args[2], $args[3]);
+                return $obj = new $class($args[1], $args[2], $args[3], $args[4]);
             default:
-                return $obj = new $name;
+                return $obj = new $class;
         }
     }
 }

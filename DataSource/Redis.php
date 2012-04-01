@@ -17,7 +17,7 @@ namespace Parith\DataSource;
 
 class Redis extends DataSource
 {
-    public $prefix = '', $key, $link, $redis, $default = array(
+    public $prefix = '', $key, $link, $redis, $defaults = array(
         'host' => null, 'port' => 6379, 'timeout' => 0.0
     );
 
@@ -38,13 +38,11 @@ class Redis extends DataSource
 
     /**
      * @param $id
-     * @param array $options
      * @return Redis
      */
-    public function connectById($id, array $options = array())
+    public function connectById($id)
     {
-        $options += $this->initServer($id, $options);
-        return $this->connect($options);
+        return $this->connect($this->drawOption($id));
     }
 
     /**
@@ -54,6 +52,8 @@ class Redis extends DataSource
      */
     public function connect($options)
     {
+        $options = $this->normalizeOption($options);
+
         $this->link = $this->redis->connect($options['host'], $options['port'], $options['timeout']);
         if ($this->link === false)
             throw new \Parith\Exception('Redis could not connect to ' . $options['host'] . ':' . $options['port']);
