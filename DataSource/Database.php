@@ -35,11 +35,12 @@ class Database extends DataSource
 
     /**
      * @param $id
+     * @param array $options
      * @return Database
      */
-    public function connectById($id)
+    public function connectById($id, array $options = array())
     {
-        return $this->connect($this->drawOption($id));
+        return $this->connect($options + $this->drawOption($id));
     }
 
     /**
