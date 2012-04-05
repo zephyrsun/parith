@@ -26,7 +26,7 @@ class Redis extends DataSource
      */
     public function __construct()
     {
-        $this->option('Redis');
+        $this->config('Redis');
 
         $this->redis = $this->getBaseClass();
     }
@@ -38,21 +38,13 @@ class Redis extends DataSource
 
     /**
      * @param $id
-     * @return Redis
-     */
-    public function connectById($id)
-    {
-        return $this->connect($this->drawOption($id));
-    }
-
-    /**
-     * @param $options
+     * @param array $options
      * @return Redis
      * @throws \Parith\Exception
      */
-    public function connect($options)
+    public function connect($id, array $options = array())
     {
-        $options = $this->normalizeOption($options);
+        $options = $this->option($id, $options);
 
         $this->link = $this->redis->connect($options['host'], $options['port'], $options['timeout']);
         if ($this->link === false)

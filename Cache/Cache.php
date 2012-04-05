@@ -17,7 +17,7 @@ namespace Parith\Cache;
 
 class Cache
 {
-    public $options, $default = array();
+    public $configs, $defaults = array();
 
     private $_cache = array();
 
@@ -26,9 +26,9 @@ class Cache
      * @param array $options
      * @return Cache
      */
-    public function option($name, array $options = array())
+    public function config($name, array $options = array())
     {
-        $this->options = \Parith\App::option($name, $options, $this->default);
+        $this->configs = \Parith\App::config($name, $options, $this->defaults);
         return $this;
     }
 

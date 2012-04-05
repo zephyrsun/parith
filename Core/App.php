@@ -121,7 +121,7 @@ class App
         self::$tr_pairs = array(APP_NS => APP_DIR, 'Parith\\' => PARITH_DIR, '\\' => DS);
 
         // initial options
-        self::$options = $options = self::option('App', array(), array('timezone' => 'UTC'));
+        self::$options = $options = self::config('App', array(), array('timezone' => 'UTC'));
 
         // timezone setup
         \date_default_timezone_set($options['timezone']);
@@ -143,7 +143,7 @@ class App
      * @param array $after
      * @return array
      */
-    public static function option($name, array $before = array(), array $after = array())
+    public static function config($name, array $before = array(), array $after = array())
     {
         return $before + self::loadConfig($name) + $after;
     }
@@ -231,7 +231,7 @@ class Router
      */
     public function __construct(array $options = array())
     {
-        $this->options = App::option('Router', $options, $this->options);
+        $this->options = App::config('Router', $options, $this->options);
     }
 
     /**

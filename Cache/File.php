@@ -17,14 +17,14 @@ namespace Parith\Cache;
 
 class File extends Cache
 {
-    public $default = array('dir' => null, 'file_ext' => 'php');
+    public $defaults = array('dir' => null, 'file_ext' => 'php');
 
     /**
      * @param array $options
      */
     public function __construct(array $options = array())
     {
-        $this->options or parent::option('Cache_File', $options);
+        $this->options or parent::config('Cache_File', $options);
 
         if ($this->options['dir'] === null)
             $this->options['dir'] = APP_DIR . 'tmp' . DS . 'File';

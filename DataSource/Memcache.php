@@ -29,31 +29,20 @@ class Memcache extends DataSource
      */
     public function __construct($option_name = 'Memcache')
     {
-        $this->option($option_name);
+        $this->config($option_name);
 
         $this->memcache = new \Memcache();
     }
 
     /**
      * @param $id
-     * @param bool $add_server
-     * @return Memcache
-     */
-    public function connectById($id, $add_server = false)
-    {
-        $options = $this->drawOption($id);
-
-        return $add_server ? $this->addServer($options) : $this->connect($options);
-    }
-
-    /**
-     * @param $options
+     * @param array $options
      * @return Memcache
      * @throws \Parith\Exception
      */
-    public function connect($options)
+    public function connect($id, array $options = array())
     {
-        $options = $this->normalizeOption($options);
+        $options = $this->option($id, $options);
 
         $this->setCompress($options['compress']);
 
@@ -66,13 +55,14 @@ class Memcache extends DataSource
     }
 
     /**
-     * @param $options
+     * @param $id
+     * @param array $options
      * @return Memcache
      * @throws \Parith\Exception
      */
-    public function addServer($options)
+    public function addServer($id, array $options = array())
     {
-        $options = $this->normalizeOption($options);
+        $options = $this->option($id, $options);
 
         $this->setCompress($options['compress']);
 
@@ -91,7 +81,7 @@ class Memcache extends DataSource
      */
     public function connectAll()
     {
-        foreach ($this->options as &$cfg)
+        foreach ($this->configs as &$cfg)
             $this->addServer($cfg);
 
         return $this;

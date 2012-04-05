@@ -17,32 +17,26 @@ namespace Parith\DataSource;
 
 class DataSource
 {
-    public $options = array(), $defaults = array();
+    public $configs = array(), $defaults = array();
 
-    public function option($name)
+    public function config($name)
     {
-        $this->options = \Parith\App::option($name, array(), $this->defaults);
-
+        $this->configs = \Parith\App::config($name);
         return $this;
     }
 
-    /**
-     * @param int $id
-     * @return array
-     */
-    public function drawOption($id)
+    public function option($id, array $options = array())
     {
-        $cfg = &$this->options[$id];
+        if (is_array($id)) { //$id equals $options
+            return $id + $this->defaults;
+        }
 
-        if (is_array($cfg))
-            return $cfg;
+        $configs = &$this->configs[$id];
+        if (is_array($configs)) {
+            return $options + $configs + $this->defaults;
+        }
 
         throw new \Parith\Exception('Unknown ' . get_called_class() . ' config ID: ' . $id);
-    }
-
-    public function normalizeOption(array $options)
-    {
-        return $options + $this->defaults;
     }
 
     /**

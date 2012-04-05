@@ -30,7 +30,7 @@ class Database extends DataSource
      */
     public function __construct()
     {
-        $this->option('Database');
+        $this->config('Database');
     }
 
     /**
@@ -38,18 +38,9 @@ class Database extends DataSource
      * @param array $options
      * @return Database
      */
-    public function connectById($id, array $options = array())
+    public function connect($id, array $options = array())
     {
-        return $this->connect($options + $this->drawOption($id));
-    }
-
-    /**
-     * @param array $options
-     * @return Database
-     */
-    public function connect(array $options)
-    {
-        $options = $this->normalizeOption($options);
+        $options = $this->option($id, $options);
 
         try
         {
