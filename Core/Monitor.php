@@ -160,9 +160,8 @@ class Exception extends \Exception
         {
             self::log($e);
             print_r(\Parith\Monitor::getLog());
+            exit(1);
         }
-
-        exit(1);
     }
 
     /**

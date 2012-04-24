@@ -139,11 +139,11 @@ abstract class Model extends \Parith\Result
 
         $sql = 'UPDATE ' . $this->getTable(false) . ' SET ' . $value . $this->qc['where'] . ';';
 
-        $this->db->query($sql, $this->qp);
+        $ret = $this->db->query($sql, $this->qp);
 
         $this->clear();
 
-        return $this->db->rowCount();
+        return $ret; //$this->db->rowCount();
     }
 
     /**

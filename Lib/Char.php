@@ -17,7 +17,7 @@
 
 namespace Parith\Lib;
 
-abstract class Char
+class Char
 {
     /**
      * Based on BKDR (Brian Kernighan and Dennis Ritchie) hash function,

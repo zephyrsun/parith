@@ -20,11 +20,19 @@ abstract class Object
     private static $_cache = array();
 
     /**
+     * \Parith\Object::getInstance('\memcache')
+     * or
+     * \Parith\Lib\File::getInstance();
+     *
      * @param $class
      * @return object
      */
-    public static function getInstance($class)
+    public static function getInstance($class = null)
     {
+        // for subclass call
+        $c = get_called_class();
+        __CLASS__ === $c or $class = $c;
+
         $obj = &self::$_cache[$class];
         if ($obj)
             return $obj;

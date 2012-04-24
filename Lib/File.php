@@ -15,7 +15,7 @@
 
 namespace Parith\Lib;
 
-abstract class File extends \Parith\Object
+class File extends \Parith\Object
 {
     /**
      * @static

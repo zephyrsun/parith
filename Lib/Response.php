@@ -15,7 +15,7 @@
 
 namespace Parith\Lib;
 
-abstract class Response extends \Parith\Object
+class Response extends \Parith\Object
 {
     public static $protocol = 'HTTP/1.1',
         $status_code = array(

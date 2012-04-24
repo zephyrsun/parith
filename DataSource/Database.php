@@ -102,7 +102,7 @@ class Database extends DataSource
         }
         catch (\PDOException $e)
         {
-            \Parith\Exception::handler($e);
+            //\Parith\Exception::handler($e);
         }
 
         return false;
