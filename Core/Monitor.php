@@ -149,15 +149,13 @@ class Exception extends \Exception
      */
     public static function handler(\Exception $e)
     {
-        try
-        {
+        try {
             $class = APP_NS . 'Controller\Error';
             $handler = \class_exists($class) ? new $class($e) : new \Parith\Controller\Error($e);
             self::log($e);
             $handler->index();
         }
-        catch (\Exception $e)
-        {
+        catch (\Exception $e) {
             self::log($e);
             print_r(\Parith\Monitor::getLog());
             exit(1);

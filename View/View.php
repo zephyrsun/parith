@@ -25,7 +25,7 @@ class View extends \Parith\Result
      */
     public function __construct(array $options = array())
     {
-        $this->options = \Parith\App::config('View', $options, $this->options);
+        $this->options = \Parith\App::config('View', $options) + $this->options;
 
         $this->options['source_dir'] or $this->options['source_dir'] = APP_DIR . 'View';
     }

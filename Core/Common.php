@@ -38,16 +38,19 @@ abstract class Object
             return $obj;
 
         $args = func_get_args();
-        switch (count($args) - 1)
-        {
+
+        if (__CLASS__ === $c)
+            array_shift($args);
+
+        switch (count($args)) {
             case 1:
-                return $obj = new $class($args[1]);
+                return $obj = new $class($args[0]);
             case 2:
-                return $obj = new $class($args[1], $args[2]);
+                return $obj = new $class($args[0], $args[1]);
             case 3:
-                return $obj = new $class($args[1], $args[2], $args[3]);
+                return $obj = new $class($args[0], $args[1], $args[2]);
             case 4:
-                return $obj = new $class($args[1], $args[2], $args[3], $args[4]);
+                return $obj = new $class($args[0], $args[1], $args[2], $args[3]);
             default:
                 return $obj = new $class;
         }
@@ -123,8 +126,7 @@ abstract class Arr
         $var = \explode('.', $key);
         $last = \end($var);
 
-        foreach ($var as $val)
-        {
+        foreach ($var as $val) {
             if ($val === $last)
                 unset($arr[$val]);
             else

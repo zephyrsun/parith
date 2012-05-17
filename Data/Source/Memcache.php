@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * Memcache
+ *
  * for compatible with Memcached protocol (Memcached, Tokyo Tyrant, Tencent CMEM, etc.)
  *
  * Parith :: a compact PHP framework
@@ -13,87 +15,64 @@
  * @link http://www.parith.net/
  */
 
-namespace Parith\DataSource;
+namespace Parith\Data\Source;
 
-class Memcache extends DataSource
+class Memcache extends \Parith\Data\Source
 {
-    public $link, $memcache, $compress = 0, $defaults = array(
+    public $options = array(
         'host' => '127.0.0.1', 'port' => 11211, 'timeout' => 1, 'compress' => 0,
         'persistent' => true, 'weight' => 1,
         'retry_interval' => 15, 'status' => true, 'failure_callback' => null,
     );
 
-    /**
-     * @param string $option_name
-     * @return Memcache
-     */
-    public function __construct($option_name = 'Memcache')
-    {
-        $this->config($option_name);
+    private $_compress;
 
-        $this->memcache = new \Memcache();
+    public function __construct()
+    {
+        $this->ds = $this->getBaseClass();
+        parent::__construct();
+    }
+
+    public function getBaseClass()
+    {
+        return new \Memcache();
     }
 
     /**
-     * @param $id
      * @param array $options
      * @return Memcache
      * @throws \Parith\Exception
      */
-    public function connect($id, array $options = array())
+    public function connect($options = array())
     {
-        $options = $this->option($id, $options);
+        $options = $this->option($options);
+
+        $this->link = $this->ds->connect($options['host'], $options['port'], $options['timeout']);
+
+        if ($this->link === false)
+            throw new \Parith\Exception('Memcache could not connect to: ' . $options['host'] . ':' . $options['port']);
 
         $this->setCompress($options['compress']);
 
-        $link = $this->memcache->connect($options['host'], $options['port'], $options['timeout']);
-        if ($link === false)
-            throw new \Parith\Exception('Memcache could not connect to ' . $options['host'] . ':' . $options['port']);
-
-        $this->link = $link;
         return $this;
     }
 
     /**
-     * @param $id
      * @param array $options
      * @return Memcache
      * @throws \Parith\Exception
      */
-    public function addServer($id, array $options = array())
+    public function addServer(array $options = array())
     {
-        $options = $this->option($id, $options);
+        $options = $this->option($options);
 
-        $this->setCompress($options['compress']);
-
-        $link = $this->memcache->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
+        $this->link = $this->ds->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
             $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
 
-        if ($link === false)
-            throw new \Parith\Exception('Memcache could not connect to ' . $options['host'] . ':' . $options['port']);
+        if ($this->link === false)
+            throw new \Parith\Exception('Memcache could not addServer: ' . $options['host'] . ':' . $options['port']);
 
-        $this->link = $link;
-        return $this;
-    }
-
-    /**
-     * @return Memcache
-     */
-    public function connectAll()
-    {
-        foreach ($this->configs as &$cfg)
-            $this->addServer($cfg);
-
-        return $this;
-    }
-
-    /**
-     * @return Memcache
-     */
-    public function close()
-    {
-        if ($this->link)
-            $this->memcache->close();
+        $this->setCompress($options['compress']);
 
         return $this;
     }
@@ -104,7 +83,7 @@ class Memcache extends DataSource
      */
     public function setCompress($compress)
     {
-        $this->compress = $compress;
+        $this->_compress = $compress;
         return $this;
     }
 
@@ -113,7 +92,7 @@ class Memcache extends DataSource
      */
     public function getCompress()
     {
-        $ret = &$this->compress;
+        $ret = &$this->_compress;
         return $ret; // ? \MEMCACHE_COMPRESSED : 0;
     }
 
@@ -123,7 +102,7 @@ class Memcache extends DataSource
      */
     public function get($key)
     {
-        return $this->memcache->get($key, $this->getCompress());
+        return $this->ds->get($key, $this->getCompress());
     }
 
     /**
@@ -134,7 +113,7 @@ class Memcache extends DataSource
      */
     public function set($key, $var, $expire = 0)
     {
-        return $this->memcache->set($key, $var, $this->getCompress(), $expire);
+        return $this->ds->set($key, $var, $this->getCompress(), $expire);
     }
 
     /**
@@ -145,7 +124,7 @@ class Memcache extends DataSource
      */
     public function add($key, $var, $expire = 0)
     {
-        return $this->memcache->add($key, $var, $this->getCompress(), $expire);
+        return $this->ds->add($key, $var, $this->getCompress(), $expire);
     }
 
     /**
@@ -156,7 +135,7 @@ class Memcache extends DataSource
      */
     public function replace($key, $var, $expire = 0)
     {
-        return $this->memcache->replace($key, $var, $this->getCompress(), $expire);
+        return $this->ds->replace($key, $var, $this->getCompress(), $expire);
     }
 
     /**
@@ -166,7 +145,7 @@ class Memcache extends DataSource
      */
     public function increment($key, $int = 1)
     {
-        return $this->memcache->increment($key, $int);
+        return $this->ds->increment($key, $int);
     }
 
     /**
@@ -176,16 +155,17 @@ class Memcache extends DataSource
      */
     public function decrement($key, $int = 1)
     {
-        return $this->memcache->decrement($key, $int);
+        return $this->ds->decrement($key, $int);
     }
 
     /**
-     * @param string $key
+     * @param $key
+     * @param array $options
      * @return bool
      */
-    public function delete($key)
+    public function delete($key, array $options = array())
     {
-        return $this->memcache->delete($key);
+        return $this->ds->delete($key);
     }
 
     /**
@@ -193,11 +173,22 @@ class Memcache extends DataSource
      */
     public function flush()
     {
-        $ret = $this->memcache->flush();
+        $ret = $this->ds->flush();
 
         // wait a second, this is necessary, or Memcached::set() will return 1, although your data is in fact not saved.
         sleep(1);
 
         return $ret;
+    }
+
+    /**
+     * @return Memcache
+     */
+    public function close()
+    {
+        if ($this->link)
+            $this->ds->close();
+
+        return $this;
     }
 }

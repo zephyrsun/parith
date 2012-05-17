@@ -121,7 +121,7 @@ class App
         self::$tr_pairs = array(APP_NS => APP_DIR, 'Parith\\' => PARITH_DIR, '\\' => DS);
 
         // initial options
-        self::$options = $options = self::config('App', array(), array('timezone' => 'UTC'));
+        self::$options = $options = self::config('App') + array('timezone' => 'UTC');
 
         // timezone setup
         \date_default_timezone_set($options['timezone']);
@@ -139,13 +139,12 @@ class App
     /**
      * @static
      * @param $name
-     * @param array $before
-     * @param array $after
+     * @param array $merge
      * @return array
      */
-    public static function config($name, array $before = array(), array $after = array())
+    public static function config($name, array $merge = array())
     {
-        return $before + self::loadConfig($name) + $after;
+        return $merge + self::loadConfig($name);
     }
 
     /**
@@ -231,7 +230,7 @@ class Router
      */
     public function __construct(array $options = array())
     {
-        $this->options = App::config('Router', $options, $this->options);
+        $this->options = App::config('Router', $options) + $this->options;
     }
 
     /**
@@ -305,8 +304,7 @@ class Router
      */
     public function parsePath($uri, $options)
     {
-        foreach ($options['rules'] as $key => $val)
-        {
+        foreach ($options['rules'] as $key => $val) {
             $r = \preg_replace('/^' . $key . '$/i', $val, $uri);
             if ($key !== $r) {
                 $uri = $r;
