@@ -30,9 +30,9 @@ Your directory structure could be:
         │
         ...
 
-###How to use in PHP 5.3.0 to PHP 5.3.2
+###How to use from PHP 5.3.0 to PHP 5.3.2
 
-if you use PHP 5.3.0 to PHP 5.3.2, you should config 'router' before \Parith\App::run():
+if you use PHP below 5.3.3, you should config 'router' before \Parith\App::run():
 
     \Parith\App::setOption('router', array('default_values' => array('Home', 'index')));
 
@@ -49,7 +49,6 @@ if you use PHP 5.3.0 to PHP 5.3.2, you should config 'router' before \Parith\App
             ....
         }
     }
-    ?>
 
 ###How to set URL rewrite
 
