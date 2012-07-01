@@ -50,6 +50,16 @@ class Char
     /**
      * @static
      * @param $str
+     * @return bool
+     */
+    public static function isAscii($str)
+    {
+        return !preg_match('/[^\x00-\x7F]/', $str);
+    }
+
+    /**
+     * @static
+     * @param $str
      * @param string $delimiter
      * @param function $filter
      * @return array

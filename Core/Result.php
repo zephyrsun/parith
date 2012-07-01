@@ -62,7 +62,7 @@ abstract class Result extends \Parith\Object implements \Iterator, \ArrayAccess,
 
     /**
      * @param $key
-     * @param null|mixed $var
+     * @param mixed $var
      * @return Result
      */
     public function resultSet($key, $var = null)
@@ -72,12 +72,12 @@ abstract class Result extends \Parith\Object implements \Iterator, \ArrayAccess,
         elseif ($key)
             $this->__set($key, $var);
 
-        return $this;
+        return $this->_rs;
     }
 
     /**
-     * @param null|mixed $key
-     * @return array|mixed
+     * @param mixed $key
+     * @return mixed
      */
     public function resultGet($key = null)
     {

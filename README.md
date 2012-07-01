@@ -32,14 +32,12 @@ Your directory structure could be:
 
 ###How to use in PHP 5.3.0 to PHP 5.3.2
 
-if you use PHP 5.3.0 to PHP 5.3.2, you must config Yourapp/Config/Router.php like this:
+if you use PHP 5.3.0 to PHP 5.3.2, you should config 'router' before \Parith\App::run():
 
-    <?php
-        return array('default' => array('controller' => 'Home', 'action' => 'index'));
-        // default is: array('default' => array('controller' => 'Index', 'action' => 'index'));
-    ?>
+    \Parith\App::setOption('router', array('default_values' => array('Home', 'index')));
 
-config 'Home' as default controller, will prevent PHP treat 'index' as __construct. there is 'Home.php':
+
+'Home' is configed as default controller, will prevent PHP treat 'index' as __construct. there is 'Home.php':
 
     <?php
     namespace Yourapp\Controller;
@@ -62,11 +60,11 @@ Apache:
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
-    RewriteRule (.*) index.php?PATH_INFO=$1&%{QUERY_STRING}
+    RewriteRule (.*) index.php/$1?%{QUERY_STRING} [L]
 
 Nginx:
 
-    try_files $uri $uri/ /index.php?PATH_INFO=$uri&$query_string;
+    try_files $uri $uri/ /index.php/$uri?$query_string;
 
 ###How to customize error pages
 

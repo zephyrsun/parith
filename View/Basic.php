@@ -15,13 +15,12 @@
 
 namespace Parith\View;
 
-class View extends \Parith\Result
+class Basic extends \Parith\Result
 {
     public $options = array('source_dir' => null, 'source_ext' => 'php');
 
     /**
      * @param array $options
-     * @return \Parith\View\View
      */
     public function __construct(array $options = array())
     {

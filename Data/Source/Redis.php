@@ -17,7 +17,7 @@ namespace Parith\Data\Source;
 
 class Redis extends \Parith\Data\Source
 {
-    public $options = array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0);
+    public static $options = array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0);
 
     public function __construct()
     {
@@ -32,18 +32,28 @@ class Redis extends \Parith\Data\Source
 
     /**
      * @param array $options
-     * @return Redis
+     * @return mixed|Redis
      * @throws \Parith\Exception
      */
-    public function connect($options = array())
+    public function connect(array $options)
     {
-        $options = $this->option($options);
+        $options = static::option($options);
 
         $this->link = $this->ds->connect($options['host'], $options['port'], $options['timeout']);
         if ($this->link === false)
             throw new \Parith\Exception('Redis could not connect to ' . $options['host'] . ':' . $options['port']);
 
         return $this;
+    }
+
+    /**
+     * @param string $method
+     * @param array $arguments
+     * @return mixed
+     */
+    public function __call($method, $arguments)
+    {
+        return \call_user_func_array(array($this->ds, $method), $arguments);
     }
 
     /**

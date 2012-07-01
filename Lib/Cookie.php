@@ -25,9 +25,9 @@ class Cookie extends \Parith\Object
      */
     public function __construct(array $options = array())
     {
-        $opt = $this->options = \Parith\App::config('Cookie', $options) + $this->options;
-        if ($opt['hash'])
-            $this->hash = $this->hashMethod($opt['key']);
+        $this->options = \Parith\App::getOption('cookie', $options) + $this->options;
+        if ($this->options['hash'])
+            $this->hash = $this->hashMethod($this->options['key']);
     }
 
     /**

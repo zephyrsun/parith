@@ -74,7 +74,7 @@ class Monitor
         if (self::$log === array())
             return false;
 
-        $file or $file = APP_DIR . 'Log' . DS . \date('Y-m-d', APP_TIME) . '.log';
+        $file or $file = APP_DIR . 'Log' . DIRECTORY_SEPARATOR . \date('Y-m-d', APP_TIME) . '.log';
 
         $ret = \error_log(\implode(PHP_EOL, self::$log), 3, $file);
 
@@ -129,11 +129,13 @@ class Exception extends \Exception
     }
 
     /**
-     * @param int $code
-     * @param string $message
-     * @param string $file
-     * @param int $line
+     * @static
+     * @param $code
+     * @param $message
+     * @param $file
+     * @param $line
      * @return bool
+     * @throws \ErrorException
      */
     public static function error($code, $message, $file, $line)
     {

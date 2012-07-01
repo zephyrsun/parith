@@ -15,9 +15,9 @@
 
 namespace Parith\View;
 
-class Template extends View
+class Template extends Basic
 {
-    public $file, $ext, $cache, $options = array(
+    public $cache, $options = array(
         'source_dir' => null, 'source_ext' => 'html', 'cache_dir' => null, 'ldelim' => '{', 'rdelim' => '}'
     );
 
@@ -29,23 +29,22 @@ class Template extends View
     {
         parent::__construct($options);
 
-        $dir = $this->options['cache_dir'] or $dir = APP_DIR . 'tmp' . DS . 'Template';
+        $dir = $this->options['cache_dir'] or $dir = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'Template';
 
         $this->cache = new \Parith\Cache\File(array('dir' => $dir));
     }
 
     /**
      * @param $name
-     * @param null|string $ext
+     * @param string $ext
      */
-    public function render($name, $ext = null)
+    public function render($name, $ext = '')
     {
         $source = $this->getSourceFile($name, $ext);
 
         $cache = $this->cache->filename(\rawurlencode($name));
-
         if (\Parith\Lib\File::isNewer($source, $cache))
-            \Parith\Lib\File::touch($cache, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']));
+            \Parith\Lib\File::touch($cache, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
 
         include $cache;
     }
@@ -82,7 +81,8 @@ class Template extends View
         $p[] = '/^[A-Z_]*$/';
         $r[] = '<?php echo \\0; ?>';
 
-        // {Router::path()}
+        //{Router::path()}
+        //{date('Y-m-d', \APP_TIME}
         $p[] = '/^([^:]+::)?[^\(]+\([^\)]*\)$/';
         $r[] = '<?php echo \\0; ?>';
 

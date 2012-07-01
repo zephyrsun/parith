@@ -56,17 +56,6 @@ class Request extends \Parith\Object
     }
 
     /**
-     * @param bool $script_name
-     * @return string
-     */
-    public static function path($script_name = true)
-    {
-        $path = '/' . $_GET['controller'] . '/' . $_GET['action'];
-
-        return $script_name ? $_SERVER['SCRIPT_NAME'] . $path : $path;
-    }
-
-    /**
      * @param string $method
      * @return bool
      */

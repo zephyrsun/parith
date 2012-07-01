@@ -19,7 +19,7 @@ namespace Parith\Data\Source;
 
 class Memcache extends \Parith\Data\Source
 {
-    public $options = array(
+    public static $options = array(
         'host' => '127.0.0.1', 'port' => 11211, 'timeout' => 1, 'compress' => 0,
         'persistent' => true, 'weight' => 1,
         'retry_interval' => 15, 'status' => true, 'failure_callback' => null,
@@ -40,12 +40,12 @@ class Memcache extends \Parith\Data\Source
 
     /**
      * @param array $options
-     * @return Memcache
+     * @return mixed|Memcache
      * @throws \Parith\Exception
      */
-    public function connect($options = array())
+    public function connect(array $options)
     {
-        $options = $this->option($options);
+        $options = static::option($options);
 
         $this->link = $this->ds->connect($options['host'], $options['port'], $options['timeout']);
 
@@ -62,7 +62,7 @@ class Memcache extends \Parith\Data\Source
      * @return Memcache
      * @throws \Parith\Exception
      */
-    public function addServer(array $options = array())
+    public function addServer(array $options)
     {
         $options = $this->option($options);
 
