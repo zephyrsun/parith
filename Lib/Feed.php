@@ -29,8 +29,7 @@ class Feed
     {
         if (strpos($feed, '<?') === false) {
             $feed = simplexml_load_file($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
-        }
-        else {
+        } else {
             $feed = simplexml_load_string($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
         }
 

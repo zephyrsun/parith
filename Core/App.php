@@ -25,7 +25,7 @@ class App
         $app_action,
         $options = array(
         'app_dir' => 'App',
-        'app' => array('timezone' => 'UTC'),
+        'app' => array(),
     );
 
     /**
@@ -45,26 +45,27 @@ class App
     /**
      * @static
      * @return mixed
+     * @throws Exception
      */
     public static function cli()
     {
         $argv = $_SERVER['argv'];
 
-        if (isset($argv[1]))
-            $method = \explode('?', $argv[1]);
-        else
-            $method = array('');
-
-        // treated as $_GET
-        if (isset($method[1]))
-            \parse_str($method[1], $_GET);
+        if (!isset($argv[1]))
+            throw new \Parith\Exception('Please input Controller/Action');
 
         // treated as $_POST
         if (isset($argv[2]))
             \parse_str($argv[2], $_POST);
 
+        $argv = \explode('?', $argv[1]);
+
+        // treated as $_GET
+        if (isset($argv[1]))
+            \parse_str($argv[1], $_GET);
+
         self::$is_cli = true;
-        return self::run($method[0]);
+        return self::run($argv[0]);
     }
 
     /**
@@ -84,7 +85,7 @@ class App
         self::$replace_dst = array(APP_DIR, PARITH_DIR, DIRECTORY_SEPARATOR);
 
         // timezone setup
-        \date_default_timezone_set(self::$options['app']['timezone']);
+        //\date_default_timezone_set(self::$options['app']['timezone']);
 
         // Parith Exception handler
         \set_error_handler('\Parith\Exception::error');
@@ -216,10 +217,7 @@ class Router
 
     public static function getUri()
     {
-        return \ltrim(isset($_SERVER['PATH_INFO'])
-                ? $_SERVER['PATH_INFO']
-                : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF'])
-            , '/');
+        return isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']);
     }
 
     /**
@@ -234,8 +232,8 @@ class Router
         // get route info
         $uri or $uri = self::getUri();
 
-        if ($uri) {
-            $arr = self::parsePath($uri, $options) + $arr;
+        if ($uri && $uri !== '/') {
+            $arr = self::parseUri(ltrim($uri, '/'), $options) + $options['route_values'] + $arr;
 
             $c = $arr[0];
             $a = $arr[1];
@@ -254,7 +252,7 @@ class Router
      * @param $options
      * @return array
      */
-    public function parsePath($uri, $options)
+    public static function parseUri($uri, $options)
     {
         foreach ($options['rules'] as $key => $val) {
             $r = \preg_replace('/^' . $key . '$/i', $val, $uri, -1, $n);
@@ -264,6 +262,6 @@ class Router
             }
         }
 
-        return \explode($options['delimiter'], $uri) + $options['route_values'];
+        return \explode($options['delimiter'], $uri);
     }
 }

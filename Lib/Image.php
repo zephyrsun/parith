@@ -26,6 +26,12 @@ abstract class Image extends \Parith\Object
 
     protected $image;
 
+    public function getExtension($filename)
+    {
+        $ext = explode('?', pathinfo($filename, PATHINFO_EXTENSION), 2);
+        return $ext[0];
+    }
+
     abstract public function width();
 
     abstract public function height();

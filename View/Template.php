@@ -29,7 +29,7 @@ class Template extends Basic
     {
         parent::__construct($options);
 
-        $dir = $this->options['cache_dir'] or $dir = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'Template';
+        $dir = $this->options['cache_dir'] or $dir = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'template';
 
         $this->cache = new \Parith\Cache\File(array('dir' => $dir));
     }

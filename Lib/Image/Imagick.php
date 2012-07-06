@@ -39,7 +39,7 @@ class Imagick extends \Parith\Lib\Image
      */
     public function loadImage($image)
     {
-        $ext = pathinfo($image, PATHINFO_EXTENSION);
+        $ext = $this->getExtension($image);
         if (isset(static::$image_types[$ext])) {
             $this->lib->readImage($image);
         } else {
@@ -152,7 +152,7 @@ class Imagick extends \Parith\Lib\Image
 
     protected function saveSetup($filename, $quality)
     {
-        $ext = pathinfo($filename, PATHINFO_EXTENSION) or $ext = $filename;
+        $ext = $this->getExtension($filename) or $ext = $filename;
 
         $types = static::$image_types;
         $ext = &$types[$ext];

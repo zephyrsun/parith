@@ -38,8 +38,9 @@ class Pagination extends \Parith\Object
      *
      * @param array $uri_query
      *               - Rewrite On: array('catalog' => 1) will be a part of query string
-     *               - Rewrite Off: array('controller' => 'index', 'action' => 'page', 'catalog' => 1)
-     *                              controller/action should be passed here
+     *               - Rewrite Off: $uri must be empty. pass controller/action here, like:
+     *                              array('controller' => 'index', 'action' => 'page', 'catalog' => 1),
+     *                              params 'page' will be added automatically, and you can ONLY use 'page'
      *
      * @param array $options
      */
@@ -51,13 +52,17 @@ class Pagination extends \Parith\Object
         $this->total = ceil($total / $this->options['per_page']);
         $this->links = $this->options['links'];
 
+        parse_str($_SERVER['QUERY_STRING'], $uri_query); // merge $_GET
+
         if ($uri) {
             $this->uri = rtrim($uri, '/') . '/';
+
             if ($uri_query)
                 $this->uri_query = '?' . \Parith\Lib\URL::query($uri_query);
 
         } else {
             $uri_query['page'] = '__page';
+
             $this->uri_query = '?' . \Parith\Lib\URL::query($uri_query);
         }
     }

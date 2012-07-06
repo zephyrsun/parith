@@ -64,7 +64,7 @@ class GD extends \Parith\Lib\Image
      */
     public function loadImage($image)
     {
-        $ext = pathinfo($image, PATHINFO_EXTENSION);
+        $ext = $this->getExtension($image);
         if (isset(static::$image_types[$ext])) {
             $call = 'imagecreatefrom' . static::$image_types[$ext];
             $image = $call($image);
@@ -181,7 +181,7 @@ class GD extends \Parith\Lib\Image
         if (!$this->image)
             return false;
 
-        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        $ext = $this->getExtension($filename);
 
         if (!$ext) {
             $ext = $filename;

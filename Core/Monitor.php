@@ -134,15 +134,17 @@ class Exception extends \Exception
      * @param $message
      * @param $file
      * @param $line
-     * @return bool
+     * @return void
      * @throws \ErrorException
      */
     public static function error($code, $message, $file, $line)
     {
-        if (\error_reporting())
-            throw new \ErrorException($message, $code, 0, $file, $line);
+        $e = new \ErrorException($message, $code, 0, $file, $line);
 
-        return true;
+        if (\error_reporting())
+            throw $e;
+        else
+            self::log($e);
     }
 
     /**
@@ -156,8 +158,7 @@ class Exception extends \Exception
             $handler = \class_exists($class) ? new $class($e) : new \Parith\Controller\Error($e);
             self::log($e);
             $handler->index();
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             self::log($e);
             print_r(\Parith\Monitor::getLog());
             exit(1);

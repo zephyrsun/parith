@@ -58,8 +58,9 @@ Apache:
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-l
 
-    RewriteRule (.*) index.php/$1?%{QUERY_STRING} [L]
+    RewriteRule .* index.php/$0?%{QUERY_STRING} [L]
 
 Nginx:
 
@@ -85,5 +86,4 @@ Web applications can use web() to instead of cli(). You can invoke module \Parit
             return \Parith\Exception::text($this->exception, '[%s] [%s]');
         }
     }
-    ?>
 
