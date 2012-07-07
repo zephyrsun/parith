@@ -202,8 +202,8 @@ class Router
     public $options = array(
         'delimiter' => '/',
         'rules' => array(),
-        'route_keys' => array('controller', 'action'),
-        'route_values' => array('Index', 'index'),
+        'default_keys' => array('controller', 'action'),
+        'default_values' => array('Index', 'index'),
     );
 
     /**
@@ -233,15 +233,15 @@ class Router
         $uri or $uri = self::getUri();
 
         if ($uri && $uri !== '/') {
-            $arr = self::parseUri(ltrim($uri, '/'), $options) + $options['route_values'] + $arr;
+            $arr = self::parseUri(ltrim($uri, '/'), $options) + $options['default_values'] + $arr;
 
             $c = $arr[0];
             $a = $arr[1];
 
             //unset($arr[0], $arr[1]);
         } else {
-            $c = &$arr[$options['route_keys'][0]] or $c = $options['route_values'][0];
-            $a = &$arr[$options['route_keys'][1]] or $a = $options['route_values'][1];
+            $c = &$arr[$options['default_keys'][0]] or $c = $options['default_values'][0];
+            $a = &$arr[$options['default_keys'][1]] or $a = $options['default_values'][1];
         }
 
         return array(\ucfirst($c), $a);
