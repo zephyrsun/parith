@@ -1,4 +1,4 @@
-#Parith
+#Parith (come from PHP and Arithmetic)
 
 ##Introduction
 
