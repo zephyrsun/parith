@@ -24,12 +24,12 @@ class File extends Cache
      */
     public function __construct(array $options = array())
     {
-        parent::config('Cache_File', $options);
+        parent::__construct($options);
 
         if ($this->options['dir'] === null)
             $this->options['dir'] = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'file';
 
-        \Parith\Lib\File::mkdir($this->options['dir']);
+        //\Parith\Lib\File::mkdir($this->options['dir']);
     }
 
     /**

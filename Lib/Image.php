@@ -42,7 +42,7 @@ abstract class Image extends \Parith\Object
 
     abstract public function rotate($angle, $background = 0);
 
-    abstract public function save($image);
+    abstract public function save($filename, $quality = null);
 
-    abstract public function render($image);
+    abstract public function export($type, $quality = null, $render = true);
 }

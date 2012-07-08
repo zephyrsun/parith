@@ -128,29 +128,36 @@ class Imagick extends \Parith\Lib\Image
      */
     public function save($filename, $quality = null)
     {
-        if ($this->saveSetup($filename, $quality))
+        if ($this->doSave($filename, $quality))
             return $this->lib->writeImage($filename);
 
         return false;
     }
 
     /**
-     * according to save
-     *
      * @param $type
      * @param null $quality
-     * @return bool
+     * @param bool $render
+     * @return bool|string
      */
-    public function render($type, $quality = null)
+    public function export($type, $quality = null, $render = true)
     {
-        $ext = $this->saveSetup($type, $quality);
-        if ($ext) {
+        $ext = $this->doSave($type, $quality);
+        if (!$ext)
+            return false;
+
+        $blob = $this->lib->getImageBlob();
+
+        if ($render) {
             \header('Content-Type: image/' . $ext);
-            echo $this->lib->getImageBlob();
+            echo $blob;
+            return true;
         }
+
+        return $blob;
     }
 
-    protected function saveSetup($filename, $quality)
+    protected function doSave($filename, $quality)
     {
         $ext = $this->getExtension($filename) or $ext = $filename;
 

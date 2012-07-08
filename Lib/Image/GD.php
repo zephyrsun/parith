@@ -178,6 +178,35 @@ class GD extends \Parith\Lib\Image
      */
     public function save($filename, $quality = null)
     {
+        return (bool)$this->doSave($filename, $quality);
+    }
+
+    /**
+     * @param $type
+     * @param null $quality
+     * @param bool $render
+     * @return bool|string
+     */
+    public function export($type, $quality = null, $render = true)
+    {
+        if ($render) {
+            \header('Content-Type: image/' . $type);
+
+            $ext = $this->doSave($type, $quality);
+            if ($ext)
+                return true;
+
+        } else {
+            ob_start();
+            if ($this->doSave($type, $quality))
+                return ob_get_clean();
+        }
+
+        return false;
+    }
+
+    protected function doSave($filename, $quality)
+    {
         if (!$this->image)
             return false;
 
@@ -196,24 +225,11 @@ class GD extends \Parith\Lib\Image
         else
             return false;
 
-        //render mode
-        if ($filename === null)
-            \header('Content-Type: image/' . $ext);
-
         if ($quality === null)
-            return $call($this->image, $filename);
+            $call($this->image, $filename);
+        else
+            $call($this->image, $filename, $quality);
 
-        return $call($this->image, $filename, $quality);
-    }
-
-    /**
-     * according to save
-     *
-     * @param $type
-     * @param null $quality
-     */
-    public function render($type, $quality = null)
-    {
-        $this->save($type, $quality);
+        return $ext;
     }
 }

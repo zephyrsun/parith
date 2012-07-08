@@ -37,7 +37,7 @@ if you use PHP below 5.3.3, you should config 'router' before \Parith\App::run()
     \Parith\App::setOption('router', array('default_values' => array('Home', 'index')));
 
 
-'Home' is configed as default controller, will prevent PHP treat 'index' as __construct. there is 'Home.php':
+'Home' is configed as default controller, will prevent PHP treat index() as __construct(). there is 'Home.php':
 
     <?php
     namespace Yourapp\Controller;
@@ -60,7 +60,7 @@ Apache:
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-l
 
-    RewriteRule .* index.php/$0?%{QUERY_STRING} [L]
+    RewriteRule (.*) index.php/$1?%{QUERY_STRING} [L]
 
 Nginx:
 
@@ -72,7 +72,7 @@ Below is an example. getText() returns what error messages to be showed by cli()
 Web applications can use web() to instead of cli(). You can invoke module \Parith\View to customize it.
 
     <?php
-    namespace Yourapp\Controller;
+    namespace YOURAPP\Controller;
 
     class Error extends \Parith\Controller\Error
     {

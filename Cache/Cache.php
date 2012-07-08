@@ -21,14 +21,9 @@ class Cache
 
     private $_cache = array();
 
-    /**
-     * @param $name
-     * @param array $options
-     * @return array
-     */
-    public function config($name, array $options = array())
+    public function __construct(array $options = array())
     {
-        return $this->options = \Parith\App::getOption($name, $options) + $this->options;
+        $this->options = \Parith\App::getOption('cache', $options) + $this->options;
     }
 
     /**
