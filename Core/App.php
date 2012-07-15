@@ -79,7 +79,7 @@ class App
         \define('APP_DIR', $path . DIRECTORY_SEPARATOR);
 
         // now time
-        define('APP_TIME', \time());
+        define('APP_TS', \time());
 
         self::$replace_src = array(APP_NS, 'Parith\\', '\\');
         self::$replace_dst = array(APP_DIR, PARITH_DIR, DIRECTORY_SEPARATOR);
@@ -233,7 +233,7 @@ class Router
         $uri or $uri = self::getUri();
 
         if ($uri && $uri !== '/') {
-            $arr = self::parseUri(ltrim($uri, '/'), $options) + $options['default_values'] + $arr;
+            $arr = self::parseUri(trim($uri, '/'), $options) + $options['default_values'] + $arr;
 
             $c = $arr[0];
             $a = $arr[1];

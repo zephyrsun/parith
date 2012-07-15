@@ -82,7 +82,7 @@ class Template extends Basic
         $r[] = '<?php echo \\0; ?>';
 
         //{Router::path()}
-        //{date('Y-m-d', \APP_TIME}
+        //{date('Y-m-d', \APP_TS}
         $p[] = '/^([^:]+::)?[^\(]+\([^\)]*\)$/';
         $r[] = '<?php echo \\0; ?>';
 
