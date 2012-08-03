@@ -3,6 +3,9 @@
 /**
  * App
  *
+ * Notice:
+ *      - Please use \date_default_timezone_set() to setup timezone in index.php by yourself, if need.
+ *
  * Parith :: a compact PHP framework
  *
  * @package Parith
@@ -23,31 +26,27 @@ class App
         $replace_dst = array(),
         $is_cli = false,
         $app_action,
-        $options = array(
-        'app_dir' => 'App',
-        'app' => array(),
-    );
+        $options = array();
 
     /**
      * @static
-     * @param string $uri
+     * @param $app_dir
      * @return mixed
      */
-    public static function run($uri = '')
+    public static function run($app_dir)
     {
-        self::init();
+        self::init($app_dir);
 
-        $r = new Router();
-
-        return self::invoke(self::$app_action = $r->parse($uri, $_GET));
+        return self::invoke(Router::parse(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']), $_GET));
     }
 
     /**
      * @static
+     * @param $app_dir
      * @return mixed
      * @throws Exception
      */
-    public static function cli()
+    public static function cli($app_dir)
     {
         $argv = $_SERVER['argv'];
 
@@ -65,19 +64,20 @@ class App
             \parse_str($argv[1], $_GET);
 
         self::$is_cli = true;
-        return self::run($argv[0]);
+
+        self::init($app_dir);
+
+        return self::invoke(Router::parse($argv[0], $_GET));
     }
 
     /**
      * @static
      *
      */
-    public static function init()
+    public static function init($app_dir)
     {
-        $path = realpath(self::$options['app_dir']);
-        \define('APP_NS', basename($path) . '\\');
-        \define('APP_DIR', $path . DIRECTORY_SEPARATOR);
-
+        \define('APP_DIR', $app_dir . DIRECTORY_SEPARATOR);
+        \define('APP_NS', basename(APP_DIR) . '\\');
         // now time
         define('APP_TS', \time());
 
@@ -117,6 +117,7 @@ class App
      */
     public static function invoke($params)
     {
+        self::$app_action = $params;
         return self::getController($params[0])->$params[1]();
     }
 
@@ -199,49 +200,36 @@ class App
  */
 class Router
 {
-    public $options = array(
+    public static $options = array(
         'delimiter' => '/',
         'rules' => array(),
-        'default_keys' => array('controller', 'action'),
-        'default_values' => array('Index', 'index'),
+        'keys' => array('controller', 'action'),
+        'values' => array('Index', 'index'),
     );
-
-    /**
-     * @param array $options
-     * @return Router
-     */
-    public function __construct(array $options = array())
-    {
-        $this->options = App::getOption('router', $options) + $this->options;
-    }
-
-    public static function getUri()
-    {
-        return isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']);
-    }
 
     /**
      * @param string $uri
      * @param array $arr
+     * @param array $options
      * @return array
      */
-    public function parse($uri = '', array &$arr = array())
+    public static function parse($uri = '', array &$arr = array(), array $options = array())
     {
-        $options = $this->options;
+        $options = App::getOption('router', $options) + self::$options;
 
-        // get route info
-        $uri or $uri = self::getUri();
+        if ($uri) {
 
-        if ($uri && $uri !== '/') {
-            $arr = self::parseUri(trim($uri, '/'), $options) + $options['default_values'] + $arr;
+            $uri = explode('?', $uri, 2);
+            $arr = self::parseUri(trim($uri[0], '/'), $options) + $options['values'] + $arr;
 
             $c = $arr[0];
             $a = $arr[1];
 
             //unset($arr[0], $arr[1]);
+
         } else {
-            $c = &$arr[$options['default_keys'][0]] or $c = $options['default_values'][0];
-            $a = &$arr[$options['default_keys'][1]] or $a = $options['default_values'][1];
+            $c = &$arr[$options['keys'][0]] or $c = $options['values'][0];
+            $a = &$arr[$options['keys'][1]] or $a = $options['values'][1];
         }
 
         return array(\ucfirst($c), $a);

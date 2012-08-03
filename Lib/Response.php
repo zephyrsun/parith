@@ -80,12 +80,13 @@ class Response extends \Parith\Object
     }
 
     /**
+     * @static
      * @param string $uri
-     * @return void
+     * @param int $status_code
      */
-    public static function redirect($uri = '')
+    public static function redirect($uri = '', $status_code = 302)
     {
-        \headers_sent() or \header('Location: ' . $uri);
+        \headers_sent() or \header('Location: ' . $uri, true, $status_code);
         exit(1);
     }
 

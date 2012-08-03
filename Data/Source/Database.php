@@ -31,8 +31,8 @@ class Database extends \Parith\Data\Source
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
 
             #overwrite 'options' if using other database
-            \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
-            \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+            1002 => 'SET NAMES utf8', //\PDO::MYSQL_ATTR_INIT_COMMAND
+            1000 => true, //\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY
         )
     );
 

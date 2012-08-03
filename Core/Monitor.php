@@ -167,7 +167,8 @@ class Exception extends \Exception
 
         } catch (\Exception $e) {
             //self::log($e);
-            \print_r(\Parith\Monitor::getLog());
+            //\print_r(\Parith\Monitor::getLog());
+            print_r($e->getTrace());
             exit(1);
         }
     }

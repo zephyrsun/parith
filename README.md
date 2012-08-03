@@ -20,7 +20,7 @@ Your directory structure could be:
     │  ├─Model
     │  ├─View
     │  ...
-    └─Yourapp
+    └─App
         ├─Config
         │      Router.php
         │
@@ -32,15 +32,16 @@ Your directory structure could be:
 
 ###How to use from PHP 5.3.0 to PHP 5.3.2
 
-if you use PHP below 5.3.3, you should config 'router' before \Parith\App::run():
+if you use PHP below 5.3.3, can reference here:
 
-    \Parith\App::setOption('router', array('default_values' => array('Home', 'index')));
+    \Parith\App::setOption('router', array('values' => array('Home', 'index')));
 
+    \Parith\App::run(__DIR__ . '/App');
 
-'Home' is configed as default controller, will prevent PHP treat index() as __construct(). there is 'Home.php':
+Here is the controller 'Home.php':
 
     <?php
-    namespace Yourapp\Controller;
+    namespace App\Controller;
     
     class Home
     {
@@ -64,7 +65,19 @@ Apache:
 
 Nginx:
 
-    try_files $uri $uri/ /index.php/$uri?$query_string;
+    location / {
+        try_files $uri $uri/ /index.php$uri?$args;
+    }
+
+    location ~ ^.+\.php {
+        fastcgi_pass unix:/tmp/php-fpm.sock; # depends on your machine
+        fastcgi_index index.php;
+
+        fastcgi_split_path_info ^((?U).+\.php)(/?.+)$;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+
+        include fastcgi_params;
+    }
 
 ###How to customize error pages
 
@@ -72,7 +85,7 @@ Below is an example. getText() returns what error messages to be showed by cli()
 Web applications can use web() to instead of cli(). You can invoke module \Parith\View to customize it.
 
     <?php
-    namespace YOURAPP\Controller;
+    namespace App\Controller;
 
     class Error extends \Parith\Controller\Error
     {
