@@ -41,12 +41,10 @@ class Imagick extends \Parith\Lib\Image
     {
         $ext = $this->getExtension($image);
         if (isset(static::$image_types[$ext])) {
-            $this->lib->readImage($image);
+            return $this->lib->readImage($image);
         } else {
-            $this->lib->readImageBlob($image);
+            return $this->lib->readImageBlob($image);
         }
-
-        return $this;
     }
 
     public function width()

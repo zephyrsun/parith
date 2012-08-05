@@ -81,11 +81,6 @@ class Template extends Basic
         $p[] = '/^[A-Z_]*$/';
         $r[] = '<?php echo \\0; ?>';
 
-        //{Router::path()}
-        //{date('Y-m-d', \APP_TS}
-        $p[] = '/^([^:]+::)?[^\(]+\([^\)]*\)$/';
-        $r[] = '<?php echo \\0; ?>';
-
         // {if $foo}
         $p[] = '/^if\s+([^}]+)$/';
         $r[] = '<?php if(\\1) { ?>';
@@ -97,6 +92,11 @@ class Template extends Basic
         // {elseif}
         $p[] = '/^elseif\s+(.+?)$/';
         $r[] = '<?php } elseif (\\1) { ?>';
+
+        //{Router::path()}
+        //{date('Y-m-d', \APP_TS}
+        $p[] = '/^([^:]+::)?[^\(]+\([^\)]*\)$/';
+        $r[] = '<?php echo \\0; ?>';
 
         // {foreach $name as $key => $val}
         $p[] = '/^foreach\s+(\S+)\s+as\s+(\S+(\s*=>\s*\S+)?)$/';

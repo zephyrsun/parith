@@ -60,19 +60,24 @@ class GD extends \Parith\Lib\Image
 
     /**
      * @param $image
-     * @return GD
+     * @return bool
      */
     public function loadImage($image)
     {
         $ext = $this->getExtension($image);
         if (isset(static::$image_types[$ext])) {
             $call = 'imagecreatefrom' . static::$image_types[$ext];
-            $image = $call($image);
+            $image = @$call($image);
         } else {
-            $image = imagecreatefromstring($image);
+            $image = @imagecreatefromstring($image);
         }
 
-        return $this->setImageData($image);
+        if ($image) {
+            $this->setImageData($image);
+            return true;
+        }
+
+        return false;
     }
 
     public function width()
