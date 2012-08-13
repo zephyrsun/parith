@@ -60,19 +60,29 @@ class GD extends \Parith\Lib\Image
 
     /**
      * @param $image
-     * @return GD
+     * @return bool
      */
     public function loadImage($image)
+    {
+        $image = $this->_loadImage($image);
+
+        if ($image) {
+            $this->setImageData($image);
+            return true;
+        }
+
+        return false;
+    }
+
+    private function _loadImage($image)
     {
         $ext = $this->getExtension($image);
         if (isset(static::$image_types[$ext])) {
             $call = 'imagecreatefrom' . static::$image_types[$ext];
-            $image = $call($image);
-        } else {
-            $image = imagecreatefromstring($image);
+            return @$call($image);
         }
 
-        return $this->setImageData($image);
+        return @imagecreatefromstring($image);
     }
 
     public function width()
@@ -163,9 +173,33 @@ class GD extends \Parith\Lib\Image
         // Save the alpha of the rotated image
         imagesavealpha($image, true);
 
-        imagecopymerge($this->image, $image, 0, 0, 0, 0, $width, $height, 100);
+        imagecopy($this->image, $image, 0, 0, 0, 0, $width, $height);
 
         return $this->setImageData($image);
+    }
+
+    /**
+     * @param $image
+     * @param int $x
+     * @param int $y
+     * @return GD
+     */
+    public function watermark($image, $x = 0, $y = 0)
+    {
+        $image = $this->_loadImage($image);
+
+        imagesavealpha($image, true);
+
+        $width = imagesx($image);
+        $height = imagesy($image);
+
+        imagealphablending($this->image, true);
+
+        imagecopy($this->image, $image, $x, $y, 0, 0, $width, $height);
+
+        imagedestroy($image);
+
+        return $this;
     }
 
     /**

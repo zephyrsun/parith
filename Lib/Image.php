@@ -45,4 +45,6 @@ abstract class Image extends \Parith\Object
     abstract public function save($filename, $quality = null);
 
     abstract public function export($type, $quality = null, $render = true);
+
+    abstract public function watermark($image, $x = 0, $y = 0);
 }

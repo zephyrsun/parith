@@ -54,7 +54,7 @@ class Monitor
      */
     public static function addLog($message, $type = 1024)
     {
-        return self::$log[] = \date(\DATE_RFC2822, APP_TIME) . ' ' . $message;
+        return self::$log[] = \date(\DATE_RFC2822, APP_TS) . ' ' . $message;
     }
 
     /**
@@ -74,7 +74,7 @@ class Monitor
         if (self::$log === array())
             return false;
 
-        $file or $file = APP_DIR . 'Log' . DIRECTORY_SEPARATOR . \date('Y-m-d', APP_TIME) . '.log';
+        $file or $file = APP_DIR . 'Log' . DIRECTORY_SEPARATOR . \date('Y-m-d', APP_TS) . '.log';
 
         $ret = \error_log(\implode(PHP_EOL, self::$log), 3, $file);
 
@@ -167,7 +167,8 @@ class Exception extends \Exception
 
         } catch (\Exception $e) {
             //self::log($e);
-            \print_r(\Parith\Monitor::getLog());
+            //\print_r(\Parith\Monitor::getLog());
+            print_r($e->getTrace());
             exit(1);
         }
     }

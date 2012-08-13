@@ -52,18 +52,20 @@ class Pagination extends \Parith\Object
         $this->total = ceil($total / $this->options['per_page']);
         $this->links = $this->options['links'];
 
-        parse_str($_SERVER['QUERY_STRING'], $uri_query); // merge $_GET
+        parse_str($_SERVER['QUERY_STRING'], $query); // merge $_GET
+
+        $uri_query = \Parith\Lib\URL::query($query + $uri_query);
 
         if ($uri) {
             $this->uri = rtrim($uri, '/') . '/';
 
             if ($uri_query)
-                $this->uri_query = '?' . \Parith\Lib\URL::query($uri_query);
+                $this->uri_query = '?' . $uri_query;
 
         } else {
             $uri_query['page'] = '__page';
 
-            $this->uri_query = '?' . \Parith\Lib\URL::query($uri_query);
+            $this->uri_query = '?' . $uri_query;
         }
     }
 

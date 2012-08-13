@@ -39,14 +39,17 @@ class Imagick extends \Parith\Lib\Image
      */
     public function loadImage($image)
     {
+        return $this->_loadImage($image, $this->lib);
+    }
+
+    private function _loadImage($image, &$lib)
+    {
         $ext = $this->getExtension($image);
         if (isset(static::$image_types[$ext])) {
-            $this->lib->readImage($image);
+            return $lib->readImage($image);
         } else {
-            $this->lib->readImageBlob($image);
+            return $lib->readImageBlob($image);
         }
-
-        return $this;
     }
 
     public function width()
@@ -114,6 +117,68 @@ class Imagick extends \Parith\Lib\Image
     public function rotate($angle, $background = '#FFF')
     {
         $this->lib->rotateImage($background, $angle);
+
+        return $this;
+    }
+
+    /**
+     * @param $x
+     * @param $y
+     * @param $width if <= 0, use the width of $this->image
+     * @param $height if <= 0, use the height of $this->image
+     * @param array $color
+     * @return Imagick
+     */
+    public function overlay($x, $y, $width, $height, array $color = array())
+    {
+        $src_w = $this->width();
+        $src_h = $this->height();
+
+        if ($x < 0)
+            $x += $src_w;
+
+        if ($y < 0)
+            $y += $src_h;
+
+        if ($width > 0) {
+            $width = $x + $width;
+        } else {
+            $width = $src_w;
+        }
+
+        if ($height > 0) {
+            $height = $y + $height;
+        } else {
+            $height = $src_h;
+        }
+
+        $image = $this->create($width, $height);
+
+        $color += array(255, 255, 255);
+        $color = imagecolorallocate($image, $color[0], $color[1], $color[2]);
+
+        imagefilledrectangle($this->image, $x, $y, $width, $height, $color);
+
+        imagedestroy($image);
+
+        return $this;
+    }
+
+    /**
+     * @param $image
+     * @param int $x
+     * @param int $y
+     * @return Imagick
+     */
+    public function watermark($image, $x = 0, $y = 0)
+    {
+        $imagick = new \Imagick();
+        $this->_loadImage($image, $imagick);
+
+        $imagick->setImageAlphaChannel(\Imagick::ALPHACHANNEL_OPAQUE);
+
+        // Apply the watermark to the image
+        $this->lib->compositeImage($imagick, \Imagick::COMPOSITE_DISSOLVE, $x, $y);
 
         return $this;
     }

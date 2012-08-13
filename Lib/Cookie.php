@@ -137,9 +137,9 @@ class Cookie extends \Parith\Object
         $opt = $this->options;
 
         if ($expire > 0)
-            $expire += APP_TIME;
+            $expire += APP_TS;
         elseif ($expire == 0)
-            $expire = $opt['expire'] + APP_TIME;
+            $expire = $opt['expire'] + APP_TS;
 
         $ret = setcookie($key, $var, $expire, $opt['path'], $opt['domain']);
 
