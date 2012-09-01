@@ -2,9 +2,9 @@
 
 /**
  * Bootstrap
- * 
+ *
  * Parith :: a compact PHP framework
- * 
+ *
  * @package Parith
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
@@ -15,10 +15,11 @@
 
 namespace Parith;
 
-\define('PARITH_DIR', \dirname(__FILE__) . \DIRECTORY_SEPARATOR);
+\define('PARITH_DIR', \dirname(__FILE__) . DIRECTORY_SEPARATOR);
 
 // load core class
-require 'Core/Common.php';
-require 'Core/Monitor.php';
-require 'Core/Result.php';
-require 'Core/App.php';
+require __DIR__ . '/Core/Common.php';
+require __DIR__ . '/Core/Monitor.php';
+require __DIR__ . '/Core/Result.php';
+require __DIR__ . '/Core/App.php';
+require __DIR__ . '/Controller/Controller.php';

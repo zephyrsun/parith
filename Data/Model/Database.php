@@ -17,9 +17,9 @@ namespace Parith\Data\Model;
 
 class Database extends \Parith\Data\Model
 {
-    public function __construct()
+    public function connection($options)
     {
-        $this->ds = new \Parith\Data\Source\Database();
+        return $this->ds = \Parith\Data\Source\Database::connection($options);
     }
 
     /**
@@ -77,13 +77,13 @@ class Database extends \Parith\Data\Model
     public function formatQuery(array $query)
     {
         foreach ($query as $key => $val) {
-            if (isset($this->defaults[$key]))
+            if (isset($this->options[$key]))
                 continue;
 
             $query[':conditions'][$key] = $val;
         }
 
-        $query += $this->defaults;
+        $query += $this->options;
 
         return $query;
     }
@@ -94,7 +94,7 @@ class Database extends \Parith\Data\Model
      * @param null $connection
      * @return mixed
      */
-    public function insert($data, array $query = array(), $connection = null)
+    public function insert(array $data, array $query = array(), $connection = null)
     {
         $query = $this->formatQuery($query);
 
@@ -109,20 +109,24 @@ class Database extends \Parith\Data\Model
      * @param null $connection
      * @return mixed
      */
-    public function save($data = null, array $query = array(), $connection = null)
+    public function save(array $data = array(), array $query = array(), $connection = null)
     {
-        if (is_array($data))
-            $this->resultSet($data);
-
-        $data = $this->resultGet();
-
-        //where
-        $query[$this->primary_key] = $this->resultGet($this->primary_key);
-        $query = $this->formatQuery($query);
+        $data = $this->resultSet($data);
 
         $this->connection($connection);
 
-        return $this->ds->update($this->source($data, $query[':source']), $data, $query[':conditions']);
+        $primary_value = $this->resultGet($this->primary_key);
+
+        if ($primary_value) {
+            //where
+            $query[$this->primary_key] = $primary_value;
+            $query = $this->formatQuery($query);
+
+            return $this->ds->update($this->source($data, $query[':source']), $data, $query[':conditions']);
+        }
+
+        $query = $this->formatQuery($query);
+        return $this->ds->insert($this->source($data, $query[':source']), $data);
     }
 
     /**
@@ -134,8 +138,7 @@ class Database extends \Parith\Data\Model
     {
         if ($query) {
             is_array($query) or $query = array($this->primary_key => $query);
-        }
-        else {
+        } else {
             $query = array($this->primary_key => $this->resultGet($this->primary_key));
         }
 

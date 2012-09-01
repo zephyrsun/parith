@@ -27,18 +27,20 @@ class Database extends \Parith\Data\Source
     public static $options = array(
         'driver' => 'mysql', 'host' => '127.0.0.1', 'port' => 3306, 'dbname' => null,
         'username' => 'root', 'password' => null, 'options' => array(
-            \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
-            \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+
+            #overwrite 'options' if not using MySQL
+            1002 => 'SET NAMES utf8', //\PDO::MYSQL_ATTR_INIT_COMMAND
+            1000 => true, //\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY
         )
     );
 
     /**
      * @param array $options
-     * @return Database
+     * @return mixed|void
      */
-    public function connect($options = array())
+    public function connect(array $options)
     {
         $options = static::option($options);
 
@@ -49,12 +51,14 @@ class Database extends \Parith\Data\Source
                 $options['password'],
                 $options['options']
             );
-        }
-        catch (\PDOException $e) {
+        } catch (\PDOException $e) {
             \Parith\Exception::handler($e);
         }
+    }
 
-        return $this;
+    public static function instanceKey($options)
+    {
+        return $options['host'] . ':' . $options['port'] . ':' . $options['dbname'];
     }
 
     /**
@@ -63,7 +67,7 @@ class Database extends \Parith\Data\Source
      * @param string $where
      * @return mixed
      */
-    public function update($table, $data, $where = '')
+    public function update($table, array $data, $where = '')
     {
         $params = array();
 
@@ -88,7 +92,7 @@ class Database extends \Parith\Data\Source
      * @param string $operator
      * @return mixed
      */
-    public function insert($table, $data, $operator = self::DML_INSERT)
+    public function insert($table, array $data, $operator = self::DML_INSERT)
     {
         $params = array();
 
@@ -175,8 +179,7 @@ class Database extends \Parith\Data\Source
             foreach ($where as $col => $val) {
                 if (is_array($val)) {
                     $val += array('=', '', ' AND ');
-                }
-                else {
+                } else {
                     $val = array('=', $val, ' AND ');
                 }
 
@@ -184,8 +187,7 @@ class Database extends \Parith\Data\Source
 
                 $params[] = $val[1];
             }
-        }
-        elseif ($where) {
+        } elseif ($where) {
             $query = ' AND ' . $where;
         }
 
@@ -229,16 +231,14 @@ class Database extends \Parith\Data\Source
                 if (\is_int($col)) {
                     $col = $expr;
                     $expr = 'ASC';
-                }
-                elseif (-1 == $expr) {
+                } elseif (-1 == $expr) {
                     $expr = 'DESC';
                 }
 
                 $ret .= $glue . '`' . $col . '` ' . $expr;
                 $glue = ', ';
             }
-        }
-        else {
+        } else {
             $ret .= $order;
         }
 
@@ -314,6 +314,14 @@ class Database extends \Parith\Data\Source
             $this->stmt->setFetchMode($mode);
 
         return $this->stmt;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function dumpParams()
+    {
+        return $this->stmt->debugDumpParams();
     }
 
     /**

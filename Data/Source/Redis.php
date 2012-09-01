@@ -19,23 +19,18 @@ class Redis extends \Parith\Data\Source
 {
     public static $options = array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0);
 
-    public function __construct()
+    public function __construct(array $options = array())
     {
-        $this->ds = $this->getBaseClass();
-        parent::__construct();
-    }
-
-    public function getBaseClass()
-    {
-        return new \Redis();
+        $this->ds = new \Redis();
+        parent::__construct($options);
     }
 
     /**
      * @param array $options
-     * @return Redis
+     * @return mixed|Redis
      * @throws \Parith\Exception
      */
-    public function connect($options = array())
+    public function connect(array $options)
     {
         $options = static::option($options);
 

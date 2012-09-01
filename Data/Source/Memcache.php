@@ -27,23 +27,18 @@ class Memcache extends \Parith\Data\Source
 
     private $_compress;
 
-    public function __construct()
+    public function __construct(array $options = array())
     {
-        $this->ds = $this->getBaseClass();
-        parent::__construct();
-    }
-
-    public function getBaseClass()
-    {
-        return new \Memcache();
+        $this->ds = new \Memcache();
+        parent::__construct($options);
     }
 
     /**
      * @param array $options
-     * @return Memcache
+     * @return mixed|Memcache
      * @throws \Parith\Exception
      */
-    public function connect($options = array())
+    public function connect(array $options)
     {
         $options = static::option($options);
 
@@ -62,7 +57,7 @@ class Memcache extends \Parith\Data\Source
      * @return Memcache
      * @throws \Parith\Exception
      */
-    public function addServer(array $options = array())
+    public function addServer(array $options)
     {
         $options = $this->option($options);
 

@@ -3,6 +3,9 @@
 /**
  * App
  *
+ * Notice:
+ *      - Please use \date_default_timezone_set() to setup timezone in index.php by yourself, if need.
+ *
  * Parith :: a compact PHP framework
  *
  * @package Parith
@@ -18,104 +21,110 @@ namespace Parith;
 
 class App
 {
-    public static $tr_pairs = array(), $configs = array(), $options = array(), $is_cli = false, $file_ext = '.php';
+    public static
+        $replace_src = array(),
+        $replace_dst = array(),
+        $is_cli = false,
+        $app_action,
+        $options = array();
 
     /**
-     * @param string $path
-     * @param array $options
+     * @static
+     * @param $app_dir
+     * @return mixed
      */
-    public function __construct($path = 'App', array $options = array())
+    public static function run($app_dir)
     {
-        $path = realpath($path);
-        \define('APP_NS', basename($path) . '\\');
-        \define('APP_DIR', $path . \DIRECTORY_SEPARATOR);
+        self::init($app_dir);
 
-        self::$tr_pairs = array(APP_NS => APP_DIR, 'Parith\\' => PARITH_DIR, '\\' => \DIRECTORY_SEPARATOR);
+        return self::invoke(Router::parse(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']), $_GET));
+    }
 
-        // initial options
-        self::$options = $options + array('timezone' => 'UTC');
+    /**
+     * @static
+     * @param $app_dir
+     * @return mixed
+     * @throws Exception
+     */
+    public static function cli($app_dir)
+    {
+        $argv = $_SERVER['argv'];
+
+        if (!isset($argv[1]))
+            throw new \Parith\Exception('Please input Controller/Action');
+
+        // treated as $_POST
+        if (isset($argv[2]))
+            \parse_str($argv[2], $_POST);
+
+        $argv = \explode('?', $argv[1]);
+
+        // treated as $_GET
+        if (isset($argv[1]))
+            \parse_str($argv[1], $_GET);
+
+        self::$is_cli = true;
+
+        self::init($app_dir);
+
+        return self::invoke(Router::parse($argv[0], $_GET));
+    }
+
+    /**
+     * @static
+     *
+     */
+    public static function init($app_dir)
+    {
+        \define('APP_DIR', $app_dir . DIRECTORY_SEPARATOR);
+        \define('APP_NS', basename(APP_DIR) . '\\');
+        // now time
+        define('APP_TS', \time());
+
+        self::$replace_src = array(APP_NS, 'Parith\\', '\\');
+        self::$replace_dst = array(APP_DIR, PARITH_DIR, DIRECTORY_SEPARATOR);
 
         // timezone setup
-        \date_default_timezone_set(self::$options['timezone']);
-
-        // now time
-        define('APP_TIME', \time());
+        //\date_default_timezone_set(self::$options['app']['timezone']);
 
         // Parith Exception handler
         \set_error_handler('\Parith\Exception::error');
         \set_exception_handler('\Parith\Exception::handler');
     }
 
-    /**
-     * @static
-     * @param null|string $route
-     * @param array $arr
-     * @return mixed
-     */
-    public static function dispatch($route = null, array &$arr = array())
+    public static function setOption($key, $val = null)
     {
-        $r = Router::parseCA($route, $arr);
-        return self::invoke($r[0], $r[1]);
+        if (\is_array($key))
+            self::$options = $key + self::$options;
+        elseif ($key)
+            self::$options[$key] = $val;
+
+        return self::$options;
     }
 
-    /**
-     * @param null|string $route
-     * @return mixed
-     */
-    public function run($route = null)
+    public static function getOption($key, array $options = array())
     {
-        return self::dispatch($route, $_GET);
-    }
+        if (isset(self::$options[$key]))
+            return $options + self::$options[$key];
 
-    /**
-     * @param null|string $route
-     * @return mixed
-     */
-    public function cgi($route = null)
-    {
-        return $this->run($route);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function cli()
-    {
-        $argv = $_SERVER['argv'];
-
-        if (isset($argv[1]))
-            $method = \explode('?', $argv[1]);
-        else
-            $method = array('');
-
-        // treated as $_GET
-        if (isset($method[1]))
-            \parse_str($method[1], $_GET);
-
-        // treated as $_POST
-        if (isset($argv[2]))
-            \parse_str($argv[2], $_POST);
-
-        self::$is_cli = true;
-        return $this->run($method[0]);
+        return $options;
     }
 
     /**
      * @static
-     * @param $controller
-     * @param $action
+     * @param $params
      * @return mixed
      */
-    public static function invoke($controller, $action)
+    public static function invoke($params)
     {
-        $class = self::getController($controller);
-        return $class->$action();
+        self::$app_action = $params;
+        return self::getController($params[0])->$params[1]();
     }
 
     /**
      * @static
      * @param $name
-     * @return mixed
+     * @return bool|mixed
      * @throws Exception
      */
     public static function getController($name)
@@ -126,50 +135,27 @@ class App
             return new $class;
 
         throw new \Parith\Exception('Controller "' . $name . '" not found', 404);
+
+        return false;
     }
 
     /**
      * @static
      * @param $name
-     * @param array $merge
-     * @return array
+     * @param bool $throw
+     * @return bool|mixed
+     * @throws Exception
      */
-    public static function config($name, array $merge = array())
-    {
-        return $merge + self::loadConfig($name);
-    }
-
-    /**
-     * @static
-     * @param $name
-     * @return mixed
-     */
-    public static function loadConfig($name)
-    {
-        $cfg = &self::$configs;
-
-        isset($cfg[$name]) or $cfg[$name] = self::import(APP_NS . 'Config' . \DIRECTORY_SEPARATOR . $name . self::$file_ext, array(), false);
-
-        return $cfg[$name];
-    }
-
-    /**
-     * @static
-     * @param $name
-     * @param array $default
-     * @param bool $log
-     * @return array|mixed
-     */
-    public static function import($name, $default = array(), $log = true)
+    public static function import($name, $throw = true)
     {
         $name = self::parseName($name);
         if (\is_file($name))
             return include $name;
 
-        if ($log)
-            Monitor::addLog('File "' . $name . '" not found');
+        if ($throw)
+            throw new \Parith\Exception('File "' . $name . '" is not exists');
 
-        return $default;
+        return false;
     }
 
     /**
@@ -179,7 +165,8 @@ class App
      */
     public static function parseName($name)
     {
-        return \strtr($name, self::$tr_pairs);
+        return str_replace(self::$replace_src, self::$replace_dst, $name);
+        // return \strtr($name, self::$tr_pairs);
     }
 
     /**
@@ -189,7 +176,7 @@ class App
      */
     public static function autoload($class)
     {
-        return self::import($class . self::$file_ext);
+        return self::import($class . '.php', false);
     }
 }
 
@@ -197,6 +184,12 @@ class App
  * Router
  *
  * Parith :: a compact PHP framework
+ *
+ * $options e.g.:
+ *  array(
+ *      'delimiter' => '/',
+ *      'rules' => array('\d+' => 'Article/view/${0}'),
+ *  );
  *
  * @package Parith
  * @author Zephyr Sun
@@ -207,86 +200,39 @@ class App
  */
 class Router
 {
-    public $options = array(
+    public static $options = array(
         'delimiter' => '/',
         'rules' => array(),
-        // 'default' could be array('c' => 'Home', 'a' => 'index'), it's up to you, but 'controller' must before 'action'
-        'default' => array('controller' => 'Index', 'action' => 'index'),
+        'keys' => array('controller', 'action'),
+        'values' => array('Index', 'index'),
     );
 
-    private $_arr = array(), $_ca = array();
-
     /**
+     * @param string $uri
+     * @param array $arr
      * @param array $options
-     * @return Router
-     */
-    public function __construct(array $options = array())
-    {
-        $this->options = App::config('Router', $options) + $this->options;
-    }
-
-    /**
      * @return array
      */
-    public function getCA()
+    public static function parse($uri = '', array &$arr = array(), array $options = array())
     {
-        return $this->_ca;
-    }
+        $options = App::getOption('router', $options) + self::$options;
 
-    /**
-     * @static
-     * @param null|string $route
-     * @param array $arr
-     * @return array
-     */
-    public static function parseCA($route = null, array &$arr = array())
-    {
-        $r = new Router();
-        $r->parse($route, $arr);
-        return $r->getCA();
-    }
+        if ($uri) {
 
-    /**
-     * @param null|string $key
-     * @return array|mixed
-     */
-    public function getParams($key = null)
-    {
-        if ($key === null)
-            return $this->_arr;
+            $uri = explode('?', $uri, 2);
+            $arr = self::parseUri(trim($uri[0], '/'), $options) + $options['values'] + $arr;
 
-        return \Parith\Arr::get($this->_arr, $key);
-    }
+            $c = $arr[0];
+            $a = $arr[1];
 
-    public static function getPathInfo($arr)
-    {
-        return isset($arr['PATH_INFO']) ? \ltrim($arr['PATH_INFO'], '/') : null;
-    }
+            //unset($arr[0], $arr[1]);
 
-    /**
-     * @param null|string $route
-     * @param array $arr
-     * @return array
-     */
-    public function parse($route = null, array &$arr = array())
-    {
-        $options = $this->options;
-
-        // parse route
-        if ($route === null)
-            $route = self::getPathInfo($arr);
-
-        if ($route) {
-            $this->parsePath($route, $options);
-        }
-        else {
-            foreach ($options['default'] as $key => $val)
-                $this->_ca[] = isset($arr[$key]) ? $arr[$key] : $val;
-
-            $this->_ca[0] = \ucfirst($this->_ca[0]);
+        } else {
+            $c = &$arr[$options['keys'][0]] or $c = $options['values'][0];
+            $a = &$arr[$options['keys'][1]] or $a = $options['values'][1];
         }
 
-        return $this->_arr = $arr;
+        return array(\ucfirst($c), $a);
     }
 
     /**
@@ -294,24 +240,16 @@ class Router
      * @param $options
      * @return array
      */
-    public function parsePath($uri, $options)
+    public static function parseUri($uri, $options)
     {
         foreach ($options['rules'] as $key => $val) {
-            $r = \preg_replace('/^' . $key . '$/i', $val, $uri);
-            if ($key !== $r) {
+            $r = \preg_replace('/^' . $key . '$/i', $val, $uri, -1, $n);
+            if ($n) {
                 $uri = $r;
                 break;
             }
         }
 
-        $arr = \explode($options['delimiter'], $uri);
-
-        // controller
-        $this->_ca[0] = \ucfirst($arr[0]);
-
-        // action
-        $this->_ca[1] = \next($arr) or $this->_ca[1] = \end($options['default']);
-
-        return $arr;
+        return \explode($options['delimiter'], $uri);
     }
 }

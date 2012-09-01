@@ -160,8 +160,16 @@ class Pagination extends \Parith\Object
         $html = $this->previous() . $this->first();
 
         for ($i = $start; $i <= $end; ++$i) {
-            // Wrap the link in a list item
-            $html .= static::tag($this->uri($i), $i, $this->current == $i ? array('class' => 'active') : array());
+
+            if ($this->current == $i) {
+                $attributes = array('class' => 'active');
+                $page = 'javascript:;';
+            } else {
+                $attributes = array();
+                $page = $this->uri($i);
+            }
+
+            $html .= static::tag($page, $i, $attributes);
         }
 
         $html .= $this->last() . $this->next();

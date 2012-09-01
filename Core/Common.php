@@ -17,30 +17,31 @@ namespace Parith;
 
 abstract class Object
 {
-    private static $_cache = array();
+    private static $_instances = array();
 
     /**
-     * \Parith\Object::getInstance('\memcache')
-     * or
-     * \Parith\Lib\File::getInstance();
+     * \Parith\Lib\File::factory();
      *
-     * @param $class
+     * @static
      * @return object
      */
-    public static function getInstance($class = null)
+    public static function factory()
     {
-        // for subclass call
-        $c = get_called_class();
-        __CLASS__ === $c or $class = $c;
+        return static::getInstance(get_called_class(), func_get_args());
+    }
 
-        $obj = &self::$_cache[$class];
+    /**
+     * @static
+     * @param $class
+     * @param $args
+     * @param null $key
+     * @return mixed
+     */
+    public static function getInstance($class, $args, $key = null)
+    {
+        $obj = &self::$_instances[$key ? $key : $class];
         if ($obj)
             return $obj;
-
-        $args = func_get_args();
-
-        if (__CLASS__ === $c)
-            array_shift($args);
 
         switch (count($args)) {
             case 1:
@@ -52,7 +53,7 @@ abstract class Object
             case 4:
                 return $obj = new $class($args[0], $args[1], $args[2], $args[3]);
             default:
-                return $obj = new $class;
+                return $obj = new $class();
         }
     }
 }
@@ -216,11 +217,11 @@ abstract class Arr
      */
     public static function rand($min, $max, $num)
     {
-        $t = array();
+        $arr = array();
         do {
-            $t[mt_rand($min, $max)] = 1;
-        } while (\count($t) < $num);
+            $arr[mt_rand($min, $max)] = 1;
+        } while (\count($arr) < $num);
 
-        return \array_keys($t);
+        return \array_keys($arr);
     }
 }

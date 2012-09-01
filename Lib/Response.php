@@ -80,12 +80,13 @@ class Response extends \Parith\Object
     }
 
     /**
+     * @static
      * @param string $uri
-     * @return void
+     * @param int $status_code
      */
-    public static function redirect($uri = '')
+    public static function redirect($uri = '', $status_code = 302)
     {
-        \headers_sent() or \header('Location: ' . $uri);
+        \headers_sent() or \header('Location: ' . $uri, true, $status_code);
         exit(1);
     }
 
@@ -95,7 +96,7 @@ class Response extends \Parith\Object
      */
     public static function expires($seconds = 1800)
     {
-        \header('Expires: ' . self::httpDate(APP_TIME + $seconds));
+        \header('Expires: ' . self::httpDate(APP_TS + $seconds));
     }
 
     /**
@@ -156,7 +157,7 @@ class Response extends \Parith\Object
      */
     public static function httpDate($timestamp = null)
     {
-        $timestamp or $timestamp = APP_TIME;
+        $timestamp or $timestamp = APP_TS;
 
         return \gmdate('D, d M Y H:i:s', $timestamp) . ' GMT';
     }
