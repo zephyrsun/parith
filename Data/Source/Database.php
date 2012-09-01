@@ -162,7 +162,7 @@ class Database extends \Parith\Data\Source
      * @static
      * @param string|array $where
      *              - `gender`='male' AND `age`>=18 OR `email` LIKE '%@qq.com'
-     *              - array('gender' => 'male', 'age' => array('>=', 18), 'email' => 'LIKE', '%@qq.com', 'OR')
+     *              - array('gender' => 'male', 'age' => array('>=', 18), 'email' => array('LIKE', '%@qq.com', 'OR')
      *
      * @param array $params
      * @return array

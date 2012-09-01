@@ -61,7 +61,7 @@ class Template extends View
     {
         return \preg_replace_callback(
             '/' . $ldelim . '([^' . $ldelim . $rdelim . ']+)' . $rdelim . '/', //  '/{([^{}]+)}/'
-            '\Parith\View\Template::parseBrace', \stripslashes($tag)
+            '\Parith\View\Template::parseBrace', $tag //\stripslashes($tag)
         );
     }
 
@@ -87,7 +87,7 @@ class Template extends View
         $r[] = '<?php echo \\0; ?>';
 
         // {if $foo}
-        $p[] = '/^if\s+([^}]+)$/';
+        $p[] = '/^if\s+(.+)$/';
         $r[] = '<?php if(\\1) { ?>';
 
         // {else}
@@ -118,10 +118,16 @@ class Template extends View
         $p[] = '/^(\/if|\/foreach|\/while)$/';
         $r[] = '<?php } ?>';
 
+        //variable {$foo}, {\App::$foo}
+        //const {PARITH_DIR}, {\App::PARITH_DIR}
+        //method {date('Y-m-d', \APP_TS)}, {\Router::path()}
+        $p[] = '/^(.+::)?(\$\w+[^\s}]*|[A-Z_]*|[^\(\s]+\(.*\))$/';
+        $r[] = '<?php echo \\0; ?>';
+
         $s = \preg_replace($p, $r, $str[1]);
 
         // parse vars
-        $s = \preg_replace_callback('/\$[^\s}\(\)]+/', '\Parith\View\Template::parseVar', $s);
+        $s = \preg_replace_callback('/(?<!::)\$[^\s}\(\)]+/', '\Parith\View\Template::parseVar', $s);
 
         // parse include
         $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::parseInclude', $s);
