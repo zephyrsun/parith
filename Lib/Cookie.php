@@ -25,9 +25,9 @@ class Cookie extends \Parith\Object
      */
     public function __construct(array $options = array())
     {
-        $this->options = \Parith\App::getOption('cookie', $options) + $this->options;
-        if ($this->options['hash'])
-            $this->hash = $this->hashMethod($this->options['key']);
+        $opt = $this->options = \Parith\App::config('Cookie', $options) + $this->options;
+        if ($opt['hash'])
+            $this->hash = $this->hashMethod($opt['key']);
     }
 
     /**
@@ -137,9 +137,9 @@ class Cookie extends \Parith\Object
         $opt = $this->options;
 
         if ($expire > 0)
-            $expire += APP_TS;
+            $expire += APP_TIME;
         elseif ($expire == 0)
-            $expire = $opt['expire'] + APP_TS;
+            $expire = $opt['expire'] + APP_TIME;
 
         $ret = setcookie($key, $var, $expire, $opt['path'], $opt['domain']);
 

@@ -17,13 +17,19 @@ namespace Parith\Cache;
 
 class Cache
 {
-    public $options = array();
+    public $configs, $options = array();
 
     private $_cache = array();
 
-    public function __construct(array $options = array())
+    /**
+     * @param $name
+     * @param array $options
+     * @return Cache
+     */
+    public function config($name, array $options = array())
     {
-        $this->options = \Parith\App::getOption('cache', $options) + $this->options;
+        $this->configs = \Parith\App::config($name, $options) + $this->options;
+        return $this;
     }
 
     /**
@@ -38,30 +44,30 @@ class Cache
     /**
      * @param $key
      * @param $var
-     * @return bool
+     * @return Cache
      */
     public function set($key, $var)
     {
         $this->_cache[$key] = $var;
-        return true;
+        return $this;
     }
 
     /**
      * @param $key
-     * @return bool
+     * @return Cache
      */
     public function delete($key)
     {
         unset($this->_cache[$key]);
-        return true;
+        return $this;
     }
 
     /**
-     * @return bool
+     * @return Cache
      */
     public function flush()
     {
         $this->_cache = array();
-        return true;
+        return $this;
     }
 }

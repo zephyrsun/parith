@@ -28,9 +28,10 @@ class Feed
     public static function parse($feed, $limit = 0)
     {
         if (strpos($feed, '<?') === false) {
-            $feed = @simplexml_load_file($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
-        } else {
-            $feed = @simplexml_load_string($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
+            $feed = simplexml_load_file($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
+        }
+        else {
+            $feed = simplexml_load_string($feed, 'SimpleXMLElement', LIBXML_NOCDATA);
         }
 
         if ($feed === false)

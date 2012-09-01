@@ -15,7 +15,7 @@
 
 namespace Parith\Controller;
 
-class Error extends \Parith\Controller
+class Error extends Controller
 {
     public $exception;
 

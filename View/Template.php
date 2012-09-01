@@ -15,9 +15,9 @@
 
 namespace Parith\View;
 
-class Template extends Basic
+class Template extends View
 {
-    public $cache, $options = array(
+    public $file, $ext, $cache, $options = array(
         'source_dir' => null, 'source_ext' => 'html', 'cache_dir' => null, 'ldelim' => '{', 'rdelim' => '}'
     );
 
@@ -29,22 +29,23 @@ class Template extends Basic
     {
         parent::__construct($options);
 
-        $dir = $this->options['cache_dir'] or $dir = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'template';
+        $dir = $this->options['cache_dir'] or $dir = APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'Template';
 
         $this->cache = new \Parith\Cache\File(array('dir' => $dir));
     }
 
     /**
      * @param $name
-     * @param string $ext
+     * @param null|string $ext
      */
-    public function render($name, $ext = '')
+    public function render($name, $ext = null)
     {
         $source = $this->getSourceFile($name, $ext);
 
         $cache = $this->cache->filename(\rawurlencode($name));
+
         if (\Parith\Lib\File::isNewer($source, $cache))
-            \Parith\Lib\File::touch($cache, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
+            \Parith\Lib\File::touch($cache, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']));
 
         include $cache;
     }
@@ -81,6 +82,10 @@ class Template extends Basic
         $p[] = '/^[A-Z_]*$/';
         $r[] = '<?php echo \\0; ?>';
 
+        // {Router::path()}
+        $p[] = '/^([^:]+::)?[^\(]+\([^\)]*\)$/';
+        $r[] = '<?php echo \\0; ?>';
+
         // {if $foo}
         $p[] = '/^if\s+([^}]+)$/';
         $r[] = '<?php if(\\1) { ?>';
@@ -92,11 +97,6 @@ class Template extends Basic
         // {elseif}
         $p[] = '/^elseif\s+(.+?)$/';
         $r[] = '<?php } elseif (\\1) { ?>';
-
-        //{Router::path()}
-        //{date('Y-m-d', \APP_TS}
-        $p[] = '/^([^:]+::)?[^\(]+\([^\)]*\)$/';
-        $r[] = '<?php echo \\0; ?>';
 
         // {foreach $name as $key => $val}
         $p[] = '/^foreach\s+(\S+)\s+as\s+(\S+(\s*=>\s*\S+)?)$/';
@@ -135,10 +135,10 @@ class Template extends Basic
 
     /**
      * @static
-     * @param $str
+     * @param $var
      * @return mixed
      */
-    private static function parseVar($str)
+    private static function parseVar($var)
     {
         // replace $foo.bar.str to $foo['bar']['str']
         $p[] = '/\.(\w+)/';
@@ -148,17 +148,17 @@ class Template extends Basic
         $p[] = '/\$(?!this->)(\w+)/';
         $r[] = '$this->\\1'; //$r[] = '$this->_data["\\1"]';
 
-        return \preg_replace($p, $r, $str[0]);
+        return \preg_replace($p, $r, $var[0]);
     }
 
     /**
      * @static
-     * @param $str
+     * @param $var
      * @return string
      */
-    private static function parseInclude($str)
+    private static function parseInclude($var)
     {
-        return '<?php $this->load(' . self::propExport($str[1]) . '); ?>';
+        return '<?php $this->load(' . self::propExport($var[1]) . '); ?>';
     }
 
     /**

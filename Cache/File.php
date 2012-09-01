@@ -17,24 +17,24 @@ namespace Parith\Cache;
 
 class File extends Cache
 {
-    public $options = array('dir' => null, 'file_ext' => 'php');
+    public $defaults = array('dir' => null, 'file_ext' => 'php');
 
     /**
      * @param array $options
      */
     public function __construct(array $options = array())
     {
-        parent::__construct($options);
+        $this->options or parent::config('Cache_File', $options);
 
         if ($this->options['dir'] === null)
-            $this->options['dir'] = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'file';
+            $this->options['dir'] = APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'File';
 
-        //\Parith\Lib\File::mkdir($this->options['dir']);
+        \Parith\Lib\File::mkdir($this->options['dir']);
     }
 
     /**
      * @param $name
-     * @return mixed
+     * @return bool|mixed
      */
     public function get($name)
     {
@@ -49,7 +49,7 @@ class File extends Cache
     /**
      * @param $name
      * @param $var
-     * @return bool|int
+     * @return bool
      */
     public function set($name, $var)
     {
@@ -79,7 +79,7 @@ class File extends Cache
      */
     public function filename($name)
     {
-        return $this->options['dir'] . DIRECTORY_SEPARATOR . $name . '.' . $this->options['file_ext'];
+        return $this->options['dir'] . \DIRECTORY_SEPARATOR . $name . '.' . $this->options['file_ext'];
     }
 
 }

@@ -40,10 +40,10 @@ class Memcache extends \Parith\Data\Source
 
     /**
      * @param array $options
-     * @return mixed|Memcache
+     * @return Memcache
      * @throws \Parith\Exception
      */
-    public function connect(array $options)
+    public function connect($options = array())
     {
         $options = static::option($options);
 
@@ -62,7 +62,7 @@ class Memcache extends \Parith\Data\Source
      * @return Memcache
      * @throws \Parith\Exception
      */
-    public function addServer(array $options)
+    public function addServer(array $options = array())
     {
         $options = $this->option($options);
 

@@ -1,4 +1,4 @@
-#Parith (come from PHP and Arithmetic)
+#Parith
 
 ##Introduction
 
@@ -20,7 +20,7 @@ Your directory structure could be:
     │  ├─Model
     │  ├─View
     │  ...
-    └─App
+    └─Yourapp
         ├─Config
         │      Router.php
         │
@@ -30,18 +30,19 @@ Your directory structure could be:
         │
         ...
 
-###How to use from PHP 5.3.0 to PHP 5.3.2
+###How to use in PHP 5.3.0 to PHP 5.3.2
 
-if you use PHP below 5.3.3, can reference here:
-
-    \Parith\App::setOption('router', array('values' => array('Home', 'index')));
-
-    \Parith\App::run(__DIR__ . '/App');
-
-Here is the controller 'Home.php':
+if you use PHP 5.3.0 to PHP 5.3.2, you must config Yourapp/Config/Router.php like this:
 
     <?php
-    namespace App\Controller;
+        return array('default' => array('controller' => 'Home', 'action' => 'index'));
+        // default is: array('default' => array('controller' => 'Index', 'action' => 'index'));
+    ?>
+
+config 'Home' as default controller, will prevent PHP treat 'index' as __construct. there is 'Home.php':
+
+    <?php
+    namespace Yourapp\Controller;
     
     class Home
     {
@@ -50,6 +51,7 @@ Here is the controller 'Home.php':
             ....
         }
     }
+    ?>
 
 ###How to set URL rewrite
 
@@ -59,25 +61,12 @@ Apache:
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-l
 
-    RewriteRule (.*) index.php/$1?%{QUERY_STRING} [L]
+    RewriteRule (.*) index.php?PATH_INFO=$1&%{QUERY_STRING}
 
 Nginx:
 
-    location / {
-        try_files $uri $uri/ /index.php$uri?$args;
-    }
-
-    location ~ ^.+\.php {
-        fastcgi_pass unix:/tmp/php-fpm.sock; # depends on your machine
-        fastcgi_index index.php;
-
-        fastcgi_split_path_info ^((?U).+\.php)(/?.+)$;
-        fastcgi_param PATH_INFO $fastcgi_path_info;
-
-        include fastcgi_params;
-    }
+    try_files $uri $uri/ /index.php?PATH_INFO=$uri&$query_string;
 
 ###How to customize error pages
 
@@ -85,7 +74,7 @@ Below is an example. getText() returns what error messages to be showed by cli()
 Web applications can use web() to instead of cli(). You can invoke module \Parith\View to customize it.
 
     <?php
-    namespace App\Controller;
+    namespace Yourapp\Controller;
 
     class Error extends \Parith\Controller\Error
     {
@@ -99,4 +88,5 @@ Web applications can use web() to instead of cli(). You can invoke module \Parit
             return \Parith\Exception::text($this->exception, '[%s] [%s]');
         }
     }
+    ?>
 

@@ -15,16 +15,17 @@
 
 namespace Parith\View;
 
-class Basic extends \Parith\Result
+class View extends \Parith\Result
 {
     public $options = array('source_dir' => null, 'source_ext' => 'php');
 
     /**
      * @param array $options
+     * @return \Parith\View\View
      */
     public function __construct(array $options = array())
     {
-        $this->options = \Parith\App::getOption('view', $options) + $this->options;
+        $this->options = \Parith\App::config('View', $options) + $this->options;
 
         $this->options['source_dir'] or $this->options['source_dir'] = APP_DIR . 'View';
     }
@@ -56,16 +57,15 @@ class Basic extends \Parith\Result
     }
 
     /**
-     * @param $name
-     * @param $ext
+     * @param string $name
+     * @param string $ext
      * @return string
-     * @throws \Parith\Exception
      */
     public function getSourceFile($name, $ext)
     {
         $ext or $ext = $this->options['source_ext'];
 
-        $name = $this->options['source_dir'] . DIRECTORY_SEPARATOR . $name . '.' . $ext;
+        $name = $this->options['source_dir'] . \DIRECTORY_SEPARATOR . $name . '.' . $ext;
 
         if (\is_file($name))
             return $name;

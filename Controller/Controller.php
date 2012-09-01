@@ -2,9 +2,9 @@
 
 /**
  * Controller
- *
+ * 
  * Parith :: a compact PHP framework
- *
+ * 
  * @package Parith
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
@@ -13,14 +13,21 @@
  * @link http://www.parith.net/
  */
 
-namespace Parith;
+namespace Parith\Controller;
 
 abstract class Controller
 {
     /**
-     * @param $name
-     * @param $arguments
-     * @throws \Parith\Exception
+     * @return \Parith\Controller\Controller
+     */
+    public function __construct()
+    {
+    }
+
+    /**
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
      */
     public function __call($name, $arguments)
     {

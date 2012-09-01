@@ -42,7 +42,7 @@ class File extends \Parith\Object
         if (\is_dir($filename) && $dh = \opendir($filename)) {
             while (false !== ($file = \readdir($dh)))
                 if ($file !== '.' && $file !== '..')
-                    self::rm($filename . DIRECTORY_SEPARATOR . $file);
+                    self::rm($filename . \DIRECTORY_SEPARATOR . $file);
 
             \closedir($dh);
 
@@ -62,9 +62,10 @@ class File extends \Parith\Object
     {
         if (\is_dir($dir) && $dh = \opendir($dir)) {
             $out = array();
-            while (false !== ($file = \readdir($dh))) {
+            while (false !== ($file = \readdir($dh)))
+            {
                 if ($file != '.' && $file != '..') {
-                    $file = $dir . DIRECTORY_SEPARATOR . $file;
+                    $file = $dir . \DIRECTORY_SEPARATOR . $file;
 
                     if (\is_file($file))
                         $out[] = $file;
@@ -83,13 +84,17 @@ class File extends \Parith\Object
      * @static
      * @param $filename
      * @param mixed $var
-     * @param bool $php_code
+     * @param int $script
      * @return int
      */
-    public static function touch($filename, $var, $php_code = true)
+    public static function touch($filename, $var = null, $script = 0)
     {
-        if ($php_code)
-            $var = "<?php\n  return " . \var_export($var, true) . ";\n?>";
+        static $start = "<?php ", $end = ';?>';
+
+        if (\is_array($var) || \is_object($var))
+            $var = $start . 'return ' . \var_export($var, true) . $end;
+        elseif ($script)
+            $var = $start . 'return "' . \addslashes($var) . '"' . $end;
 
         return \file_put_contents($filename, $var);
     }

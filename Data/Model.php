@@ -21,13 +21,13 @@ abstract class Model extends \Parith\Result
         FETCH_OBJECT = 1,
         FETCH_ARRAY = 2;
 
-    public $options = array(
+    public $defaults = array(
         ':source' => '',
         ':conditions' => '',
         ':fields' => '*',
         ':order' => '',
         ':limit' => '',
-        ':page' => 0,
+        ':page' => '',
     ),
 
         $ds,
@@ -39,7 +39,7 @@ abstract class Model extends \Parith\Result
         $belongs_to = array(),
         $has_many = array();
 
-    public static $method_alias = array(
+    public static $static_methods = array(
         'find' => 'fetch',
         'findAll' => 'fetchAll',
         'create' => 'insert',
@@ -49,9 +49,9 @@ abstract class Model extends \Parith\Result
 
     abstract public function fetch($query, $connection = null);
 
-    abstract public function insert(array $data, array $query = array(), $connection = null);
+    abstract public function insert($data, array $query = array(), $connection = null);
 
-    abstract public function save(array $data = array(), array $query = array(), $connection = null);
+    abstract public function save($data = null, array $query = array(), $connection = null);
 
     abstract public function delete($query = array(), $connection = null);
 
@@ -63,42 +63,32 @@ abstract class Model extends \Parith\Result
      */
     public static function __callStatic($name, $arguments)
     {
-        if (isset(static::$method_alias[$name]))
-            return \call_user_func_array(array(parent::factory(), static::$method_alias[$name]), $arguments);
+        $obj = parent::getInstance();
+
+        if (isset(static::$static_methods[$name]))
+            return \call_user_func_array(array($obj, static::$static_methods[$name]), $arguments);
 
         return false;
     }
 
     /**
      * @param $name
-     * @param $arguments
-     * @return bool|mixed
+     * @return mixed
      */
-    public function __call($name, $arguments)
+    public function connection($name)
     {
-        if (isset(static::$method_alias[$name]))
-            return \call_user_func_array(array(parent::factory(), static::$method_alias[$name]), $arguments);
-
-        return false;
+        return $this->ds->connect($this->getServer($name));
     }
 
     /**
-     * an Overwrite example:
-     *
-     * public function connection($cfg_id)
-     * {
-     *      $servers = array (
-     *          1 => array('host' => '127.0.0.1', 'port' => 11211),
-     *          2 => array('host' => '127.0.0.1', 'port' => 11212),
-     *      );
-     *
-     *      return $this->ds = \Parith\Data\Source\Database::connection($servers[$cfg_id]);
-     * }
-     *
-     * @param $connection
+     * @param $name
+     * @param array $options
      * @return mixed
      */
-    abstract public function connection($connection);
+    public function getServer($name, array $options = array())
+    {
+        return $this->ds->getServer($this->config_file, $name, $options);
+    }
 
     /**
      * @param $var

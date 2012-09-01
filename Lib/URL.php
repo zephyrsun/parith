@@ -2,7 +2,7 @@
 
 
 /**
- * URL
+ * Url
  *
  * Parith :: a compact PHP framework
  * http://www.parith.net/
@@ -17,7 +17,7 @@
 
 namespace Parith\Lib;
 
-class URL
+class Url
 {
     /**
      * @static
@@ -26,7 +26,7 @@ class URL
      */
     public static function base($url = null)
     {
-        $options = array(
+        $defaults = array(
             'scheme' => 'http',
             'host' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'],
             'port' => '',
@@ -34,12 +34,13 @@ class URL
         );
 
         if ($url) {
-            $url = parse_url($url) + $options;
+            $url = parse_url($url) + $defaults;
 
             if ($url['port'])
                 $url['port'] = ':' . $url['port'];
-        } else {
-            $url = $options;
+        }
+        else {
+            $url = $defaults;
         }
 
         return $url['scheme'] . '://' . $url['host'] . $url['port'] . $url['path'];
@@ -53,26 +54,10 @@ class URL
     public static function link($uri = '')
     {
         $uri = trim($uri, '/');
-
         if (!\Parith\Lib\Char::isAscii($uri))
             $uri = rawurlencode($uri);
 
         return static::base() . $uri;
-    }
-
-    /**
-     * @static
-     * @param array $query
-     * @return string
-     */
-    public static function query(array $query)
-    {
-
-        if (\defined('PHP_QUERY_RFC3986'))
-            return http_build_query($query, '', '&', PHP_QUERY_RFC3986);
-
-        return str_replace('+', '%20', http_build_query($query, '', '&'));
-
     }
 
 }

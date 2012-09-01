@@ -32,10 +32,10 @@ class Redis extends \Parith\Data\Source
 
     /**
      * @param array $options
-     * @return mixed|Redis
+     * @return Redis
      * @throws \Parith\Exception
      */
-    public function connect(array $options)
+    public function connect($options = array())
     {
         $options = static::option($options);
 

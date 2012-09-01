@@ -54,7 +54,7 @@ class Monitor
      */
     public static function addLog($message, $type = 1024)
     {
-        return self::$log[] = \date(\DATE_RFC2822, APP_TS) . ' ' . $message;
+        return self::$log[] = \date(\DATE_RFC2822, APP_TIME) . ' ' . $message;
     }
 
     /**
@@ -74,7 +74,7 @@ class Monitor
         if (self::$log === array())
             return false;
 
-        $file or $file = APP_DIR . 'Log' . DIRECTORY_SEPARATOR . \date('Y-m-d', APP_TS) . '.log';
+        $file or $file = APP_DIR . 'Log' . \DIRECTORY_SEPARATOR . \date('Y-m-d', APP_TIME) . '.log';
 
         $ret = \error_log(\implode(PHP_EOL, self::$log), 3, $file);
 
@@ -129,22 +129,18 @@ class Exception extends \Exception
     }
 
     /**
-     * @static
-     * @param $code
-     * @param $message
-     * @param $file
-     * @param $line
-     * @return void
-     * @throws \ErrorException
+     * @param int $code
+     * @param string $message
+     * @param string $file
+     * @param int $line
+     * @return bool
      */
     public static function error($code, $message, $file, $line)
     {
-        $e = new \ErrorException($message, $code, 0, $file, $line);
-
         if (\error_reporting())
-            throw $e;
-        else
-            self::log($e);
+            throw new \ErrorException($message, $code, 0, $file, $line);
+
+        return true;
     }
 
     /**
@@ -154,21 +150,14 @@ class Exception extends \Exception
     public static function handler(\Exception $e)
     {
         try {
-            self::log($e);
-
             $class = APP_NS . 'Controller\Error';
-
-            if (\class_exists($class))
-                $handler = new $class($e);
-            else
-                $handler = new \Parith\Controller\Error($e);
-
+            $handler = \class_exists($class) ? new $class($e) : new \Parith\Controller\Error($e);
+            self::log($e);
             $handler->index();
-
-        } catch (\Exception $e) {
-            //self::log($e);
-            //\print_r(\Parith\Monitor::getLog());
-            print_r($e->getTrace());
+        }
+        catch (\Exception $e) {
+            self::log($e);
+            print_r(\Parith\Monitor::getLog());
             exit(1);
         }
     }

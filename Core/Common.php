@@ -17,23 +17,23 @@ namespace Parith;
 
 abstract class Object
 {
-    private static $_instances = array();
+    private static $_cache = array();
 
     /**
-     * \Parith\Object::factory('\memcache')
+     * \Parith\Object::getInstance('\memcache')
      * or
-     * \Parith\Lib\File::factory();
+     * \Parith\Lib\File::getInstance();
      *
      * @param $class
      * @return object
      */
-    public static function factory($class = null)
+    public static function getInstance($class = null)
     {
         // for subclass call
         $c = get_called_class();
         __CLASS__ === $c or $class = $c;
 
-        $obj = &self::$_instances[$class];
+        $obj = &self::$_cache[$class];
         if ($obj)
             return $obj;
 
@@ -216,11 +216,11 @@ abstract class Arr
      */
     public static function rand($min, $max, $num)
     {
-        $arr = array();
+        $t = array();
         do {
-            $arr[mt_rand($min, $max)] = 1;
-        } while (\count($arr) < $num);
+            $t[mt_rand($min, $max)] = 1;
+        } while (\count($t) < $num);
 
-        return \array_keys($arr);
+        return \array_keys($t);
     }
 }

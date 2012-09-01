@@ -19,11 +19,22 @@ abstract class Source
 {
     public $configs = array();
 
-    public static $options = array('host' => '127.0.0.1', 'port' => 0);
+    public static $options = array();
 
     protected $link;
 
-    private static $_instances = array();
+    public function __construct(array $options = array())
+    {
+        if ($options)
+            $this->connect($options);
+    }
+
+    /**
+     * connect to server
+     * @abstract
+     * @param array $options
+     */
+    abstract public function connect($options = array());
 
     /**
      * disconnect from server
@@ -32,68 +43,38 @@ abstract class Source
     abstract public function close();
 
     /**
-     * @abstract
+     * @param $cfg
+     * @param $key
      * @param array $options
-     * @return mixed
-     */
-    abstract public function connect(array $options);
-
-    /**
-     * singleton
-     *
-     * @static
-     * @param array $options
-     * @return \get_called_class
-     */
-    public static function connection($options)
-    {
-        $options = static::option($options);
-
-        $obj = &self::$_instances[static::instanceKey($options)];
-
-        if (!$obj) {
-            $class = \get_called_class();
-            $obj = new $class();
-            $obj->connect($options);
-        }
-
-        return $obj;
-    }
-
-    /**
-     * @param $options
-     * @return string
-     */
-    public static function instanceKey($options)
-    {
-        return $options['host'] . ':' . $options['port'];
-    }
-
-    /**
-     * an Overwrite example:
-     *
-     * public static function option($cfg_id)
-     * {
-     *      $servers = array (
-     *          1 => array('host' => '127.0.0.1', 'port' => 11211),
-     *          2 => array('host' => '127.0.0.1', 'port' => 11212),
-     *      );
-     *
-     *      return parent::option($servers[$cfg_id]);
-     * }
-     *
-     * @static
-     * @param array $options
-     * @return array|bool
+     * @return array
      * @throws \Parith\Exception
      */
-    public static function option($options)
+    public function getServer($cfg, $key = null, array $options = array())
+    {
+        if (is_array($cfg))
+            return $cfg;
+        elseif ($key === null)
+            return \Parith\App::config($cfg, $options);
+
+        $cfg = \Parith\App::config($cfg);
+
+        $cfg = &$cfg[$key];
+
+        if (is_array($cfg))
+            return $cfg + $options;
+
+        throw new \Parith\Exception('Incorrect config ID: ' . $key . ' in ' . get_called_class());
+    }
+
+    /**
+     * @param array $options
+     * @return array
+     */
+    public static function option($options = array())
     {
         if (is_array($options))
             return $options + static::$options;
 
-        throw new \Parith\Exception('options must be an Array');
-
-        return false;
+        return static::$options;
     }
 }
