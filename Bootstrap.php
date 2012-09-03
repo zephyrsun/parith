@@ -18,8 +18,8 @@ namespace Parith;
 \define('PARITH_DIR', __DIR__ . DIRECTORY_SEPARATOR);
 
 // load core class
-require __DIR__ . '/Core/Common.php';
-require __DIR__ . '/Core/Monitor.php';
-require __DIR__ . '/Core/Result.php';
-require __DIR__ . '/Core/App.php';
-require __DIR__ . '/Controller/Controller.php';
+require PARITH_DIR . 'Core/Common.php';
+require PARITH_DIR . 'Core/Monitor.php';
+require PARITH_DIR . 'Core/Result.php';
+require PARITH_DIR . 'Core/App.php';
+require PARITH_DIR . 'Controller/Controller.php';
