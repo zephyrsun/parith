@@ -106,7 +106,7 @@ abstract class Model extends \Parith\Result
      */
     public static function encode($var)
     {
-        return \json_encode($var);
+        return \Parith\Data\Source::encode($var);
     }
 
     /**
@@ -115,6 +115,6 @@ abstract class Model extends \Parith\Result
      */
     public static function decode($var)
     {
-        return $var ? \json_decode($var, true) : $var;
+        return \Parith\Data\Source::decode($var);
     }
 }

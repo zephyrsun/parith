@@ -27,15 +27,10 @@ class Memcache extends \Parith\Data\Source
 
     private $_compress;
 
-    public function __construct()
+    public function __construct(array $options = array())
     {
-        $this->ds = $this->getBaseClass();
-        parent::__construct();
-    }
-
-    public function getBaseClass()
-    {
-        return new \Memcache();
+        $this->ds = new \Memcache();
+        parent::__construct($options);
     }
 
     /**

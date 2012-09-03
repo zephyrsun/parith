@@ -38,6 +38,12 @@ abstract class Source
      */
     abstract public function connect(array $options);
 
+    public function __construct(array $options = array())
+    {
+        if ($options)
+            $this->connect($options);
+    }
+
     /**
      * singleton
      *
@@ -47,17 +53,7 @@ abstract class Source
      */
     public static function connection($options)
     {
-        $options = static::option($options);
-
-        $obj = &self::$_instances[static::instanceKey($options)];
-
-        if (!$obj) {
-            $class = \get_called_class();
-            $obj = new $class();
-            $obj->connect($options);
-        }
-
-        return $obj;
+        return \Parith\Object::getInstance(\get_called_class(), func_get_args(), static::instanceKey($options));
     }
 
     /**
@@ -66,7 +62,10 @@ abstract class Source
      */
     public static function instanceKey($options)
     {
-        return $options['host'] . ':' . $options['port'];
+        if (is_array($options))
+            return $options['host'] . ':' . $options['port'];
+
+        return $options;
     }
 
     /**
@@ -95,5 +94,23 @@ abstract class Source
         throw new \Parith\Exception('options must be an Array');
 
         return false;
+    }
+
+    /**
+     * @param $var
+     * @return string
+     */
+    public static function encode($var)
+    {
+        return \json_encode($var);
+    }
+
+    /**
+     * @param $var
+     * @return mixed
+     */
+    public static function decode($var)
+    {
+        return $var ? \json_decode($var, true) : $var;
     }
 }

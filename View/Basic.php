@@ -1,7 +1,7 @@
 <?php
 
 /**
- * BaseView
+ * Basic View
  *
  * Parith :: a compact PHP framework
  *
