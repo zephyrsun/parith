@@ -81,7 +81,10 @@ abstract class Result extends \Parith\Object implements \Iterator, \ArrayAccess,
      */
     public function resultGet($key = null)
     {
-        return $key === null ? $this->_rs : $this->__get($key);
+        if ($key === null)
+            return $this->_rs;
+
+        return $this->__get($key);
     }
 
     /**

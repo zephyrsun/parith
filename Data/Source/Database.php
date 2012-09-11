@@ -108,10 +108,10 @@ class Database extends \Parith\Data\Source
             $glue = ', ';
         }
 
-        return
-            $this->query($operator . ' ' . $table . ' (' . $col . ') VALUES (' . $value . ');', $params)
-                ? $this->lastInsertId()
-                : false;
+        if ($this->query($operator . ' ' . $table . ' (' . $col . ') VALUES (' . $value . ');', $params))
+            return $this->lastInsertId();
+
+        return false;
     }
 
     public function delete($table, $where = '')
@@ -149,7 +149,10 @@ class Database extends \Parith\Data\Source
      */
     public static function field($fields)
     {
-        return $fields ? $fields : '*';
+        if ($fields)
+            return $fields;
+
+        return '*';
     }
 
     /**

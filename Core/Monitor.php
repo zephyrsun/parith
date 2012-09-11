@@ -80,7 +80,10 @@ class Monitor
 
         self::$log = array();
 
-        return $ret ? $file : false;
+        if ($ret)
+            return $file;
+
+        return false;
     }
 
 }
@@ -179,7 +182,10 @@ class Exception extends \Exception
      */
     public static function getCodeValue($code)
     {
-        return isset(self::$php_errors[$code]) ? self::$php_errors[$code] : $code;
+        if (isset(self::$php_errors[$code]))
+            return self::$php_errors[$code];
+
+        return $code;
     }
 
     /**

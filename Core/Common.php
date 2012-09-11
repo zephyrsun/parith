@@ -81,7 +81,10 @@ abstract class Arr
      */
     public static function get(array $arr, $key, $default = null)
     {
-        return isset($arr[$key]) ? $arr[$key] : $default;
+        if (isset($arr[$key]))
+            return $arr[$key];
+
+        return $default;
     }
 
     /**

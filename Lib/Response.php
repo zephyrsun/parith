@@ -167,6 +167,9 @@ class Response extends \Parith\Object
      */
     public static function getReferer()
     {
-        return !empty($_SERVER['HTTP_REFERER']) ? false : $_SERVER['HTTP_REFERER'];
+        if (empty($_SERVER['HTTP_REFERER']))
+            return false;
+
+        return $_SERVER['HTTP_REFERER'];
     }
 }

@@ -111,6 +111,9 @@ abstract class Source
      */
     public static function decode($var)
     {
-        return $var ? \json_decode($var, true) : $var;
+        if ($var)
+            return \json_decode($var, true);
+
+        return $var;
     }
 }

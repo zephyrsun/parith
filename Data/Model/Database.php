@@ -17,6 +17,8 @@ namespace Parith\Data\Model;
 
 class Database extends \Parith\Data\Model
 {
+    public $last_select_query = array();
+
     public function connection($options)
     {
         return $this->ds = \Parith\Data\Source\Database::connection($options);
@@ -56,6 +58,17 @@ class Database extends \Parith\Data\Model
         return $this->ds->fetchAll($query[0], $query[1], $this->fetch_model == parent::FETCH_OBJECT ? $this : 0);
     }
 
+    public function fetchCount($query = null, $connection = null)
+    {
+        $query or $query = $this->last_select_query();
+
+        $query[':fields'] = 'COUNT(*)';
+        $query[':limit'] = '';
+        //$query[':page'] = 0;
+
+        return $this->fetch($query, $connection);
+    }
+
     /**
      * @param $query
      * @return array
@@ -64,7 +77,7 @@ class Database extends \Parith\Data\Model
     {
         is_array($query) or $query = array($this->primary_key => $query);
 
-        $query = $this->formatQuery($query);
+        $query = $this->last_select_query = $this->formatQuery($query);
 
         return $this->ds->selectSql($this->source($query, $query[':source']), $query[':fields'], $query[':conditions'],
             $query[':limit'], $query[':page'], $query[':order']);

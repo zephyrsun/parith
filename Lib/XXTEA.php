@@ -176,7 +176,10 @@ class XXTEA extends \Parith\Object
         for ($i = 0; $i < $len; $i++)
             $s .= pack('V', $v[$i]);
 
-        return $w ? substr($s, 0, $v[$len - 1]) : $s;
+        if ($w)
+            return substr($s, 0, $v[$len - 1]);
+
+        return $s;
     }
 
     /**

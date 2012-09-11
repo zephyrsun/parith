@@ -56,6 +56,24 @@ abstract class Model extends \Parith\Result
     abstract public function delete($query = array(), $connection = null);
 
     /**
+     * an Overwrite example:
+     *
+     * public function connection($cfg_id)
+     * {
+     *      $servers = array (
+     *          1 => array('host' => '127.0.0.1', 'port' => 11211),
+     *          2 => array('host' => '127.0.0.1', 'port' => 11212),
+     *      );
+     *
+     *      return $this->ds = \Parith\Data\Source\Database::connection($servers[$cfg_id]);
+     * }
+     *
+     * @param $connection
+     * @return mixed
+     */
+    abstract public function connection($connection);
+
+    /**
      * @static
      * @param string $name
      * @param array $arguments
@@ -81,24 +99,6 @@ abstract class Model extends \Parith\Result
 
         return false;
     }
-
-    /**
-     * an Overwrite example:
-     *
-     * public function connection($cfg_id)
-     * {
-     *      $servers = array (
-     *          1 => array('host' => '127.0.0.1', 'port' => 11211),
-     *          2 => array('host' => '127.0.0.1', 'port' => 11212),
-     *      );
-     *
-     *      return $this->ds = \Parith\Data\Source\Database::connection($servers[$cfg_id]);
-     * }
-     *
-     * @param $connection
-     * @return mixed
-     */
-    abstract public function connection($connection);
 
     /**
      * @param $var

@@ -45,7 +45,10 @@ class Cookie extends \Parith\Object
      */
     public function get($key)
     {
-        return $this->options['hash'] ? $this->hashGet($key) : $this->_get($key);
+        if ($this->options['hash'])
+            return $this->hashGet($key);
+
+        return $this->_get($key);
     }
 
     /**
@@ -56,7 +59,10 @@ class Cookie extends \Parith\Object
      */
     public function set($key, $var, $expire = 0)
     {
-        return $this->options['hash'] ? $this->hashSet($key, $var, $expire) : $this->_set($key, $var, $expire);
+        if ($this->options['hash'])
+            return $this->hashSet($key, $var, $expire);
+
+        return $this->_set($key, $var, $expire);
     }
 
     /**
@@ -96,7 +102,10 @@ class Cookie extends \Parith\Object
      */
     public function decode($var)
     {
-        return $var ? \json_decode($var, true) : $var;
+        if ($var)
+            return \json_decode($var, true);
+
+        return $var;
     }
 
     /**
@@ -123,7 +132,10 @@ class Cookie extends \Parith\Object
      */
     public function _get($key)
     {
-        return isset($_COOKIE[$key]) ? $_COOKIE[$key] : false;
+        if (isset($_COOKIE[$key]))
+            return $_COOKIE[$key];
+
+        return null;
     }
 
     /**
