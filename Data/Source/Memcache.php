@@ -20,9 +20,15 @@ namespace Parith\Data\Source;
 class Memcache extends \Parith\Data\Source
 {
     public static $options = array(
-        'host' => '127.0.0.1', 'port' => 11211, 'timeout' => 1, 'compress' => 0,
-        'persistent' => true, 'weight' => 1,
-        'retry_interval' => 15, 'status' => true, 'failure_callback' => null,
+        'host' => '127.0.0.1',
+        'port' => 11211,
+        'timeout' => 1,
+        'compress' => 0,
+        'persistent' => true,
+        'weight' => 1,
+        'retry_interval' => 15,
+        'status' => true,
+        'failure_callback' => null,
     );
 
     private $_compress;
@@ -155,10 +161,9 @@ class Memcache extends \Parith\Data\Source
 
     /**
      * @param $key
-     * @param array $options
      * @return bool
      */
-    public function delete($key, array $options = array())
+    public function delete($key)
     {
         return $this->ds->delete($key);
     }

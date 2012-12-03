@@ -17,7 +17,10 @@ namespace Parith\Cache;
 
 class File extends Cache
 {
-    public $options = array('dir' => null, 'file_ext' => 'php');
+    public $options = array(
+        'dir' => null,
+        'file_ext' => 'php',
+    );
 
     /**
      * @param array $options

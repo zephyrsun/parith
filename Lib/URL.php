@@ -52,10 +52,14 @@ class URL
      */
     public static function link($uri = '')
     {
-        $uri = trim($uri, '/');
+        if ($uri) {
+            $uri = trim($uri, '/');
 
-        if (!\Parith\Lib\Char::isAscii($uri))
-            $uri = rawurlencode($uri);
+            \Parith\Lib\Char::isAscii($uri) or $uri = rawurlencode($uri);
+
+        } elseif ($uri === '') {
+            $uri = implode('/', \Parith\App::$uri_query);
+        }
 
         return static::base() . $uri;
     }
@@ -67,7 +71,6 @@ class URL
      */
     public static function query(array $query)
     {
-
         if (\defined('PHP_QUERY_RFC3986'))
             return http_build_query($query, '', '&', PHP_QUERY_RFC3986);
 

@@ -17,13 +17,14 @@ namespace Parith\Data;
 
 abstract class Source
 {
+    public static $options = array(
+        'host' => '127.0.0.1',
+        'port' => 0
+    );
+
     public $configs = array();
 
-    public static $options = array('host' => '127.0.0.1', 'port' => 0);
-
     protected $link;
-
-    private static $_instances = array();
 
     /**
      * disconnect from server

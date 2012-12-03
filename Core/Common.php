@@ -39,7 +39,8 @@ abstract class Object
      */
     public static function getInstance($class, $args, $key = null)
     {
-        $obj = &self::$_instances[$key ? $key : $class];
+        $key or $key = $class;
+        $obj = &self::$_instances[$key];
         if ($obj)
             return $obj;
 

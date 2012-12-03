@@ -18,21 +18,27 @@ namespace Parith\Data\Source;
 class Database extends \Parith\Data\Source
 {
     const
-        DML_INSERT = 'INSERT INTO',
-        DML_INSERT_IGNORE = 'INSERT IGNORE INTO',
-        DML_REPLACE = 'REPLACE INTO';
+        MODIFIER_INSERT = 'INSERT INTO',
+        MODIFIER_INSERT_IGNORE = 'INSERT IGNORE INTO',
+        MODIFIER_REPLACE = 'REPLACE INTO';
 
-    public $stmt;
+    public $sth;
 
     public static $options = array(
-        'driver' => 'mysql', 'host' => '127.0.0.1', 'port' => 3306, 'dbname' => null,
-        'username' => 'root', 'password' => null, 'options' => array(
+        'driver' => 'mysql',
+        'host' => '127.0.0.1',
+        'port' => 3306,
+        'dbname' => null,
+        'username' => 'root',
+        'password' => null,
+        'options' => array(
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            //\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
 
             #overwrite 'options' if not using MySQL
-            1002 => 'SET NAMES utf8', //\PDO::MYSQL_ATTR_INIT_COMMAND
-            1000 => true, //\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY
+            \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
+            \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8', //1002
+            \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
         )
     );
 
@@ -83,16 +89,18 @@ class Database extends \Parith\Data\Source
 
         list($where, $params) = static::where($where, $params);
 
-        return $this->query('UPDATE ' . $table . ' SET ' . $update . $where . ';', $params);
+        $this->query('UPDATE ' . $table . ' SET ' . $update . $where . ';', $params);
+
+        return $this->rowCount();
     }
 
     /**
      * @param $table
      * @param $data
-     * @param string $operator
+     * @param string $modifier
      * @return mixed
      */
-    public function insert($table, array $data, $operator = self::DML_INSERT)
+    public function insert($table, array $data, $modifier = null)
     {
         $params = array();
 
@@ -108,8 +116,10 @@ class Database extends \Parith\Data\Source
             $glue = ', ';
         }
 
-        if ($this->query($operator . ' ' . $table . ' (' . $col . ') VALUES (' . $value . ');', $params))
-            return $this->lastInsertId();
+        $modifier or $modifier = self::MODIFIER_INSERT;
+
+        if ($this->query($modifier . ' ' . $table . ' (' . $col . ') VALUES (' . $value . ');', $params))
+            return $this->rowCount();
 
         return false;
     }
@@ -124,20 +134,23 @@ class Database extends \Parith\Data\Source
     }
 
     /**
+     * @static
      * @param $table
      * @param string $fields
      * @param string $where
      * @param int $limit
      * @param int $offset
      * @param string $order
+     * @param string $group
+     * @param string $join
      * @return array
      */
-    public static function selectSql($table, $fields = '*', $where = '', $limit = 0, $offset = 0, $order = '')
+    public static function selectParams($table, $fields = '*', $where = '', $limit = 0, $offset = 0, $order = '', $group = '', $join = '')
     {
         list($where, $params) = static::where($where);
 
-        return array('SELECT ' . static::field($fields) . ' FROM ' . static::table($table) .
-            $where . static::order($order) . static::limit($limit, $offset) . ';',
+        return array('SELECT ' . static::field($fields) . ' FROM ' . static::table($table) . static::join($join) .
+            $where . static::groupBy($group) . static::orderBy($order) . static::limit($limit, $offset) . ';',
             $params
         );
     }
@@ -162,7 +175,7 @@ class Database extends \Parith\Data\Source
      */
     public static function table($table)
     {
-        return $table;
+        return '`' . $table . '`';
     }
 
     /**
@@ -181,12 +194,12 @@ class Database extends \Parith\Data\Source
         if (is_array($where)) {
             foreach ($where as $col => $val) {
                 if (is_array($val)) {
-                    $val += array('=', '', ' AND ');
+                    $val += array('=', '', 'AND');
                 } else {
-                    $val = array('=', $val, ' AND ');
+                    $val = array('=', $val, 'AND');
                 }
 
-                $query .= $val[2] . '`' . $col . '`' . $val[0] . ' ?'; // means: "AND `gender` = ?"
+                $query .= ' ' . $val[2] . ' `' . $col . '`' . $val[0] . ' ?'; // means: "AND `gender` = ?"
 
                 $params[] = $val[1];
             }
@@ -214,13 +227,27 @@ class Database extends \Parith\Data\Source
 
     /**
      * @static
+     * @param $group
+     * @return string
+     */
+    public static function groupBy($group)
+    {
+        if ($group) {
+            return ' GROUP BY ' . $group;
+        }
+
+        return '';
+    }
+
+    /**
+     * @static
      * @param string|array $order
      *          - 'id'
      *          - array('id', 'ts' => -1)
      *
      * @return mixed
      */
-    public static function order($order)
+    public static function orderBy($order)
     {
         if (!$order)
             return '';
@@ -250,22 +277,21 @@ class Database extends \Parith\Data\Source
 
     /**
      * @static
-     * @param $join
-     *          - 'blog'
-     *          - array('blog', 'INNER JOIN' => 'comments')
+     * @param array $join
+     *          - array('comment' => 'blog.comment_id=comment.id')
+     *          - array('comment' => array('on' => 'blog.comment_id=comment.id', 'type' => 'INNER JOIN'))
      *
      * @return string
      */
-    public static function join($join)
+    public static function join(array $join)
     {
         $ret = '';
-        if (is_array($join)) {
-            foreach ($join as $expr => $col) {
-                if (\is_int($expr))
-                    $expr = 'LEFT OUTER JOIN';
-
-                $ret .= ' ' . $expr . ' `' . $col . '`';
+        foreach ($join as $table => $expr) {
+            if (!\is_array($expr)) {
+                $expr = array('on' => $expr, 'type' => 'INNER JOIN');
             }
+
+            $ret .= ' ' . $expr['type'] . ' `' . $table . '` ON ' . $expr['on'];
         }
 
         return $ret;
@@ -278,45 +304,55 @@ class Database extends \Parith\Data\Source
      */
     public function query($query, array $params = array())
     {
-        $this->stmt = $this->link->prepare($query);
+        $this->sth = $this->link->prepare($query);
 
-        return $this->stmt->execute($params);
+        return $this->sth->execute($params);
+    }
+
+    /**
+     * @param int|array $mode
+     * @return Database
+     */
+    protected function setFetchMode($mode)
+    {
+        if (is_array($mode))
+            call_user_func_array(array($this->sth, 'setFetchMode'), $mode);
+        else
+            $this->sth->setFetchMode($mode);
+
+        return $this;
     }
 
     /**
      * @param $query
      * @param array $params
-     * @param int|object $mode
+     * @param int|array $mode
      * @return mixed
      */
     public function fetch($query, array $params = array(), $mode = 0)
     {
         $this->query($query, $params);
 
-        return $this->_setFetchMode($mode)->fetch();
+        if ($mode)
+            $this->setFetchMode($mode);
+
+        return $this->sth->fetch();
     }
 
     /**
      * @param $query
      * @param array $params
-     * @param int|object $mode
+     * @param int|array $mode
      * @return mixed
      */
     public function fetchAll($query, array $params = array(), $mode = 0)
     {
         $this->query($query, $params);
 
-        return $this->_setFetchMode($mode)->fetchAll();
-    }
+        if ($mode)
+            $this->setFetchMode($mode);
 
-    private function _setFetchMode($mode)
-    {
-        if (\is_object($mode))
-            $this->stmt->setFetchMode(\PDO::FETCH_INTO, $mode);
-        elseif ($mode)
-            $this->stmt->setFetchMode($mode);
-
-        return $this->stmt;
+        return $this->sth->fetchAll();
     }
 
     /**
@@ -324,7 +360,7 @@ class Database extends \Parith\Data\Source
      */
     public function dumpParams()
     {
-        return $this->stmt->debugDumpParams();
+        return $this->sth->debugDumpParams();
     }
 
     /**
@@ -332,7 +368,7 @@ class Database extends \Parith\Data\Source
      */
     public function getLastSql()
     {
-        return $this->stmt->queryString;
+        return $this->sth->queryString;
     }
 
     /**
@@ -349,7 +385,7 @@ class Database extends \Parith\Data\Source
      */
     public function errorInfo()
     {
-        return $this->stmt->errorInfo();
+        return $this->sth->errorInfo();
     }
 
     /**
@@ -357,7 +393,7 @@ class Database extends \Parith\Data\Source
      */
     public function rowCount()
     {
-        return $this->stmt->rowCount();
+        return $this->sth->rowCount();
     }
 
     public function setCharset($charset)

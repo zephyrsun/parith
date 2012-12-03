@@ -17,8 +17,6 @@ namespace Parith\View\Helper;
 
 class Pagination extends \Parith\Object
 {
-    public $total = 1, $current = 1, $links = 2, $uri = '', $uri_query = '';
-
     public $options = array(
         'per_page' => 10,
         'links' => 2,
@@ -27,45 +25,55 @@ class Pagination extends \Parith\Object
         'attributes' => array('class' => 'pagination'),
         'prev_text' => '&laquo;',
         'next_text' => '&raquo;',
-    );
+        'source' => array(),
+        'query' => array(),
+    )
+    , $total = 1
+    , $current = 1
+    , $links = 2
+    , $uri = ''
+    , $uri_query = '';
 
     /**
      * @param $total
-     * @param $current
-     * @param string $uri
-     *                - Rewrite On: '/index/page'
-     *                - Rewrite Off: '' leave it empty
-     *
-     * @param array $uri_query
-     *               - Rewrite On: array('catalog' => 1) will be a part of query string
-     *               - Rewrite Off: $uri must be empty. pass controller/action here, like:
-     *                              array('controller' => 'index', 'action' => 'page', 'catalog' => 1),
-     *                              params 'page' will be added automatically, and you can ONLY use 'page'
-     *
+     * @param array|string $query
+     *                  - array: array('controller' => 'search', 'action' => 'index', 'catalog' => 1)
+     *                  - string: /search /index, 'catalog' passed by $options['query']
      * @param array $options
      */
-    public function __construct($total, $current, $uri = '', array $uri_query = array(), array $options = array())
+    public function __construct($total, $query = '', array $options = array())
     {
         $this->options = \Parith\App::getOption('pagination', $options) + $this->options;
 
-        $this->current = $current;
+        if ($this->options['source'])
+            $source = $this->options['source'];
+        else
+            $source = $_GET;
+
+        if (isset($source['page']))
+            $this->current = $source['page'];
+        else
+            $this->current = 1;
+
         $this->total = ceil($total / $this->options['per_page']);
         $this->links = $this->options['links'];
 
-        parse_str($_SERVER['QUERY_STRING'], $query); // merge $_GET
+        if (is_array($query)) {
 
-        $uri_query = \Parith\Lib\URL::query($query + $uri_query);
+            $query += $this->options['query'] + $source;
+            $query['page'] = '__page__';
 
-        if ($uri) {
-            $this->uri = rtrim($uri, '/') . '/';
-
-            if ($uri_query)
-                $this->uri_query = '?' . $uri_query;
+            $this->uri = \Parith\Lib\URL::link('?' . \Parith\Lib\URL::query($query));
 
         } else {
-            $uri_query['page'] = '__page';
+            $this->uri = \Parith\Lib\URL::link($query);
 
-            $this->uri_query = '?' . $uri_query;
+            $query = $this->options['query'] + $source;
+            $query['page'] = '__page__';
+
+            //unset($query[0], $query[1]);
+
+            $this->uri .= '?' . \Parith\Lib\URL::query($query);
         }
     }
 
@@ -75,13 +83,7 @@ class Pagination extends \Parith\Object
      */
     public function uri($page)
     {
-        if ($this->uri) {
-            $uri = $this->uri . $page . $this->uri_query;
-        } else {
-            $uri = str_replace('__page', $page, $this->uri_query);
-        }
-
-        return $uri;
+        return str_replace('__page__', $page, $this->uri);
     }
 
     /**
@@ -146,10 +148,26 @@ class Pagination extends \Parith\Object
         return '';
     }
 
+
+    /**
+     * @static
+     * @param $total
+     * @param array|string $query
+     * @param array $options
+     * @return mixed
+     */
+    public static function generate($total, $query = '', array $options = array())
+    {
+        $class = get_called_class();
+        $class = new $class($total, $query, $options);
+
+        return $class->__toString();
+    }
+
     /**
      * @return string
      */
-    public function generate()
+    public function __toString()
     {
         $start = $this->current - $this->links;
         $start > 0 or $start = 1;
@@ -175,13 +193,5 @@ class Pagination extends \Parith\Object
         $html .= $this->last() . $this->next();
 
         return HTML::tag('div', '<ul>' . $html . '</ul>', $this->options['attributes']);
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->generate();
     }
 }

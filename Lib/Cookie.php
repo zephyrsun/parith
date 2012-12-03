@@ -17,7 +17,14 @@ namespace Parith\Lib;
 
 class Cookie extends \Parith\Object
 {
-    protected $hash, $options = array('expire' => 7200, 'path' => '/', 'domain' => '', 'key' => null, 'hash' => false);
+    public $options = array(
+        'expire' => 7200,
+        'path' => '/',
+        'domain' => '',
+        'key' => null,
+        'hash' => false,
+    )
+    , $hash;
 
     /**
      * @param array $options

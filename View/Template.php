@@ -18,7 +18,11 @@ namespace Parith\View;
 class Template extends Basic
 {
     public $cache, $options = array(
-        'source_dir' => null, 'source_ext' => 'html', 'cache_dir' => null, 'ldelim' => '{', 'rdelim' => '}'
+        'source_dir' => null,
+        'source_ext' => 'html',
+        'cache_dir' => null,
+        'ldelim' => '{',
+        'rdelim' => '}',
     );
 
 
@@ -42,11 +46,11 @@ class Template extends Basic
     {
         $source = $this->getSourceFile($name, $ext);
 
-        $cache = $this->cache->filename(\rawurlencode($name));
-        if (\Parith\Lib\File::isNewer($source, $cache))
-            \Parith\Lib\File::touch($cache, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
+        $target = $this->cache->filename(\rawurlencode($name));
+        if (\Parith\Lib\File::isNewer($source, $target))
+            \Parith\Lib\File::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
 
-        include $cache;
+        include $target;
     }
 
     /**
@@ -69,7 +73,7 @@ class Template extends Basic
      * @param $str
      * @return mixed|string
      */
-    private static function parseBrace($str)
+    public static function parseBrace($str)
     {
         $p = $r = array();
 
@@ -114,7 +118,7 @@ class Template extends Basic
         $s = \preg_replace($p, $r, $str[1]);
 
         // parse vars
-        $s = \preg_replace_callback('/(?<!::)\$[^\s}\(\)]+/', '\Parith\View\Template::parseVar', $s);
+        $s = \preg_replace_callback('/(?<!::)\$[^\d\s}\(\)]+/', '\Parith\View\Template::parseVar', $s);
 
         // parse include
         $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::parseInclude', $s);
@@ -131,7 +135,7 @@ class Template extends Basic
      * @param $var
      * @return mixed
      */
-    private static function parseVar($var)
+    public static function parseVar($var)
     {
         // replace $foo.bar.str to $foo['bar']['str']
         $p[] = '/\.(\w+)/';
@@ -149,7 +153,7 @@ class Template extends Basic
      * @param $var
      * @return string
      */
-    private static function parseInclude($var)
+    public static function parseInclude($var)
     {
         return '<?php $this->load(' . self::propExport($var[1]) . '); ?>';
     }
@@ -159,7 +163,7 @@ class Template extends Basic
      * @param $str
      * @return string
      */
-    private static function propExport($str)
+    public static function propExport($str)
     {
         // \$[^=\s]+ : variables
         // \'[^\']*\' : single quoted string

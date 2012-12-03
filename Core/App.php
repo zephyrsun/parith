@@ -21,12 +21,11 @@ namespace Parith;
 
 class App
 {
-    public static
-        $replace_src = array(),
-        $replace_dst = array(),
-        $is_cli = false,
-        $app_action,
-        $options = array();
+    public static $replace_src = array()
+    , $replace_dst = array()
+    , $is_cli = false
+    , $uri_query = array()
+    , $options = array();
 
     /**
      * @static
@@ -37,7 +36,7 @@ class App
     {
         self::init($app_dir);
 
-        return self::invoke(Router::parse(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']), $_GET));
+        return self::invoke(Router::parse(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF'])));
     }
 
     /**
@@ -67,7 +66,7 @@ class App
 
         self::init($app_dir);
 
-        return self::invoke(Router::parse($argv[0], $_GET));
+        return self::invoke(Router::parse($argv[0]));
     }
 
     /**
@@ -117,7 +116,7 @@ class App
      */
     public static function invoke($params)
     {
-        self::$app_action = $params;
+        self::$uri_query = $params;
         return self::getController($params[0])->$params[1]();
     }
 
@@ -209,28 +208,31 @@ class Router
 
     /**
      * @param string $uri
-     * @param array $arr
      * @param array $options
      * @return array
      */
-    public static function parse($uri = '', array &$arr = array(), array $options = array())
+    public static function parse($uri = '', array $options = array())
     {
         $options = App::getOption('router', $options) + self::$options;
 
         if ($uri) {
-
             $uri = explode('?', $uri, 2);
-            $arr = self::parseUri(trim($uri[0], '/'), $options) + $options['values'] + $arr;
+            $arr = self::parseUri(trim($uri[0], '/'), $options) + $options['values']; // + $arr
 
-            $c = $arr[0];
-            $a = $arr[1];
+            //$c = $arr[0];
+            //  $a = $arr[1];
 
             //unset($arr[0], $arr[1]);
 
-        } else {
-            $c = &$arr[$options['keys'][0]] or $c = $options['values'][0];
-            $a = &$arr[$options['keys'][1]] or $a = $options['values'][1];
+            $arr[0] = \ucfirst($arr[0]);
+
+            return $arr;
         }
+
+        $arr = $_GET;
+
+        $c = &$arr[$options['keys'][0]] or $c = $options['values'][0];
+        $a = &$arr[$options['keys'][1]] or $a = $options['values'][1];
 
         return array(\ucfirst($c), $a);
     }

@@ -17,7 +17,15 @@ namespace Parith\Data\Model;
 
 class Database extends \Parith\Data\Model
 {
-    public $last_select_query = array();
+    public $last_find_query = array();
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->options[':join'] = '';
+        $this->options[':group'] = '';
+    }
 
     public function connection($options)
     {
@@ -25,20 +33,33 @@ class Database extends \Parith\Data\Model
     }
 
     /**
+     * @return array|int
+     */
+    public function getFetchMode()
+    {
+        if ($this->fetch_mode === parent::FETCH_OBJECT)
+            return array(\PDO::FETCH_INTO, $this);
+
+        return \PDO::FETCH_ASSOC;
+    }
+
+    /**
      * @param $query
      *          - 1 // means find $primary_key = 1
      *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
-     *
-     * @param $connection
+     * @param mixed $connection
+     * @param int|array $mode
      * @return mixed
      */
-    public function fetch($query, $connection = null)
+    public function fetch($query, $connection = null, $mode = null)
     {
         $this->connection($connection);
 
         $query = $this->getFetchQuery($query);
 
-        return $this->ds->fetch($query[0], $query[1], $this->fetch_model == parent::FETCH_OBJECT ? $this : 0);
+        $mode or $mode = $this->getFetchMode();
+
+        return $this->ds->fetch($query[0], $query[1], $mode);
     }
 
     /**
@@ -46,27 +67,30 @@ class Database extends \Parith\Data\Model
      *          - 1 // means find $primary_key = 1
      *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
      *
-     * @param $connection
+     * @param mixed $connection
+     * @param int|array $mode
      * @return mixed
      */
-    public function fetchAll($query, $connection = null)
+    public function fetchAll($query, $connection = null, $mode = null)
     {
         $this->connection($connection);
 
         $query = $this->getFetchQuery($query);
 
-        return $this->ds->fetchAll($query[0], $query[1], $this->fetch_model == parent::FETCH_OBJECT ? $this : 0);
+        $mode or $mode = $this->getFetchMode();
+
+        return $this->ds->fetchAll($query[0], $query[1], $mode);
     }
 
     public function fetchCount($query = null, $connection = null)
     {
-        $query or $query = $this->last_select_query();
+        $query or $query = $this->last_find_query;
 
         $query[':fields'] = 'COUNT(*)';
         $query[':limit'] = '';
         //$query[':page'] = 0;
 
-        return $this->fetch($query, $connection);
+        return $this->fetch($query, $connection, array(\PDO::FETCH_COLUMN, 0));
     }
 
     /**
@@ -77,10 +101,10 @@ class Database extends \Parith\Data\Model
     {
         is_array($query) or $query = array($this->primary_key => $query);
 
-        $query = $this->last_select_query = $this->formatQuery($query);
+        $query = $this->last_find_query = $this->formatQuery($query);
 
-        return $this->ds->selectSql($this->source($query, $query[':source']), $query[':fields'], $query[':conditions'],
-            $query[':limit'], $query[':page'], $query[':order']);
+        return \Parith\Data\Source\Database::selectParams($this->source($query[':source'], $query), $query[':fields'], $query[':conditions'],
+            $query[':limit'], $query[':page'], $query[':order'], $query[':group'], $this->join($query[':join'], $query));
     }
 
     /**
@@ -102,18 +126,19 @@ class Database extends \Parith\Data\Model
     }
 
     /**
-     * @param $data
+     * @param array $data
      * @param array $query
      * @param null $connection
+     * @param null $modifier
      * @return mixed
      */
-    public function insert(array $data, array $query = array(), $connection = null)
+    public function insert(array $data, array $query = array(), $connection = null, $modifier = null)
     {
         $query = $this->formatQuery($query);
 
         $this->connection($connection);
 
-        return $this->ds->insert($this->source($data, $query[':source']), $data);
+        return $this->ds->insert($this->source($query[':source'], $data), $data, $modifier);
     }
 
     /**
@@ -135,11 +160,11 @@ class Database extends \Parith\Data\Model
             $query[$this->primary_key] = $primary_value;
             $query = $this->formatQuery($query);
 
-            return $this->ds->update($this->source($data, $query[':source']), $data, $query[':conditions']);
+            return $this->ds->update($this->source($query[':source'], $data), $data, $query[':conditions']);
         }
 
         $query = $this->formatQuery($query);
-        return $this->ds->insert($this->source($data, $query[':source']), $data);
+        return $this->ds->insert($this->source($query[':source'], $data), $data);
     }
 
     /**
@@ -159,18 +184,58 @@ class Database extends \Parith\Data\Model
 
         $this->connection($connection);
 
-        return $this->ds->delete($this->source($query, $query[':source']), $query[':conditions']);
+        return $this->ds->delete($this->source($query[':source'], $query), $query[':conditions']);
     }
 
     /**
      * just overwrite it
      *
-     * @param $data
      * @param $source
+     * @param $data
      * @return string returns table name
      */
-    public function source($data, $source)
+    public function source($source, $data)
     {
         return $source;
+    }
+
+    /**
+     * @return int
+     */
+    public function lastInsertId()
+    {
+        return $this->ds->lastInsertId();
+    }
+
+    /**
+     *
+     * \Parith\Data\Model\Database::join('comment')
+     *
+     * @param $join
+     * @param $query
+     * @return array
+     * @throws \Parith\Exception
+     */
+    public function join($join, $query)
+    {
+        $ret = array();
+
+        if ($join) {
+            is_array($join) or $join = array($join);
+            foreach ($join as $name) {
+
+                $relation = &$this->relations[$name];
+
+                if ($relation) {
+                    $ret[$relation['class']->source($query[':source'], $query)] = array(
+                        'on' => key($relation['key']) . '=' . current($relation['key']),
+                        'type' => 'INNER JOIN',
+                    );
+                } else
+                    throw new \Parith\Exception('Undefined relation "' . $name . '"');
+            }
+        }
+
+        return $ret;
     }
 }

@@ -18,8 +18,8 @@ namespace Parith\Data;
 abstract class Model extends \Parith\Result
 {
     CONST
-        FETCH_OBJECT = 1,
-        FETCH_ARRAY = 2;
+        FETCH_ARRAY = 0,
+        FETCH_OBJECT = 1;
 
     public $options = array(
         ':source' => '',
@@ -28,16 +28,19 @@ abstract class Model extends \Parith\Result
         ':order' => '',
         ':limit' => '',
         ':page' => 0,
-    ),
+    )
+    , $ds
+    , $fetch_mode = self::FETCH_ARRAY
+    , $primary_key = 'id'
 
-        $ds,
-        $fetch_model = self::FETCH_ARRAY,
-        $config_file = 'Model',
-        $primary_key = 'id',
-
-        $has_one = array(),
-        $belongs_to = array(),
-        $has_many = array();
+        /**
+         * array(
+         * 'comment' => array('type' => 'has_many', 'key' => array('comment_id' => 'id')),
+         * );
+         * @var array
+         *          - type: belongs_to, has_one, has_many
+         */
+    , $relations = array();
 
     public static $method_alias = array(
         'find' => 'fetch',
@@ -45,6 +48,13 @@ abstract class Model extends \Parith\Result
         'create' => 'insert',
         'update' => 'save',
         'remove' => 'delete',
+    )
+    , $model_dir = '';
+
+    private static $_relation_types = array(
+        'belongs_to' => 1,
+        'has_one' => 1,
+        'has_many' => 1,
     );
 
     abstract public function fetch($query, $connection = null);
@@ -72,6 +82,11 @@ abstract class Model extends \Parith\Result
      * @return mixed
      */
     abstract public function connection($connection);
+
+    public function __construct()
+    {
+        $this->initRelations();
+    }
 
     /**
      * @static
@@ -116,5 +131,40 @@ abstract class Model extends \Parith\Result
     public static function decode($var)
     {
         return \Parith\Data\Source::decode($var);
+    }
+
+    /**
+     * @static
+     * @return string
+     */
+    public static function getModelDir()
+    {
+        static::$model_dir or static::$model_dir = preg_replace('/[^\\\\]+$/', '', \get_called_class());
+
+        return static::$model_dir;
+    }
+
+    /**
+     * @return array
+     * @throws \Parith\Exception
+     */
+    public function initRelations()
+    {
+        foreach ($this->relations as $name => &$config) {
+            if (is_array($config)) {
+                if (isset(self::$_relation_types[$config['type']])) {
+
+                    $class = static::getModelDir() . \ucfirst($name);
+                    $config['class'] = new $class();
+
+                    isset($config['key']) or $config['key'] = array($name . '_id' => $config['class']->primary_key);
+
+                } else
+                    throw new \Parith\Exception('Error type of relation "' . $name . '"');
+            } else
+                throw new \Parith\Exception('Config of relation "' . $name . '" must be an array');
+        }
+
+        return $this->relations;
     }
 }

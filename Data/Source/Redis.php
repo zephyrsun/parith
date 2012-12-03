@@ -17,7 +17,11 @@ namespace Parith\Data\Source;
 
 class Redis extends \Parith\Data\Source
 {
-    public static $options = array('host' => '127.0.0.1', 'port' => 6379, 'timeout' => 0.0);
+    public static $options = array(
+        'host' => '127.0.0.1',
+        'port' => 6379,
+        'timeout' => 0.0,
+    );
 
     public function __construct(array $options = array())
     {
