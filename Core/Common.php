@@ -209,23 +209,4 @@ abstract class Arr
 
         return $ret;
     }
-
-    /**
-     * get multi random number
-     *
-     * @static
-     * @param $min
-     * @param $max
-     * @param $num
-     * @return array
-     */
-    public static function rand($min, $max, $num)
-    {
-        $arr = array();
-        do {
-            $arr[mt_rand($min, $max)] = 1;
-        } while (\count($arr) < $num);
-
-        return \array_keys($arr);
-    }
 }

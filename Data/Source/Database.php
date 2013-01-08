@@ -182,7 +182,12 @@ class Database extends \Parith\Data\Source
      * @static
      * @param string|array $where
      *              - `gender`='male' AND `age`>=18 OR `email` LIKE '%@qq.com'
-     *              - array('gender' => 'male', 'age' => array('>=', 18), 'email' => array('LIKE', '%@qq.com', 'OR')
+     *              - array(
+     *                      'gender' => 'male',
+     *                      'email' => array('LIKE', '%@qq.com', 'OR')
+     *                      'time' => array('>=', 0)
+     *                      array('<=', 1325347200 , 'AND', 'time')
+     *                  )
      *
      * @param array $params
      * @return array
@@ -194,7 +199,11 @@ class Database extends \Parith\Data\Source
         if (is_array($where)) {
             foreach ($where as $col => $val) {
                 if (is_array($val)) {
-                    $val += array('=', '', 'AND');
+                    $val += array('=', '', 'AND', '');
+
+                    if ($val[3])
+                        $col = $val[3];
+
                 } else {
                     $val = array('=', $val, 'AND');
                 }
