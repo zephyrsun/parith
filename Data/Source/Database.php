@@ -184,9 +184,8 @@ class Database extends \Parith\Data\Source
      *              - `gender`='male' AND `age`>=18 OR `email` LIKE '%@qq.com'
      *              - array(
      *                      'gender' => 'male',
-     *                      'email' => array('LIKE', '%@qq.com', 'OR')
-     *                      'time' => array('>=', 0)
-     *                      array('<=', 1325347200 , 'AND', 'time')
+     *                      'email' => array('LIKE', '%@abc.com', 'OR')
+     *                      array('AND (`title` LIKE ? OR `body` LIKE ?)', "%$title%", "%$body%")
      *                  )
      *
      * @param array $params
@@ -198,19 +197,21 @@ class Database extends \Parith\Data\Source
 
         if (is_array($where)) {
             foreach ($where as $col => $val) {
-                if (is_array($val)) {
-                    $val += array('=', '', 'AND', '');
 
-                    if ($val[3])
-                        $col = $val[3];
+                if (is_int($col)) {
+                    $query .= ' ' . array_shift($val);
+                    $params = array_merge($params, $val);
 
                 } else {
-                    $val = array('=', $val, 'AND');
+                    if (is_array($val)) {
+                        $val += array('=', '', 'AND');
+                    } else {
+                        $val = array('=', $val, 'AND');
+                    }
+
+                    $query .= ' ' . $val[2] . ' `' . $col . '`' . $val[0] . ' ?'; // means: "AND `gender` = ?"
+                    $params[] = $val[1];
                 }
-
-                $query .= ' ' . $val[2] . ' `' . $col . '`' . $val[0] . ' ?'; // means: "AND `gender` = ?"
-
-                $params[] = $val[1];
             }
         } elseif ($where) {
             $query = ' AND ' . $where;
