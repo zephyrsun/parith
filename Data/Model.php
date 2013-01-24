@@ -26,7 +26,7 @@ abstract class Model extends \Parith\Result
         ':conditions' => '',
         ':fields' => '*',
         ':order' => '',
-        ':limit' => '',
+        ':limit' => 0,
         ':page' => 0,
     )
     , $ds

@@ -22,7 +22,7 @@ class Database extends \Parith\Data\Source
         MODIFIER_INSERT_IGNORE = 'INSERT IGNORE INTO',
         MODIFIER_REPLACE = 'REPLACE INTO';
 
-    public $sth;
+    public $sth, $clauses = array(), $params = array();
 
     public static $options = array(
         'driver' => 'mysql',
@@ -33,7 +33,7 @@ class Database extends \Parith\Data\Source
         'password' => null,
         'options' => array(
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            //\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
 
             #overwrite 'options' if not using MySQL
             \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
@@ -41,6 +41,13 @@ class Database extends \Parith\Data\Source
             \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
         )
     );
+
+    public function __construct(array $options = array())
+    {
+        parent::__construct($options);
+
+        $this->initial();
+    }
 
     /**
      * @param array $options
@@ -62,207 +69,131 @@ class Database extends \Parith\Data\Source
         }
     }
 
+    /**
+     * @param $options
+     * @return string
+     */
     public static function instanceKey($options)
     {
         return $options['host'] . ':' . $options['port'] . ':' . $options['dbname'];
     }
 
     /**
-     * @param $table
-     * @param $data
-     * @param string $where
-     * @return mixed
+     * @return Database
      */
-    public function update($table, array $data, $where = '')
+    public function initial()
     {
-        $params = array();
-
-        $update = '';
-        $glue = '';
-        foreach ($data as $col => $val) {
-            $update .= $glue . '`' . $col . '`= ?';
-
-            $params[] = $val;
-
-            $glue = ', ';
-        }
-
-        list($where, $params) = static::where($where, $params);
-
-        $this->query('UPDATE ' . $table . ' SET ' . $update . $where . ';', $params);
-
-        return $this->rowCount();
-    }
-
-    /**
-     * @param $table
-     * @param $data
-     * @param string $modifier
-     * @return mixed
-     */
-    public function insert($table, array $data, $modifier = null)
-    {
-        $params = array();
-
-        $col = '';
-        $value = '';
-        $glue = '';
-        foreach ($data as $k => $v) {
-            $col .= $glue . '`' . $k . '`';
-            $value .= $glue . '?';
-
-            $params[] = $v;
-
-            $glue = ', ';
-        }
-
-        $modifier or $modifier = self::MODIFIER_INSERT;
-
-        if ($this->query($modifier . ' ' . $table . ' (' . $col . ') VALUES (' . $value . ');', $params))
-            return $this->rowCount();
-
-        return false;
-    }
-
-    public function delete($table, $where = '')
-    {
-        list($where, $params) = static::where($where);
-
-        $this->query('DELETE FROM ' . $table . $where . ';', $params);
-
-        return $this->rowCount();
-    }
-
-    /**
-     * @static
-     * @param $table
-     * @param string $fields
-     * @param string $where
-     * @param int $limit
-     * @param int $offset
-     * @param string $order
-     * @param string $group
-     * @param string $join
-     * @return array
-     */
-    public static function selectParams($table, $fields = '*', $where = '', $limit = 0, $offset = 0, $order = '', $group = '', $join = '')
-    {
-        list($where, $params) = static::where($where);
-
-        return array('SELECT ' . static::field($fields) . ' FROM ' . static::table($table) . static::join($join) .
-            $where . static::groupBy($group) . static::orderBy($order) . static::limit($limit, $offset) . ';',
-            $params
+        $this->clauses = array(
+            'fields' => '*',
+            'table' => '',
+            'join' => '',
+            'where' => ' WHERE 1',
+            'group' => '',
+            'order' => '',
+            'limit' => '',
         );
+
+        $this->params = array();
+
+        return $this;
     }
 
     /**
-     * @static
      * @param $fields
-     * @return mixed
+     * @return Database
      */
-    public static function field($fields)
+    public function field($fields)
     {
-        if ($fields)
-            return $fields;
+        $this->clauses['fields'] = $fields;
 
-        return '*';
+        return $this;
     }
 
     /**
-     * @static
      * @param $table
-     * @return mixed
+     * @return Database
      */
-    public static function table($table)
+    public function table($table)
     {
-        return '`' . $table . '`';
+        $this->clauses['table'] = $table;
+
+        return $this;
     }
 
     /**
-     * @static
-     * @param string|array $where
-     *              - `gender`='male' AND `age`>=18 OR `email` LIKE '%@qq.com'
-     *              - array(
-     *                      'gender' => 'male',
-     *                      'email' => array('LIKE', '%@abc.com', 'OR')
-     *                      array('AND (`title` LIKE ? OR `body` LIKE ?)', "%$title%", "%$body%")
-     *                  )
+     * where('gender', 'male')
      *
-     * @param array $params
-     * @return array
+     * where('email', 'LIKE', '%@abc.com', 'OR')
+     *
+     * handle as a full clause when has "?"
+     * where('(age >= ? OR age <= ?)', array(18, 30))
+     *
+     * @param $field
+     * @param $operator
+     * @param $value
+     * @param $glue
+     * @return Database
      */
-    public static function where($where, array $params = array())
+    public function where($field, $operator, $value = '', $glue = 'AND')
     {
-        $query = '';
-
-        if (is_array($where)) {
-            foreach ($where as $col => $val) {
-
-                if (is_int($col)) {
-                    $query .= ' ' . array_shift($val);
-                    $params = array_merge($params, $val);
-
-                } else {
-                    if (is_array($val)) {
-                        $val += array('=', '', 'AND');
-                    } else {
-                        $val = array('=', $val, 'AND');
-                    }
-
-                    $query .= ' ' . $val[2] . ' `' . $col . '`' . $val[0] . ' ?'; // means: "AND `gender` = ?"
-                    $params[] = $val[1];
-                }
-            }
-        } elseif ($where) {
-            $query = ' AND ' . $where;
+        if ($value) {
+            $operator .= ' ?';
+        } else {
+            $value = $operator;
+            if (strpos($field, '?') === false)
+                $operator = '= ?';
+            else
+                $operator = '';
         }
 
-        // return an array with the SQL query + params
-        return array(' WHERE 1' . $query, $params);
+        $this->clauses['where'] .= ' ' . $glue . ' ' . $field . $operator;
+
+        if (is_array($value))
+            $this->params = array_merge($this->params, $value);
+        else
+            $this->params[] = $value;
+
+        return $this;
     }
 
     /**
-     * @static
      * @param $limit
      * @param int $offset
-     * @return string
+     * @return Database
      */
-    public static function limit($limit, $offset = 0)
+    public function limit($limit, $offset = 0)
     {
         if ($limit)
-            return ' LIMIT ' . $offset . ', ' . $limit;
+            $this->clauses['limit'] = ' LIMIT ' . $offset . ', ' . $limit;
 
-        return '';
+        return $this;
     }
 
     /**
-     * @static
      * @param $group
-     * @return string
+     * @return Database
      */
-    public static function groupBy($group)
+    public function groupBy($group)
     {
-        if ($group) {
-            return ' GROUP BY ' . $group;
-        }
+        if ($group)
+            $this->clauses['groupby'] = ' GROUP BY ' . $group;
 
-        return '';
+        return $this;
     }
 
     /**
-     * @static
      * @param string|array $order
      *          - 'id'
      *          - array('id', 'ts' => -1)
      *
-     * @return mixed
+     * @return Database
      */
-    public static function orderBy($order)
+    public function orderBy($order)
     {
         if (!$order)
-            return '';
+            return $this;
 
-        $ret = ' ORDER BY ';
+        $clause = ' ORDER BY ';
 
         if (is_array($order)) {
             $glue = '';
@@ -275,48 +206,142 @@ class Database extends \Parith\Data\Source
                     $expr = 'DESC';
                 }
 
-                $ret .= $glue . '`' . $col . '` ' . $expr;
+                $clause .= $glue . '`' . $col . '` ' . $expr;
                 $glue = ', ';
             }
         } else {
-            $ret .= $order;
+            $clause .= $order;
         }
 
-        return $ret;
+        $this->clauses['orderby'] = $clause;
+
+        return $this;
     }
 
     /**
-     * @static
      * @param array $join
      *          - array('comment' => 'blog.comment_id=comment.id')
      *          - array('comment' => array('on' => 'blog.comment_id=comment.id', 'type' => 'INNER JOIN'))
      *
      * @return string
      */
-    public static function join(array $join)
+    public function join(array $join)
     {
-        $ret = '';
-        foreach ($join as $table => $expr) {
-            if (!\is_array($expr)) {
-                $expr = array('on' => $expr, 'type' => 'INNER JOIN');
-            }
+        if (!$join)
+            return $this;
 
-            $ret .= ' ' . $expr['type'] . ' `' . $table . '` ON ' . $expr['on'];
+        $clause = '';
+        foreach ($join as $table => $expr) {
+            \is_array($expr) or $expr = array('on' => $expr, 'type' => 'INNER JOIN');
+
+            $clause .= ' ' . $expr['type'] . ' `' . $table . '` ON ' . $expr['on'];
         }
 
-        return $ret;
+        $this->clauses['join'] = $clause;
+
+        return $this;
+    }
+
+    /**
+     * @param $data
+     * @return int
+     */
+    public function update(array $data)
+    {
+        $update = $glue = '';
+        foreach ($data as $col => $val) {
+            $update .= $glue . '`' . $col . '`= ?';
+
+            $this->params[] = $val;
+
+            $glue = ', ';
+        }
+
+        $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . $update . $this->clauses['where'] . ';');
+
+        return $this->rowCount();
+    }
+
+    /**
+     * @param $data
+     * @param string $modifier
+     * @return mixed
+     */
+    public function insert(array $data, $modifier = null)
+    {
+        $col = $value = $glue = '';
+        foreach ($data as $k => $v) {
+            $col .= $glue . '`' . $k . '`';
+
+            $value .= $glue . '?';
+
+            $this->params[] = $v;
+
+            $glue = ', ';
+        }
+
+        $modifier or $modifier = self::MODIFIER_INSERT;
+
+        return $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . $col . ') VALUES (' . $value . ');');
+    }
+
+    /**
+     * @return int
+     */
+    public function delete()
+    {
+        $this->query('DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';');
+        return $this->rowCount();
+    }
+
+    /**
+     * @param int $mode
+     * @return mixed
+     */
+    public function fetch($mode = 0)
+    {
+        $this->query($this->_selectClause());
+
+        if ($mode)
+            $this->setFetchMode($mode);
+
+        return $this->sth->fetch();
+    }
+
+    /**
+     * @param int $mode
+     * @return mixed
+     */
+    public function fetchAll($mode = 0)
+    {
+        $this->query($this->_selectClause());
+
+        if ($mode)
+            $this->setFetchMode($mode);
+
+        return $this->sth->fetchAll();
+    }
+
+    private function _selectClause()
+    {
+        $c = $this->clauses;
+
+        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['order'] . $c['limit'] . ';';
     }
 
     /**
      * @param $query
-     * @param array $params
      * @return mixed
      */
-    public function query($query, array $params = array())
+    public function query($query)
     {
         $this->sth = $this->link->prepare($query);
 
-        return $this->sth->execute($params);
+        $result = $this->sth->execute($this->params);
+
+        $this->initial();
+
+        return $result;
     }
 
     /**
@@ -331,38 +356,6 @@ class Database extends \Parith\Data\Source
             $this->sth->setFetchMode($mode);
 
         return $this;
-    }
-
-    /**
-     * @param $query
-     * @param array $params
-     * @param int|array $mode
-     * @return mixed
-     */
-    public function fetch($query, array $params = array(), $mode = 0)
-    {
-        $this->query($query, $params);
-
-        if ($mode)
-            $this->setFetchMode($mode);
-
-        return $this->sth->fetch();
-    }
-
-    /**
-     * @param $query
-     * @param array $params
-     * @param int|array $mode
-     * @return mixed
-     */
-    public function fetchAll($query, array $params = array(), $mode = 0)
-    {
-        $this->query($query, $params);
-
-        if ($mode)
-            $this->setFetchMode($mode);
-
-        return $this->sth->fetchAll();
     }
 
     /**
@@ -409,18 +402,18 @@ class Database extends \Parith\Data\Source
     public function setCharset($charset)
     {
         $this->query('SET NAMES ' . $charset . ';');
+
         return $this;
     }
 
     public function setAttribute($attr, $var)
     {
-        $this->link->setAttribute($attr, $var);
-        return $this;
+        return $this->link->setAttribute($attr, $var);
     }
 
     public function close()
     {
         $this->link = null;
-        return true;
+        return $this;
     }
 }
