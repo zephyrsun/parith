@@ -176,7 +176,7 @@ class Database extends \Parith\Data\Source
     public function groupBy($group)
     {
         if ($group)
-            $this->clauses['groupby'] = ' GROUP BY ' . $group;
+            $this->clauses['group'] = ' GROUP BY ' . $group;
 
         return $this;
     }
@@ -213,7 +213,7 @@ class Database extends \Parith\Data\Source
             $clause .= $order;
         }
 
-        $this->clauses['orderby'] = $clause;
+        $this->clauses['order'] = $clause;
 
         return $this;
     }
