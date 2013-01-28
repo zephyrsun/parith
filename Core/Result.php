@@ -21,12 +21,12 @@ abstract class Result extends \Parith\Object implements \Iterator, \ArrayAccess,
 
     /**
      * @param $key
-     * @param $var
+     * @param $val
      * @return Result
      */
-    public function __set($key, $var)
+    public function __set($key, $val)
     {
-        $this->_rs[$key] = $var;
+        $this->_rs[$key] = $val;
 
         return $this;
     }
@@ -62,15 +62,15 @@ abstract class Result extends \Parith\Object implements \Iterator, \ArrayAccess,
 
     /**
      * @param $key
-     * @param mixed $var
+     * @param mixed $val
      * @return Result
      */
-    public function resultSet($key, $var = null)
+    public function resultSet($key, $val = null)
     {
         if (\is_array($key))
             $this->_rs = $key + $this->_rs;
         elseif ($key)
-            $this->__set($key, $var);
+            $this->__set($key, $val);
 
         return $this->_rs;
     }
@@ -168,12 +168,12 @@ abstract class Result extends \Parith\Object implements \Iterator, \ArrayAccess,
 
     /**
      * @param $key
-     * @param $var
+     * @param $val
      * @return Result
      */
-    public function offsetSet($key, $var)
+    public function offsetSet($key, $val)
     {
-        return $this->__set($key, $var);
+        return $this->__set($key, $val);
     }
 
     /**

@@ -40,7 +40,7 @@ abstract class Object
     public static function getInstance($class, $args, $key = null)
     {
         $key or $key = $class;
-        $obj = &self::$_instances[$key];
+        $obj = & self::$_instances[$key];
         if ($obj)
             return $obj;
 
@@ -92,16 +92,16 @@ abstract class Arr
      * @static
      * @param array $arr
      * @param string $key
-     * @param mixed $var
+     * @param mixed $val
      * @param string $delimiter
      * @return array
      */
-    public static function pathSet(array &$arr, $key, $var, $delimiter = ',')
+    public static function pathSet(array &$arr, $key, $val, $delimiter = ',')
     {
-        foreach (\explode($delimiter, $key) as $val)
-            $arr = &$arr[$val] or $arr = array();
+        foreach (\explode($delimiter, $key) as $v)
+            $arr = & $arr[$v] or $arr = array();
 
-        return $arr = $var;
+        return $arr = $val;
     }
 
     /**
@@ -114,7 +114,7 @@ abstract class Arr
     public static function pathGet(array &$arr, $key, $delimiter = ',')
     {
         foreach (\explode($delimiter, $key) as $val)
-            if (!$arr = &$arr[$val])
+            if (!$arr = & $arr[$val])
                 return false;
 
         return $arr;
@@ -128,14 +128,14 @@ abstract class Arr
      */
     public static function pathDelete(array &$arr, $key)
     {
-        $var = \explode('.', $key);
-        $last = \end($var);
+        $val = \explode('.', $key);
+        $last = \end($val);
 
-        foreach ($var as $val) {
-            if ($val === $last)
-                unset($arr[$val]);
+        foreach ($val as $v) {
+            if ($v === $last)
+                unset($arr[$v]);
             else
-                $arr = &$arr[$val];
+                $arr = & $arr[$v];
         }
     }
 
@@ -145,13 +145,13 @@ abstract class Arr
      * @static
      * @param array $arr
      * @param string $key
-     * @param mixed $var
+     * @param mixed $val
      * @return array
      */
-    public static function unshift(array &$arr, $key, $var)
+    public static function unshift(array &$arr, $key, $val)
     {
         $arr = \array_reverse($arr, true);
-        $arr[$key] = $var;
+        $arr[$key] = $val;
         return \array_reverse($arr, true);
     }
 
@@ -161,13 +161,13 @@ abstract class Arr
      * @static
      * @param array $arr
      * @param string $key
-     * @param mixed $var
+     * @param mixed $val
      * @return bool
      */
-    public static function find($arr, $key, $var)
+    public static function find($arr, $key, $val)
     {
         foreach ($arr as $val)
-            if ($var == $val[$key])
+            if ($val == $val[$key])
                 return true;
 
         return false;
@@ -208,5 +208,42 @@ abstract class Arr
                 $ret[] = $row[$key];
 
         return $ret;
+    }
+}
+
+/**
+ * String
+ *
+ * Parith :: a compact PHP framework
+ *
+ * @package Parith
+ * @author Zephyr Sun
+ * @copyright 2009-2012 Zephyr Sun
+ * @license http://www.parith.net/license
+ * @version 0.3
+ * @link http://www.parith.net/
+ */
+
+abstract class String
+{
+    /**
+     * @param $val
+     * @return string
+     */
+    public static function encode($val)
+    {
+        return \json_encode($val);
+    }
+
+    /**
+     * @param $val
+     * @return mixed
+     */
+    public static function decode($val)
+    {
+        if ($val)
+            return \json_decode($val, true);
+
+        return $val;
     }
 }
