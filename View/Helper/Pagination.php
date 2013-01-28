@@ -14,6 +14,7 @@
  */
 
 namespace Parith\View\Helper;
+use \Parith\Lib\URL as LibURL;
 
 class Pagination extends \Parith\Object
 {
@@ -63,17 +64,17 @@ class Pagination extends \Parith\Object
             $query += $this->options['query'] + $source;
             $query['page'] = '__page__';
 
-            $this->uri = \Parith\Lib\URL::link('?' . \Parith\Lib\URL::query($query));
+            $this->uri = LibURL::link('?' . LibURL::query($query));
 
         } else {
-            $this->uri = \Parith\Lib\URL::link($query);
+            $this->uri = LibURL::link($query);
 
             $query = $this->options['query'] + $source;
             $query['page'] = '__page__';
 
             //unset($query[0], $query[1]);
 
-            $this->uri .= '?' . \Parith\Lib\URL::query($query);
+            $this->uri .= '?' . LibURL::query($query);
         }
     }
 

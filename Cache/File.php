@@ -51,12 +51,12 @@ class File extends Cache
 
     /**
      * @param $name
-     * @param $var
+     * @param $val
      * @return bool|int
      */
-    public function set($name, $var)
+    public function set($name, $val)
     {
-        return \Parith\Lib\File::touch($this->filename($name), $var);
+        return \Parith\Lib\File::touch($this->filename($name), $val);
     }
 
     /**

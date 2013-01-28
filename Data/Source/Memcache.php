@@ -108,35 +108,35 @@ class Memcache extends \Parith\Data\Source
 
     /**
      * @param $key
-     * @param $var
+     * @param $val
      * @param int $expire
      * @return bool
      */
-    public function set($key, $var, $expire = 0)
+    public function set($key, $val, $expire = 0)
     {
-        return $this->ds->set($key, $var, $this->getCompress(), $expire);
+        return $this->ds->set($key, $val, $this->getCompress(), $expire);
     }
 
     /**
      * @param $key
-     * @param $var
+     * @param $val
      * @param int $expire
      * @return bool
      */
-    public function add($key, $var, $expire = 0)
+    public function add($key, $val, $expire = 0)
     {
-        return $this->ds->add($key, $var, $this->getCompress(), $expire);
+        return $this->ds->add($key, $val, $this->getCompress(), $expire);
     }
 
     /**
      * @param string $key
-     * @param mixed $var
+     * @param mixed $val
      * @param int $expire
      * @return bool
      */
-    public function replace($key, $var, $expire = 0)
+    public function replace($key, $val, $expire = 0)
     {
-        return $this->ds->replace($key, $var, $this->getCompress(), $expire);
+        return $this->ds->replace($key, $val, $this->getCompress(), $expire);
     }
 
     /**

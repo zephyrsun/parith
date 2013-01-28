@@ -21,10 +21,9 @@ class Cookie extends \Parith\Object
         'expire' => 7200,
         'path' => '/',
         'domain' => '',
-        'key' => null,
-        'hash' => false,
+        'hash_object' => null,
     )
-    , $hash;
+    , $hash_object;
 
     /**
      * @param array $options
@@ -33,17 +32,8 @@ class Cookie extends \Parith\Object
     public function __construct(array $options = array())
     {
         $this->options = \Parith\App::getOption('cookie', $options) + $this->options;
-        if ($this->options['hash'])
-            $this->hash = $this->hashMethod($this->options['key']);
-    }
-
-    /**
-     * @param string $key
-     * @return object
-     */
-    public function hashMethod($key)
-    {
-        return new \Parith\Lib\XXTEA($key);
+        if ($this->options['hash_object'])
+            $this->hash_object = $this->options['hash_object']; //new \Parith\Lib\XXTEA($key)
     }
 
     /**
@@ -52,67 +42,41 @@ class Cookie extends \Parith\Object
      */
     public function get($key)
     {
-        if ($this->options['hash'])
-            return $this->hashGet($key);
+        if (isset($_COOKIE[$key])) {
+            $ret = $_COOKIE[$key];
 
-        return $this->_get($key);
+            if ($this->hash_object)
+                return \Parith\String::decode($this->hash_object->decrypt($ret));
+
+            return $ret;
+        }
+
+        return null;
     }
 
     /**
      * @param string $key
-     * @param mixed $var
+     * @param mixed $val
      * @param int $expire could be negative number
      * @return bool
      */
-    public function set($key, $var, $expire = 0)
+    public function set($key, $val, $expire = 0)
     {
-        if ($this->options['hash'])
-            return $this->hashSet($key, $var, $expire);
+        if ($this->hash_object)
+            $val = $this->hash_object->encrypt(\Parith\String::encode($val));
 
-        return $this->_set($key, $var, $expire);
-    }
+        if ($expire > 0)
+            $expire += APP_TS;
+        elseif ($expire == 0)
+            $expire = $this->options['expire'] + APP_TS;
 
-    /**
-     * @param string $key
-     * @return mixed
-     */
-    public function hashGet($key)
-    {
-        $var = $this->hash->decrypt($this->_get($key));
-        return $this->decode($var);
-    }
+        $ret = setcookie($key, $val, $expire, $this->options['path'], $this->options['domain']);
 
-    /**
-     * @param string $key
-     * @param mixed $var
-     * @param int $expire
-     * @return bool
-     */
-    public function hashSet($key, $var, $expire = 0)
-    {
-        $str = $this->encode($var);
-        return $this->_set($key, $this->hash->encrypt($str), $expire);
-    }
+        if ($ret === false)
+            return $ret;
 
-    /**
-     * @param mixed $var
-     * @return string
-     */
-    public function encode($var)
-    {
-        return \json_encode($var);
-    }
-
-    /**
-     * @param string $var
-     * @return mixed
-     */
-    public function decode($var)
-    {
-        if ($var)
-            return \json_decode($var, true);
-
-        return $var;
+        $_COOKIE[$key] = $val;
+        return true;
     }
 
     /**
@@ -131,41 +95,5 @@ class Cookie extends \Parith\Object
     {
         foreach ($_COOKIE as $key => $val)
             $this->delete($key);
-    }
-
-    /**
-     * @param string $key
-     * @return mixed
-     */
-    public function _get($key)
-    {
-        if (isset($_COOKIE[$key]))
-            return $_COOKIE[$key];
-
-        return null;
-    }
-
-    /**
-     * @param string $key
-     * @param mixed $var
-     * @param int $expire could be negative number
-     * @return bool
-     */
-    public function _set($key, $var, $expire = 0)
-    {
-        $opt = $this->options;
-
-        if ($expire > 0)
-            $expire += APP_TS;
-        elseif ($expire == 0)
-            $expire = $opt['expire'] + APP_TS;
-
-        $ret = setcookie($key, $var, $expire, $opt['path'], $opt['domain']);
-
-        if ($ret === false)
-            return $ret;
-
-        $_COOKIE[$key] = $var;
-        return true;
     }
 }

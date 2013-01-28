@@ -116,24 +116,6 @@ abstract class Model extends \Parith\Result
     }
 
     /**
-     * @param $var
-     * @return string
-     */
-    public static function encode($var)
-    {
-        return \Parith\Data\Source::encode($var);
-    }
-
-    /**
-     * @param $var
-     * @return mixed
-     */
-    public static function decode($var)
-    {
-        return \Parith\Data\Source::decode($var);
-    }
-
-    /**
      * @static
      * @return string
      */

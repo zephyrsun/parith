@@ -96,25 +96,4 @@ abstract class Source
 
         return false;
     }
-
-    /**
-     * @param $var
-     * @return string
-     */
-    public static function encode($var)
-    {
-        return \json_encode($var);
-    }
-
-    /**
-     * @param $var
-     * @return mixed
-     */
-    public static function decode($var)
-    {
-        if ($var)
-            return \json_decode($var, true);
-
-        return $var;
-    }
 }

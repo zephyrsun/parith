@@ -15,6 +15,8 @@
 
 namespace Parith\View;
 
+use \Parith\Lib\File as LibFile;
+
 class Template extends Basic
 {
     public $cache, $options = array(
@@ -47,8 +49,8 @@ class Template extends Basic
         $source = $this->getSourceFile($name, $ext);
 
         $target = $this->cache->filename(\rawurlencode($name));
-        if (\Parith\Lib\File::isNewer($source, $target))
-            \Parith\Lib\File::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
+        if (LibFile::isNewer($source, $target))
+            LibFile::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
 
         include $target;
     }
@@ -118,10 +120,10 @@ class Template extends Basic
         $s = \preg_replace($p, $r, $str[1]);
 
         // parse vars
-        $s = \preg_replace_callback('/(?<!::)\$[^\d\s}\(\)]+/', '\Parith\View\Template::parseVar', $s);
+        $s = \preg_replace_callback('/(?<!::)\$[^\d\s}\(\)]+/', '\Parith\View\Template::_parseVar', $s);
 
         // parse include
-        $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::parseInclude', $s);
+        $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::_parseInclude', $s);
 
         // for js, css
         if ($s === $str[1])
@@ -132,30 +134,30 @@ class Template extends Basic
 
     /**
      * @static
-     * @param $var
+     * @param $val
      * @return mixed
      */
-    public static function parseVar($var)
+    private static function _parseVar($val)
     {
-        // replace $foo.bar.str to $foo['bar']['str']
-        $p[] = '/\.(\w+)/';
-        $r[] = "['\\1']";
-
-        // replace to $this->var
-        $p[] = '/\$(?!this->)(\w+)/';
-        $r[] = '$this->\\1'; //$r[] = '$this->_data["\\1"]';
-
-        return \preg_replace($p, $r, $var[0]);
+        return \preg_replace(
+            array(
+                '/\.(\w+)/', // replace $foo.bar.str to $foo['bar']['str']
+                '/\$(?!this->)(\w+)/'),
+            array(
+                "['\\1']",
+                '$this->\\1'
+            ),
+            $val[0]);
     }
 
     /**
      * @static
-     * @param $var
+     * @param $val
      * @return string
      */
-    public static function parseInclude($var)
+    private static function _parseInclude($val)
     {
-        return '<?php $this->load(' . self::propExport($var[1]) . '); ?>';
+        return '<?php $this->load(' . self::propExport($val[1]) . '); ?>';
     }
 
     /**
@@ -175,18 +177,18 @@ class Template extends Basic
     }
 
     /**
-     * @param $var
+     * @param $data
      * @return Template
      */
-    public function load($var)
+    public function load($data)
     {
-        $this->resultSet($var);
+        $this->resultSet($data);
 
         //$this->render($this->_data['file']);
         $this->render($this->file, $this->ext);
 
         // avoid collision
-        parent::resultDelete($var);
+        parent::resultDelete($data);
 
         return $this;
     }

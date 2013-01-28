@@ -82,16 +82,16 @@ class File extends \Parith\Object
     /**
      * @static
      * @param $filename
-     * @param mixed $var
+     * @param mixed $val
      * @param bool $php_code
      * @return int
      */
-    public static function touch($filename, $var, $php_code = true)
+    public static function touch($filename, $val, $php_code = true)
     {
         if ($php_code)
-            $var = "<?php\n  return " . \var_export($var, true) . ";\n?>";
+            $val = "<?php\n  return " . \var_export($val, true) . ";\n?>";
 
-        return \file_put_contents($filename, $var);
+        return \file_put_contents($filename, $val);
     }
 
     /**

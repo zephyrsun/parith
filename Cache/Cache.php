@@ -37,12 +37,12 @@ class Cache
 
     /**
      * @param $key
-     * @param $var
+     * @param $val
      * @return bool
      */
-    public function set($key, $var)
+    public function set($key, $val)
     {
-        $this->_cache[$key] = $var;
+        $this->_cache[$key] = $val;
         return true;
     }
 

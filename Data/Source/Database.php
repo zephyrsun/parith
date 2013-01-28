@@ -406,9 +406,9 @@ class Database extends \Parith\Data\Source
         return $this;
     }
 
-    public function setAttribute($attr, $var)
+    public function setAttribute($attr, $val)
     {
-        return $this->link->setAttribute($attr, $var);
+        return $this->link->setAttribute($attr, $val);
     }
 
     public function close()

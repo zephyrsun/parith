@@ -30,8 +30,9 @@ class XXTEA extends \Parith\Object
     }
 
     /**
-     * @param string|array $key
-     * @return \Parith\Lib\XXTEA
+     * @param $key
+     * @return XXTEA
+     * @throws \Parith\Exception
      */
     public function setKey($key)
     {
@@ -47,15 +48,16 @@ class XXTEA extends \Parith\Object
     }
 
     /**
-     * @param string|array $var
-     * @return string|array
+     * @param $val
+     * @return array|string
+     * @throws \Parith\Exception
      */
-    public function encrypt($var)
+    public function encrypt($val)
     {
-        if (\is_scalar($var))
-            return $this->_encryptString($var);
-        elseif (\is_array($var))
-            return $this->_encryptArray($var);
+        if (\is_scalar($val))
+            return $this->_encryptString($val);
+        elseif (\is_array($val))
+            return $this->_encryptArray($val);
 
         throw new \Parith\Exception('encrypt data must be String or Array');
     }
@@ -99,15 +101,15 @@ class XXTEA extends \Parith\Object
     }
 
     /**
-     * @param string|array $var
+     * @param string|array $val
      * @return string|array|bool
      */
-    public function decrypt($var)
+    public function decrypt($val)
     {
-        if (\is_string($var))
-            return $this->_decryptString($var);
-        elseif (\is_array($var))
-            return $this->_decryptArray($var);
+        if (\is_string($val))
+            return $this->_decryptString($val);
+        elseif (\is_array($val))
+            return $this->_decryptArray($val);
 
         return false;
     }
