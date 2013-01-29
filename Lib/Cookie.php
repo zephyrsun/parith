@@ -21,9 +21,9 @@ class Cookie extends \Parith\Object
         'expire' => 7200,
         'path' => '/',
         'domain' => '',
-        'hash_object' => null,
+        'handler' => null, //must be an Object
     )
-    , $hash_object;
+    , $handler;
 
     /**
      * @param array $options
@@ -33,7 +33,7 @@ class Cookie extends \Parith\Object
     {
         $this->options = \Parith\App::getOption('cookie', $options) + $this->options;
         if ($this->options['hash_object'])
-            $this->hash_object = $this->options['hash_object']; //new \Parith\Lib\XXTEA($key)
+            $this->handler = $this->options['handler']; //new \Parith\Lib\XXTEA($key)
     }
 
     /**
@@ -45,8 +45,8 @@ class Cookie extends \Parith\Object
         if (isset($_COOKIE[$key])) {
             $ret = $_COOKIE[$key];
 
-            if ($this->hash_object)
-                return \Parith\String::decode($this->hash_object->decrypt($ret));
+            if ($this->handler)
+                return \Parith\String::decode($this->handler->decrypt($ret));
 
             return $ret;
         }
@@ -62,8 +62,8 @@ class Cookie extends \Parith\Object
      */
     public function set($key, $val, $expire = 0)
     {
-        if ($this->hash_object)
-            $val = $this->hash_object->encrypt(\Parith\String::encode($val));
+        if ($this->handler)
+            $val = $this->handler->encrypt(\Parith\String::encode($val));
 
         if ($expire > 0)
             $expire += APP_TS;
