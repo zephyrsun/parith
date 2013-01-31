@@ -13,9 +13,9 @@
  * @link http://www.parith.net/
  */
 
-namespace Parith\Lib;
+namespace Parith\Lib\Image;
 
-abstract class Image extends \Parith\Object
+abstract class Basic extends \Parith\Object
 {
     public static $image_types = array(
         'jpg' => 'jpeg',
