@@ -9,7 +9,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -47,12 +46,12 @@ class Redis extends \Parith\Data\Source
 
     /**
      * @param string $method
-     * @param array $arguments
+     * @param array $args
      * @return mixed
      */
-    public function __call($method, $arguments)
+    public function __call($method, $args)
     {
-        return \call_user_func_array(array($this->ds, $method), $arguments);
+        return \call_user_func_array(array($this->ds, $method), $args);
     }
 
     /**

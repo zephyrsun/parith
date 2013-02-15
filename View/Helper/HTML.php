@@ -9,7 +9,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -41,9 +40,9 @@ class HTML extends \Parith\Object
         return htmlspecialchars($string, ENT_QUOTES, 'utf-8');
     }
 
-    public static function link($uri, $text = '', array $attributes = array())
+    public static function link($url, $text = '', array $attributes = array())
     {
-        isset($attributes['href']) or $attributes['href'] = $uri; //\Parith\Lib\URL::link($uri);
+        isset($attributes['href']) or $attributes['href'] = $url; //\Parith\Lib\URL::link($uri);
 
         return self::tag('a', $text, $attributes);
     }

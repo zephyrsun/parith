@@ -9,7 +9,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -97,7 +96,6 @@ class Monitor
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 class Exception extends \Exception

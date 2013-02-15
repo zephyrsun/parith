@@ -9,7 +9,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -19,11 +18,14 @@ abstract class Controller
 {
     /**
      * @param $name
-     * @param $arguments
+     * @param $args
+     * @return bool
      * @throws \Parith\Exception
      */
-    public function __call($name, $arguments)
+    public function __call($name, $args)
     {
         throw new \Parith\Exception('Action "' . $name . '" not found', 404);
+
+        return false;
     }
 }

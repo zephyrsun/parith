@@ -9,7 +9,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -32,8 +31,7 @@ class Pagination extends \Parith\Object
     , $total = 1
     , $current = 1
     , $links = 2
-    , $uri = ''
-    , $uri_query = '';
+    , $url = '';
 
     /**
      * @param $total
@@ -64,17 +62,17 @@ class Pagination extends \Parith\Object
             $query += $this->options['query'] + $source;
             $query['page'] = '__page__';
 
-            $this->uri = LibURL::link('?' . LibURL::query($query));
+            $this->url = LibURL::link('?' . LibURL::query($query));
 
         } else {
-            $this->uri = LibURL::link($query);
+            $this->url = LibURL::link($query);
 
             $query = $this->options['query'] + $source;
             $query['page'] = '__page__';
 
             //unset($query[0], $query[1]);
 
-            $this->uri .= '?' . LibURL::query($query);
+            $this->url .= '?' . LibURL::query($query);
         }
     }
 
@@ -82,9 +80,9 @@ class Pagination extends \Parith\Object
      * @param $page
      * @return string
      */
-    public function uri($page)
+    public function link($page)
     {
-        return str_replace('__page__', $page, $this->uri);
+        return str_replace('__page__', $page, $this->url);
     }
 
     /**
@@ -105,7 +103,7 @@ class Pagination extends \Parith\Object
     public function previous()
     {
         if ($this->current > 1)
-            return static::tag($this->uri($this->current - 1), $this->options['prev_text']);
+            return static::tag($this->link($this->current - 1), $this->options['prev_text']);
 
         return static::tag('javascript:;', $this->options['prev_text'], array('class' => 'disabled'));
     }
@@ -116,7 +114,7 @@ class Pagination extends \Parith\Object
     public function next()
     {
         if ($this->total > 1 && $this->current < $this->total)
-            return static::tag($this->uri($this->current + 1), $this->options['next_text']);
+            return static::tag($this->link($this->current + 1), $this->options['next_text']);
 
         return static::tag('javascript:;', $this->options['next_text'], array('class' => 'disabled'));
     }
@@ -127,7 +125,7 @@ class Pagination extends \Parith\Object
     public function first()
     {
         if ($this->current > $this->links + 1) {
-            return static::tag($this->uri(1), 1) . static::dots();
+            return static::tag($this->link(1), 1) . static::dots();
         }
 
         return '';
@@ -144,7 +142,7 @@ class Pagination extends \Parith\Object
     public function last()
     {
         if ($this->current + $this->links < $this->total)
-            return static::dots() . static::tag($this->uri($this->total), $this->total);
+            return static::dots() . static::tag($this->link($this->total), $this->total);
 
         return '';
     }
@@ -185,7 +183,7 @@ class Pagination extends \Parith\Object
                 $page = 'javascript:;';
             } else {
                 $attributes = array();
-                $page = $this->uri($i);
+                $page = $this->link($i);
             }
 
             $html .= static::tag($page, $i, $attributes);

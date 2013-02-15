@@ -9,7 +9,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -91,26 +90,26 @@ abstract class Model extends \Parith\Result
     /**
      * @static
      * @param string $name
-     * @param array $arguments
+     * @param array $args
      * @return bool|mixed
      */
-    public static function __callStatic($name, $arguments)
+    public static function __callStatic($name, $args)
     {
         if (isset(static::$method_alias[$name]))
-            return \call_user_func_array(array(parent::factory(), static::$method_alias[$name]), $arguments);
+            return \call_user_func_array(array(parent::factory(), static::$method_alias[$name]), $args);
 
         return false;
     }
 
     /**
      * @param $name
-     * @param $arguments
+     * @param $args
      * @return bool|mixed
      */
-    public function __call($name, $arguments)
+    public function __call($name, $args)
     {
         if (isset(static::$method_alias[$name]))
-            return \call_user_func_array(array(parent::factory(), static::$method_alias[$name]), $arguments);
+            return \call_user_func_array(array(parent::factory(), static::$method_alias[$name]), $args);
 
         return false;
     }

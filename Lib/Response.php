@@ -9,7 +9,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -81,12 +80,12 @@ class Response extends \Parith\Object
 
     /**
      * @static
-     * @param string $uri
+     * @param string $url
      * @param int $status_code
      */
-    public static function redirect($uri = '', $status_code = 302)
+    public static function redirect($url = '', $status_code = 302)
     {
-        \headers_sent() or \header('Location: ' . $uri, true, $status_code);
+        \headers_sent() or \header('Location: ' . $url, true, $status_code);
         exit(1);
     }
 

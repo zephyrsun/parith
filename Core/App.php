@@ -12,7 +12,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -24,7 +23,7 @@ class App
     public static $replace_src = array()
     , $replace_dst = array()
     , $is_cli = false
-    , $uri_query = array()
+    , $query = array()
     , $options = array();
 
     /**
@@ -116,7 +115,7 @@ class App
      */
     public static function invoke($params)
     {
-        self::$uri_query = $params;
+        self::$query = $params;
         return self::getController($params[0])->$params[1]();
     }
 
@@ -194,7 +193,6 @@ class App
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 class Router
@@ -207,17 +205,17 @@ class Router
     );
 
     /**
-     * @param string $uri
+     * @param string $url
      * @param array $options
      * @return array
      */
-    public static function parse($uri = '', array $options = array())
+    public static function parse($url = '', array $options = array())
     {
         $options = App::getOption('router', $options) + self::$options;
 
-        if ($uri) {
-            $uri = explode('?', $uri, 2);
-            $arr = self::parseUri(trim($uri[0], '/'), $options) + $options['values']; // + $arr
+        if ($url) {
+            $url = explode('?', $url, 2);
+            $arr = self::parseURL(trim($url[0], '/'), $options) + $options['values']; // + $arr
 
             //$c = $arr[0];
             //  $a = $arr[1];
@@ -238,20 +236,20 @@ class Router
     }
 
     /**
-     * @param $uri
+     * @param $url
      * @param $options
      * @return array
      */
-    public static function parseUri($uri, $options)
+    public static function parseURL($url, $options)
     {
         foreach ($options['rules'] as $key => $val) {
-            $r = \preg_replace('/^' . $key . '$/i', $val, $uri, -1, $n);
+            $r = \preg_replace('/^' . $key . '$/i', $val, $url, -1, $n);
             if ($n) {
-                $uri = $r;
+                $url = $r;
                 break;
             }
         }
 
-        return \explode($options['delimiter'], $uri);
+        return \explode($options['delimiter'], $url);
     }
 }

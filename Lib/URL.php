@@ -11,7 +11,6 @@
  * @author Zephyr Sun
  * @copyright 2009-2012 Zephyr Sun
  * @license http://www.parith.net/license
- * @version 0.3
  * @link http://www.parith.net/
  */
 
@@ -47,21 +46,21 @@ class URL
 
     /**
      * @static
-     * @param string $uri
+     * @param string $url
      * @return string
      */
-    public static function link($uri = '')
+    public static function link($url = '')
     {
-        if ($uri) {
-            $uri = trim($uri, '/');
+        if ($url) {
+            $url = trim($url, '/');
 
-            \Parith\Lib\Char::isAscii($uri) or $uri = rawurlencode($uri);
+            \Parith\Lib\Char::isAscii($url) or $url = rawurlencode($url);
 
-        } elseif ($uri === '') {
-            $uri = implode('/', \Parith\App::$uri_query);
+        } elseif ($url === '') {
+            $url = implode('/', \Parith\App::$query);
         }
 
-        return static::base() . $uri;
+        return static::base() . $url;
     }
 
     /**
