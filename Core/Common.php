@@ -7,7 +7,7 @@
  *
  * @package Parith
  * @author Zephyr Sun
- * @copyright 2009-2012 Zephyr Sun
+ * @copyright 2009-2013 Zephyr Sun
  * @license http://www.parith.net/license
  * @link http://www.parith.net/
  */
@@ -65,7 +65,7 @@ abstract class Object
  *
  * @package Parith
  * @author Zephyr Sun
- * @copyright 2009-2012 Zephyr Sun
+ * @copyright 2009-2013 Zephyr Sun
  * @license http://www.parith.net/license
  * @link http://www.parith.net/
  */
@@ -216,7 +216,7 @@ abstract class Arr
  *
  * @package Parith
  * @author Zephyr Sun
- * @copyright 2009-2012 Zephyr Sun
+ * @copyright 2009-2013 Zephyr Sun
  * @license http://www.parith.net/license
  * @link http://www.parith.net/
  */
