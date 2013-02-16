@@ -200,8 +200,8 @@ class Router
     public static $options = array(
         'delimiter' => '/',
         'rules' => array(),
-        'keys' => array('controller', 'action'),
-        'values' => array('Index', 'index'),
+        'accept' => array('controller', 'action'),
+        'default' => array('Index', 'index'),
     );
 
     /**
@@ -215,7 +215,7 @@ class Router
 
         if ($url) {
             $url = explode('?', $url, 2);
-            $arr = self::parseURL(trim($url[0], '/'), $options) + $options['values']; // + $arr
+            $arr = self::parseURL(trim($url[0], '/'), $options) + $options['default']; // + $arr
 
             //$c = $arr[0];
             //  $a = $arr[1];
@@ -229,8 +229,8 @@ class Router
 
         $arr = $_GET;
 
-        $c = &$arr[$options['keys'][0]] or $c = $options['values'][0];
-        $a = &$arr[$options['keys'][1]] or $a = $options['values'][1];
+        $c = &$arr[$options['accept'][0]] or $c = $options['default'][0];
+        $a = &$arr[$options['accept'][1]] or $a = $options['default'][1];
 
         return array(\ucfirst($c), $a);
     }

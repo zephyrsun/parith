@@ -34,7 +34,7 @@ Your directory structure could be:
 
 if you use PHP below 5.3.3, can reference here:
 
-    \Parith\App::setOption('router', array('values' => array('Home', 'index')));
+    \Parith\App::setOption('router', array('default' => array('Home', 'index')));
 
     \Parith\App::run(__DIR__ . '/App');
 
