@@ -14,7 +14,7 @@
 
 namespace Parith;
 
-abstract class Controller
+abstract class Basic
 {
     /**
      * @param $name

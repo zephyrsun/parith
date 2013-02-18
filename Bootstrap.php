@@ -21,4 +21,4 @@ require PARITH_DIR . 'Core/Common.php';
 require PARITH_DIR . 'Core/Monitor.php';
 require PARITH_DIR . 'Core/Result.php';
 require PARITH_DIR . 'Core/App.php';
-require PARITH_DIR . 'Controller/Controller.php';
+require PARITH_DIR . 'Controller/Basic.php';
