@@ -38,13 +38,9 @@ class Error extends \Parith\Basic
     public function index()
     {
         $text = $this->getText();
-        if (\Parith\App::$is_cli) {
-            $this->cli($text);
-        }
-        else {
-            static::httpStatus($this->exception->getCode());
-            $this->web($text);
-        }
+
+        $this->httpStatus($this->exception->getCode());
+        $this->web($text);
     }
 
     /**
@@ -71,7 +67,7 @@ class Error extends \Parith\Basic
      * @param int $code
      * @return bool
      */
-    public static function httpStatus($code)
+    public function httpStatus($code)
     {
         return \Parith\Lib\Response::httpStatus($code);
     }

@@ -14,6 +14,8 @@
 
 namespace Parith\Cache;
 
+use \Parith\Lib\File as LFile;
+
 class File extends Cache
 {
     public $options = array(
@@ -55,7 +57,7 @@ class File extends Cache
      */
     public function set($name, $val)
     {
-        return \Parith\Lib\File::touch($this->filename($name), $val);
+        return LFile::touch($this->filename($name), $val);
     }
 
     /**
@@ -64,7 +66,7 @@ class File extends Cache
      */
     public function delete($name)
     {
-        return \Parith\Lib\File::rm($this->filename($name));
+        return LFile::rm($this->filename($name));
     }
 
     /**
@@ -72,7 +74,7 @@ class File extends Cache
      */
     public function flush()
     {
-        return \Parith\Lib\File::rm($this->options['dir']);
+        return LFile::rm($this->options['dir']);
     }
 
     /**
