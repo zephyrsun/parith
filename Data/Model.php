@@ -78,9 +78,10 @@ abstract class Model extends \Parith\Result
      * }
      *
      * @param $connection
+     * @param array $query
      * @return mixed
      */
-    abstract public function connection($connection);
+    abstract public function connection($connection, $query = array());
 
     public function __construct()
     {

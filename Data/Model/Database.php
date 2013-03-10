@@ -26,7 +26,7 @@ class Database extends \Parith\Data\Model
         $this->options[':group'] = '';
     }
 
-    public function connection($options)
+    public function connection($options, $query = array())
     {
         return $this->ds = \Parith\Data\Source\Database::connection($options);
     }
@@ -44,6 +44,18 @@ class Database extends \Parith\Data\Model
 
     /**
      * @param $query
+     * @param null $connection
+     * @return mixed
+     */
+    public function query($query, $connection = null)
+    {
+        $this->connection($connection, $query);
+
+        return $this->ds->query($query);
+    }
+
+    /**
+     * @param $query
      *          - 1 // means find $primary_key = 1
      *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
      * @param mixed $connection
@@ -52,7 +64,7 @@ class Database extends \Parith\Data\Model
      */
     public function fetch($query, $connection = null, $mode = 0)
     {
-        $this->connection($connection);
+        $this->connection($connection, $query);
 
         $this->getFetchQuery($query);
 
@@ -72,7 +84,7 @@ class Database extends \Parith\Data\Model
      */
     public function fetchAll($query, $connection = null, $mode = 0)
     {
-        $this->connection($connection);
+        $this->connection($connection, $query);
 
         $this->getFetchQuery($query);
 
@@ -150,7 +162,7 @@ class Database extends \Parith\Data\Model
     {
         $query = $this->formatQuery($query);
 
-        $this->connection($connection);
+        $this->connection($connection, $data);
 
         return $this->ds->table($this->source($query[':source'], $data))->insert($data, $modifier);
     }
@@ -165,15 +177,17 @@ class Database extends \Parith\Data\Model
     {
         $data = $this->resultSet($data);
 
-        $this->connection($connection);
+        $id = $this->resultGet($this->primary_key);
+        if ($id) {
+            $query = $this->formatQuery($query);
 
-        $query = $this->formatQuery($query);
+            $this->connection($connection, $data);
 
-        $this->ds->table($this->source($query[':source'], $data));
-
-        $primary_value = $this->resultGet($this->primary_key);
-        if ($primary_value)
-            return $this->ds->where($this->primary_key, $primary_value)->update($data);
+            return $this->ds
+                ->table($this->source($query[':source'], $data))
+                ->where($this->primary_key, $id)
+                ->update($data);
+        }
 
         return $this->ds->insert($data);
     }
@@ -190,9 +204,9 @@ class Database extends \Parith\Data\Model
         else
             $query = array($this->primary_key => $this->resultGet($this->primary_key));
 
-        $query = $this->formatQuery($query);
+        $this->connection($connection, $query);
 
-        $this->connection($connection);
+        $query = $this->formatQuery($query);
 
         return $this->ds->table($this->source($query[':source'], $query))->delete();
     }
