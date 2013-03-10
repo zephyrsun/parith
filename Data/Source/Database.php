@@ -22,6 +22,7 @@ class Database extends \Parith\Data\Source
         MODIFIER_REPLACE = 'REPLACE INTO';
 
     public $sth, $clauses = array(), $params = array();
+    private $_p = 0;
 
     public static $options = array(
         'driver' => 'mysql',
@@ -94,6 +95,8 @@ class Database extends \Parith\Data\Source
 
         $this->params = array();
 
+        $this->_p = 0;
+
         return $this;
     }
 
@@ -135,13 +138,16 @@ class Database extends \Parith\Data\Source
      */
     public function where($field, $operator, $value = '', $glue = 'AND')
     {
+        $p = $this->_placeholder();
+
         if ($value) {
-            $operator .= ' ?';
+            $operator .= ' ' . $p;
         } else {
             $value = $operator;
-            if (strpos($field, '?') === false)
-                $operator = '= ?';
-            else
+            if (strpos($field, '?') === false) {
+                $operator = '=' . $p;
+                $field = "`$field`";
+            } else
                 $operator = '';
         }
 
@@ -150,7 +156,7 @@ class Database extends \Parith\Data\Source
         if (is_array($value))
             $this->params = array_merge($this->params, $value);
         else
-            $this->params[] = $value;
+            $this->params[$p] = $value;
 
         return $this;
     }
@@ -249,9 +255,12 @@ class Database extends \Parith\Data\Source
     {
         $update = $glue = '';
         foreach ($data as $col => $val) {
-            $update .= $glue . '`' . $col . '`= ?';
 
-            $this->params[] = $val;
+            $p = $this->_placeholder();
+
+            $update .= $glue . '`' . $col . '`=' . $p;
+
+            $this->params[$p] = $val;
 
             $glue = ', ';
         }
@@ -270,11 +279,14 @@ class Database extends \Parith\Data\Source
     {
         $col = $value = $glue = '';
         foreach ($data as $k => $v) {
+
+            $p = $this->_placeholder();
+
             $col .= $glue . '`' . $k . '`';
 
-            $value .= $glue . '?';
+            $value .= $glue . $p;
 
-            $this->params[] = $v;
+            $this->params[$p] = $v;
 
             $glue = ', ';
         }
@@ -291,6 +303,11 @@ class Database extends \Parith\Data\Source
     {
         $this->query('DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';');
         return $this->rowCount();
+    }
+
+    private function _placeholder()
+    {
+        return ':p' . ++$this->_p;
     }
 
     /**
@@ -414,5 +431,10 @@ class Database extends \Parith\Data\Source
     {
         $this->link = null;
         return $this;
+    }
+
+    public function __destruct()
+    {
+        $this->close();
     }
 }

@@ -92,7 +92,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function getCompress()
     {
-        $ret = &$this->_compress;
+        $ret = & $this->_compress;
         return $ret; // ? \MEMCACHE_COMPRESSED : 0;
     }
 
@@ -189,5 +189,10 @@ class Memcache extends \Parith\Data\Source
             $this->ds->close();
 
         return $this;
+    }
+
+    public function __destruct()
+    {
+        $this->close();
     }
 }
