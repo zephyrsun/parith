@@ -37,6 +37,29 @@ class Validator extends \Parith\Object
             $this->data = $_POST;
     }
 
+    public function check(array $params)
+    {
+        foreach ($params as $method => $args) {
+            $ret = $this->$method($args);
+
+            if (!$ret) {
+                if (is_array($args))
+                    $this->_last_bad = $args[0];
+                else
+                    $this->_last_bad = $args;
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function getLastBad()
+    {
+        return $this->_last_bad;
+    }
+
     /**
      *
      * @param $name
@@ -52,8 +75,6 @@ class Validator extends \Parith\Object
             $args[0] = $this->data[$args[0]];
             return \call_user_func_array(array($this, $name), $args);
         }
-
-        throw new \Parith\Exception('Method "' . $name . '" not found', 404);
 
         return false;
     }
