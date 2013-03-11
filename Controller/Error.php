@@ -37,30 +37,26 @@ class Error extends \Parith\Basic
      */
     public function index()
     {
-        $text = $this->getText();
-
         $this->httpStatus($this->exception->getCode());
-        $this->web($text);
+        $this->web();
     }
 
     /**
-     * @param string $text
      * @return void
      */
-    public function web($text = 'error')
+    public function web()
     {
         echo '<pre>';
-        $this->cli($text);
+        $this->cli();
         echo '</pre>';
     }
 
     /**
-     * @param string $text
      * @return void
      */
-    public function cli($text = 'error')
+    public function cli()
     {
-        echo PHP_EOL . $text . PHP_EOL . $this->exception->getTraceAsString() . PHP_EOL;
+        echo PHP_EOL . $this->getText() . PHP_EOL . $this->exception->getTraceAsString() . PHP_EOL;
     }
 
     /**
