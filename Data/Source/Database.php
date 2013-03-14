@@ -293,7 +293,15 @@ class Database extends \Parith\Data\Source
 
         $modifier or $modifier = self::MODIFIER_INSERT;
 
-        return $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . $col . ') VALUES (' . $value . ');');
+        $ret = $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . $col . ') VALUES (' . $value . ');');
+
+        if ($ret) {
+            $id = $this->lastInsertId();
+            if ($id)
+                return $id;
+        }
+
+        return $ret;
     }
 
     /**
