@@ -62,7 +62,7 @@ abstract class Result extends \Parith\Object implements \Iterator, \ArrayAccess,
     /**
      * @param $key
      * @param mixed $val
-     * @return Result
+     * @return Array
      */
     public function resultSet($key, $val = null)
     {
