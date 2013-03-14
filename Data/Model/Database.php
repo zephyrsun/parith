@@ -76,7 +76,7 @@ class Database extends \Parith\Data\Model
     /**
      * @param $query
      *          - 1 // means find $primary_key = 1
-     *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
+     *          - array('id' => array('<', 6), ':limit' => 5)
      *
      * @param mixed $connection
      * @param int|array $mode
@@ -109,7 +109,7 @@ class Database extends \Parith\Data\Model
      */
     public function getFetchQuery($query)
     {
-        is_array($query) or $query = array($this->primary_key => $query);
+        $query = $this->_resultQuery($query);
 
         $this->last_fetch_query = $query = $this->formatQuery($query);
 
@@ -160,9 +160,9 @@ class Database extends \Parith\Data\Model
      */
     public function insert(array $data, array $query = array(), $connection = null, $modifier = null)
     {
-        $query = $this->formatQuery($query);
-
         $this->connection($connection, $data);
+
+        $query = $this->formatQuery($query);
 
         return $this->ds->table($this->source($query[':source'], $data))->insert($data, $modifier);
     }
@@ -173,23 +173,18 @@ class Database extends \Parith\Data\Model
      * @param null $connection
      * @return mixed
      */
-    public function save(array $data = array(), array $query = array(), $connection = null)
+    public function update(array $data = array(), array $query = array(), $connection = null)
     {
         $data = $this->resultSet($data);
 
-        $id = $this->resultGet($this->primary_key);
-        if ($id) {
-            $query = $this->formatQuery($query);
+        foreach ((array)$this->primary_key as $k)
+            $query[$k] = $this->resultGet($k);
 
-            $this->connection($connection, $data);
+        $this->connection($connection, $data);
 
-            return $this->ds
-                ->table($this->source($query[':source'], $data))
-                ->where($this->primary_key, $id)
-                ->update($data);
-        }
+        $query = $this->formatQuery($query);
 
-        return $this->ds->insert($data);
+        return $this->ds->table($this->source($query[':source'], $data))->update($data);
     }
 
     /**
@@ -199,10 +194,7 @@ class Database extends \Parith\Data\Model
      */
     public function delete($query = array(), $connection = null)
     {
-        if ($query)
-            is_array($query) or $query = array($this->primary_key => $query);
-        else
-            $query = array($this->primary_key => $this->resultGet($this->primary_key));
+        $query = $this->_resultQuery($query);
 
         $this->connection($connection, $query);
 
@@ -261,5 +253,17 @@ class Database extends \Parith\Data\Model
         }
 
         return $ret;
+    }
+
+    private function _resultQuery($query)
+    {
+        if ($query) {
+            if (is_array($query))
+                $query = $this->resultSet($query);
+            else
+                $query = $this->resultSet($this->primary_key, $query);
+        }
+
+        return $query;
     }
 }

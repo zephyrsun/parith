@@ -45,7 +45,7 @@ abstract class Model extends \Parith\Result
         'find' => 'fetch',
         'findAll' => 'fetchAll',
         'create' => 'insert',
-        'update' => 'save',
+        'modify' => 'update',
         'remove' => 'delete',
     )
     , $model_dir = '';
@@ -60,7 +60,7 @@ abstract class Model extends \Parith\Result
 
     abstract public function insert(array $data, array $query = array(), $connection = null);
 
-    abstract public function save(array $data = array(), array $query = array(), $connection = null);
+    abstract public function update(array $data = array(), array $query = array(), $connection = null);
 
     abstract public function delete($query = array(), $connection = null);
 
