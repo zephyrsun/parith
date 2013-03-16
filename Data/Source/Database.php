@@ -22,7 +22,6 @@ class Database extends \Parith\Data\Source
         MODIFIER_REPLACE = 'REPLACE INTO';
 
     public $sth, $clauses = array(), $params = array();
-    private $_p = 0;
 
     public static $options = array(
         'driver' => 'mysql',
@@ -95,8 +94,6 @@ class Database extends \Parith\Data\Source
 
         $this->params = array();
 
-        $this->_p = 0;
-
         return $this;
     }
 
@@ -138,16 +135,13 @@ class Database extends \Parith\Data\Source
      */
     public function where($field, $operator, $value = '', $glue = 'AND')
     {
-        $p = $this->_placeholder();
-
         if ($value) {
-            $operator .= ' ' . $p;
+            $operator .= ' ?';
         } else {
             $value = $operator;
-            if (strpos($field, '?') === false) {
-                $operator = '=' . $p;
-                $field = "`$field`";
-            } else
+            if (strpos($field, '?') === false)
+                $operator = '= ?';
+            else
                 $operator = '';
         }
 
@@ -156,7 +150,7 @@ class Database extends \Parith\Data\Source
         if (is_array($value))
             $this->params = array_merge($this->params, $value);
         else
-            $this->params[$p] = $value;
+            $this->params[] = $value;
 
         return $this;
     }
@@ -253,19 +247,16 @@ class Database extends \Parith\Data\Source
      */
     public function update(array $data)
     {
-        $update = $glue = '';
+        $value = $params = array();
         foreach ($data as $col => $val) {
-
-            $p = $this->_placeholder();
-
-            $update .= $glue . '`' . $col . '`=' . $p;
-
-            $this->params[$p] = $val;
-
-            $glue = ', ';
+            $value[] = '`' . $col . '`= ?';
+            $params[] = $val;
         }
 
-        $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . $update . $this->clauses['where'] . ';');
+        // adjust order
+        $this->params = array_merge($params, $this->params);
+
+        $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . \implode(', ', $value) . $this->clauses['where'] . ';');
 
         return $this->rowCount();
     }
@@ -277,23 +268,18 @@ class Database extends \Parith\Data\Source
      */
     public function insert(array $data, $modifier = null)
     {
-        $col = $value = $glue = '';
+        $col = $value = array();
         foreach ($data as $k => $v) {
+            $col[] = '`' . $k . '`';
 
-            $p = $this->_placeholder();
+            $value[] = '?';
 
-            $col .= $glue . '`' . $k . '`';
-
-            $value .= $glue . $p;
-
-            $this->params[$p] = $v;
-
-            $glue = ', ';
+            $this->params[] = $v;
         }
 
         $modifier or $modifier = self::MODIFIER_INSERT;
 
-        $ret = $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . $col . ') VALUES (' . $value . ');');
+        $ret = $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');');
 
         if ($ret) {
             $id = $this->lastInsertId();
@@ -311,11 +297,6 @@ class Database extends \Parith\Data\Source
     {
         $this->query('DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';');
         return $this->rowCount();
-    }
-
-    private function _placeholder()
-    {
-        return ':p' . ++$this->_p;
     }
 
     /**
