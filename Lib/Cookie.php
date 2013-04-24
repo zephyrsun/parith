@@ -31,7 +31,7 @@ class Cookie extends \Parith\Object
     public function __construct(array $options = array())
     {
         $this->options = \Parith\App::getOption('cookie', $options) + $this->options;
-        if ($this->options['hash_object'])
+        if ($this->options['handler'])
             $this->handler = $this->options['handler']; //new \Parith\Lib\XXTEA($key)
     }
 
