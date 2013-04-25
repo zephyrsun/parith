@@ -27,24 +27,22 @@ class App
     , $options = array();
 
     /**
-     * @static
      * @param $app_dir
-     * @return mixed
+     * @param array $options
      */
-    public static function run($app_dir)
+    public static function run($app_dir, array $options = array())
     {
-        self::init($app_dir);
+        self::init($app_dir, $options);
 
-        return self::invoke(Router::parse(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF'])));
+        self::invoke(Router::parse(isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF'])));
     }
 
     /**
-     * @static
      * @param $app_dir
-     * @return mixed
+     * @param array $options
      * @throws Exception
      */
-    public static function cli($app_dir)
+    public static function cli($app_dir, array $options = array())
     {
         $argv = $_SERVER['argv'];
 
@@ -63,17 +61,19 @@ class App
 
         self::$is_cli = true;
 
-        self::init($app_dir);
+        self::init($app_dir, $options);
 
-        return self::invoke(Router::parse($argv[0]));
+        self::invoke(Router::parse($argv[0]));
     }
 
     /**
-     * @static
-     *
+     * @param $app_dir
+     * @param array $options
      */
-    public static function init($app_dir)
+    public static function init($app_dir, array $options = array())
     {
+        self::setOption($options);
+
         \define('APP_DIR', $app_dir . DIRECTORY_SEPARATOR);
         \define('APP_NS', basename(APP_DIR) . '\\');
         // now time
@@ -120,9 +120,8 @@ class App
     }
 
     /**
-     * @static
      * @param $name
-     * @return bool|mixed
+     * @return bool|object
      * @throws Exception
      */
     public static function getController($name)
