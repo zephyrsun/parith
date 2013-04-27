@@ -33,7 +33,7 @@ class App
     {
         self::init($app_dir);
 
-        self::invoke(\Parith\Router::parse(self::getPathInfo()));
+        self::dispatch(self::getPathInfo());
     }
 
     /**
@@ -72,7 +72,7 @@ class App
 
         self::init($app_dir);
 
-        self::invoke(Router::parse($argv[0]));
+        self::dispatch($argv[0]);
     }
 
     /**
@@ -116,12 +116,12 @@ class App
 
     /**
      * @static
-     * @param $params
+     * @param string $url
      * @return mixed
      */
-    public static function invoke($params)
+    public static function dispatch($url)
     {
-        self::$query = $params;
+        self::$query = $params = Router::parse($url);
         return self::getController($params[0])->$params[1]();
     }
 
