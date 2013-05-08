@@ -79,7 +79,7 @@ class Request extends \Parith\Object
      */
     public static function isFlash()
     {
-        return true === \preg_match('/^(Shockwave|Adobe) Flash/', $_SERVER['HTTP_USER_AGENT']);
+        return (bool)\preg_match('/^(Shockwave|Adobe) Flash/', $_SERVER['HTTP_USER_AGENT']);
     }
 
     /**
@@ -96,7 +96,7 @@ class Request extends \Parith\Object
     public static function isMobile()
     {
         static $ua = '(iPhone|iPod|MIDP|AvantGo|BlackBerry|J2ME|Opera Mini|DoCoMo|NetFront|Nokia|PalmOS|PalmSource|portalmmm|Plucker|ReqwirelessWeb|SonyEricsson|Symbian|UP\.Browser|Windows CE|Xiino)';
-        return true === \preg_match('/' . $ua . '/i', $_SERVER['HTTP_USER_AGENT'], $match);
+        return (bool)\preg_match('/' . $ua . '/i', $_SERVER['HTTP_USER_AGENT'], $match);
     }
 
     /**
@@ -109,11 +109,9 @@ class Request extends \Parith\Object
         if (isset($env['HTTP_X_FORWARDED_FOR'])) {
             $ips = \explode(',', $env['HTTP_X_FORWARDED_FOR'], 1);
             return $ips[0];
-        } elseif (isset($env['HTTP_CLIENT_IP']))
-        {
+        } elseif (isset($env['HTTP_CLIENT_IP'])) {
             return $env['HTTP_CLIENT_IP'];
-        } elseif (isset($env['REMOTE_ADDR']))
-        {
+        } elseif (isset($env['REMOTE_ADDR'])) {
             return $env['REMOTE_ADDR'];
         }
 
