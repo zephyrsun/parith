@@ -46,6 +46,16 @@ class XXTEA extends \Parith\Object
         return $this;
     }
 
+    public function encode($val)
+    {
+        return $this->encrypt(\Parith\String::encode($val));
+    }
+
+    public function decode($val)
+    {
+        return \Parith\String::decode($this->decrypt($val));
+    }
+
     /**
      * @param $val
      * @return array|string

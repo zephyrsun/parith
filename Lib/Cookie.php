@@ -20,7 +20,8 @@ class Cookie extends \Parith\Object
         'expire' => 7200,
         'path' => '/',
         'domain' => '',
-        'handler' => null, //must be an Object
+        'handler' => '\Parith\Lib\CookieHandler',
+        'handler_key' => null
     )
     , $handler;
 
@@ -31,8 +32,9 @@ class Cookie extends \Parith\Object
     public function __construct(array $options = array())
     {
         $this->options = \Parith\App::getOption('cookie', $options) + $this->options;
+
         if ($this->options['handler'])
-            $this->handler = $this->options['handler']; //new \Parith\Lib\XXTEA($key)
+            $this->handler = new $this->options['handler']($this->options['handler_key']);
     }
 
     /**
@@ -45,7 +47,7 @@ class Cookie extends \Parith\Object
             $ret = $_COOKIE[$key];
 
             if ($this->handler)
-                return \Parith\String::decode($this->handler->decrypt($ret));
+                return $this->handler->decode($ret);
 
             return $ret;
         }
@@ -62,7 +64,7 @@ class Cookie extends \Parith\Object
     public function set($key, $val, $expire = 0)
     {
         if ($this->handler)
-            $val = $this->handler->encrypt(\Parith\String::encode($val));
+            $val = $this->handler->encode($val);
 
         if ($expire > 0)
             $expire += APP_TS;
@@ -74,7 +76,7 @@ class Cookie extends \Parith\Object
         if ($ret === false)
             return $ret;
 
-        $_COOKIE[$key] = $val;
+        //$_COOKIE[$key] = $val;
         return true;
     }
 
@@ -94,5 +96,51 @@ class Cookie extends \Parith\Object
     {
         foreach ($_COOKIE as $key => $val)
             $this->delete($key);
+    }
+}
+
+class CookieHandler
+{
+    protected $key = 0, $key_length = 0;
+
+    public function __construct($key = '')
+    {
+        if ($key)
+            $this->setKey($key);
+    }
+
+    public function setKey($key)
+    {
+        $new_key = 0;
+        $length = strlen($key);
+        for ($i = 0; $i < $length; $i++) {
+            $new_key += \ord($key[$i]);
+        }
+
+        $this->key = $new_key;
+        $this->key_length = strlen(\ord('/') ^ $this->key);
+    }
+
+    public function encode($val)
+    {
+        $val = \Parith\String::encode($val);
+
+        $ret = '';
+        $length = strlen($val);
+        for ($i = 0; $i < $length; $i++) {
+            $ret .= sprintf('%0' . $this->key_length . 'd', \ord($val[$i]) ^ $this->key);
+        };
+
+        return $ret;
+    }
+
+    public function decode($val)
+    {
+        $ret = '';
+        foreach (\str_split($val, $this->key_length) as $v) {
+            $ret .= chr($v ^ $this->key);
+        }
+
+        return \Parith\String::decode($ret);
     }
 }
