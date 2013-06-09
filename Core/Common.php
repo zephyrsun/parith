@@ -36,7 +36,7 @@ abstract class Object
      * @param null $key
      * @return mixed
      */
-    public static function getInstance($class, $args, $key = null)
+    public static function getInstance($class, $args = array(), $key = null)
     {
         $key or $key = $class;
         $obj = & self::$_instances[$key];

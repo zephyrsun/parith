@@ -58,6 +58,7 @@ class Database extends \Parith\Data\Model
      * @param $query
      *          - 1 // means find $primary_key = 1
      *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
+     *          - ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
      * @param mixed $connection
      * @param int|array $mode
      * @return mixed
@@ -74,10 +75,9 @@ class Database extends \Parith\Data\Model
     }
 
     /**
-     * @param $query
-     *          - 1 // means find $primary_key = 1
-     *          - array('id' => array('<', 6), ':limit' => 5)
+     * params see fetch()
      *
+     * @param $query
      * @param mixed $connection
      * @param int|array $mode
      * @return mixed
@@ -93,6 +93,13 @@ class Database extends \Parith\Data\Model
         return $this->ds->fetchAll($mode);
     }
 
+    /**
+     * params see fetch()
+     *
+     * @param $query
+     * @param $connection
+     * @return mixed
+     */
     public function fetchCount($query = null, $connection = null)
     {
         $query or $query = $this->last_fetch_query;
@@ -154,6 +161,7 @@ class Database extends \Parith\Data\Model
     /**
      * @param array $data
      * @param array $query
+     *              - see fetch()
      * @param null $connection
      * @param null $modifier
      * @return mixed
@@ -170,6 +178,7 @@ class Database extends \Parith\Data\Model
     /**
      * @param $data
      * @param array $query
+     *              - see fetch()
      * @param null $connection
      * @return mixed
      */
@@ -189,6 +198,7 @@ class Database extends \Parith\Data\Model
 
     /**
      * @param array $query
+     *              - see fetch()
      * @param null $connection
      * @return mixed
      */
