@@ -44,7 +44,6 @@ class Database extends \Parith\Data\Source
     public function __construct(array $options = array())
     {
         parent::__construct($options);
-
         $this->initial();
     }
 
