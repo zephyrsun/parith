@@ -5,13 +5,13 @@ return array(
         'default' => array('Index', 'index'),
     ),
     'database' => array(
-        'host' => '192.168.110.21',
-        'port' => 3315,
-        'username' => 'yunying',
-        'password' => 'yunying.passwd',
+        'host' => '127.0.0.1',
+        'port' => 3306,
+        'username' => 'root',
+        'password' => '123456',
     ),
     'memcache' => array(
-        'host' => '192.168.110.96',
-        'port' => 21101,
+        'host' => '127.0.0.1',
+        'port' => 11211,
     ),
 );
