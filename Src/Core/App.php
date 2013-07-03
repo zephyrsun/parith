@@ -20,8 +20,8 @@ namespace Parith;
 
 class App
 {
-    public static $replace_src = array()
-    , $replace_dst = array()
+    public static
+        $tr_pairs = array()
     , $is_cli = false
     , $query = array()
     , $options = array();
@@ -85,8 +85,7 @@ class App
         // now time
         define('APP_TS', \time());
 
-        self::$replace_src = array(APP_NS, 'Parith\\', '\\');
-        self::$replace_dst = array(APP_DIR, PARITH_DIR, DIRECTORY_SEPARATOR);
+        self::$tr_pairs = array(APP_NS => APP_DIR, 'Parith\\' => PARITH_DIR, '\\' => DIRECTORY_SEPARATOR);
 
         // timezone setup
         //\date_default_timezone_set(self::$options['app']['timezone']);
@@ -168,8 +167,7 @@ class App
      */
     public static function parseName($name)
     {
-        return str_replace(self::$replace_src, self::$replace_dst, $name);
-        // return \strtr($name, self::$tr_pairs);
+        return \strtr($name, self::$tr_pairs);
     }
 
     /**

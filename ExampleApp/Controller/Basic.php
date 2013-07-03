@@ -16,7 +16,8 @@ class Basic extends \Parith\Basic
         echo '<p>Hello, I am Basic::beforeAction().Remove Me, never mind.</p>';
     }
 
-    public function __destruct(){
+    public function __destruct()
+    {
         $this->afterAction();
     }
 

@@ -9,8 +9,8 @@ class Index extends Basic
     {
         echo '<p>Hello, I am Index::index().</p>';
 
-        $view_lib = \Parith\View\Template::factory();
-        //$view_lib = new \Parith\View\Template();
+        //$view_lib = \Parith\View\Template::factory();
+        $view_lib = new \Parith\View\Template();
         $view_lib->resultSet(array(
             'view_hello'=>'<p>I am just a parameter for View\Template</p>'
         ));
