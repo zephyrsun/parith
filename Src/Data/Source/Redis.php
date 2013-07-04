@@ -24,7 +24,7 @@ class Redis extends \Parith\Data\Source
 
     public function __construct(array $options = array())
     {
-        $this->ds = new \Redis();
+        $this->link = new \Redis();
         parent::__construct($options);
     }
 
@@ -37,8 +37,8 @@ class Redis extends \Parith\Data\Source
     {
         $options = static::option($options);
 
-        $this->link = $this->ds->connect($options['host'], $options['port'], $options['timeout']);
-        if ($this->link === false)
+        $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
+        if ($this->connected === false)
             throw new \Parith\Exception('Redis could not connect to ' . $options['host'] . ':' . $options['port']);
 
         return $this;
@@ -51,7 +51,7 @@ class Redis extends \Parith\Data\Source
      */
     public function __call($method, $args)
     {
-        return \call_user_func_array(array($this->ds, $method), $args);
+        return \call_user_func_array(array($this->link, $method), $args);
     }
 
     /**
@@ -59,8 +59,8 @@ class Redis extends \Parith\Data\Source
      */
     public function close()
     {
-        if ($this->link)
-            $this->ds->close();
+        if ($this->connected)
+            $this->link->close();
 
         return $this;
     }

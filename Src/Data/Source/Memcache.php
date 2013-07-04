@@ -34,7 +34,7 @@ class Memcache extends \Parith\Data\Source
 
     public function __construct(array $options = array())
     {
-        $this->ds = new \Memcache();
+        $this->link = new \Memcache();
         parent::__construct($options);
     }
 
@@ -47,9 +47,9 @@ class Memcache extends \Parith\Data\Source
     {
         $options = static::option($options);
 
-        $this->link = $this->ds->connect($options['host'], $options['port'], $options['timeout']);
+        $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
 
-        if ($this->link === false)
+        if ($this->connected === false)
             throw new \Parith\Exception('Memcache could not connect to: ' . $options['host'] . ':' . $options['port']);
 
         $this->setCompress($options['compress']);
@@ -66,10 +66,10 @@ class Memcache extends \Parith\Data\Source
     {
         $options = $this->option($options);
 
-        $this->link = $this->ds->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
+        $this->connected = $this->link->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
             $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
 
-        if ($this->link === false)
+        if ($this->connected === false)
             throw new \Parith\Exception('Memcache could not addServer: ' . $options['host'] . ':' . $options['port']);
 
         $this->setCompress($options['compress']);
@@ -102,7 +102,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function get($key)
     {
-        return $this->ds->get($key, $this->getCompress());
+        return $this->link->get($key, $this->getCompress());
     }
 
     /**
@@ -113,7 +113,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function set($key, $val, $expire = 0)
     {
-        return $this->ds->set($key, $val, $this->getCompress(), $expire);
+        return $this->link->set($key, $val, $this->getCompress(), $expire);
     }
 
     /**
@@ -124,7 +124,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function add($key, $val, $expire = 0)
     {
-        return $this->ds->add($key, $val, $this->getCompress(), $expire);
+        return $this->link->add($key, $val, $this->getCompress(), $expire);
     }
 
     /**
@@ -135,7 +135,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function replace($key, $val, $expire = 0)
     {
-        return $this->ds->replace($key, $val, $this->getCompress(), $expire);
+        return $this->link->replace($key, $val, $this->getCompress(), $expire);
     }
 
     /**
@@ -145,7 +145,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function increment($key, $int = 1)
     {
-        return $this->ds->increment($key, $int);
+        return $this->link->increment($key, $int);
     }
 
     /**
@@ -155,7 +155,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function decrement($key, $int = 1)
     {
-        return $this->ds->decrement($key, $int);
+        return $this->link->decrement($key, $int);
     }
 
     /**
@@ -164,7 +164,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function delete($key)
     {
-        return $this->ds->delete($key);
+        return $this->link->delete($key);
     }
 
     /**
@@ -172,7 +172,7 @@ class Memcache extends \Parith\Data\Source
      */
     public function flush()
     {
-        $ret = $this->ds->flush();
+        $ret = $this->link->flush();
 
         // wait a second, this is necessary, or Memcached::set() will return 1, although your data is in fact not saved.
         sleep(1);
@@ -185,8 +185,8 @@ class Memcache extends \Parith\Data\Source
      */
     public function close()
     {
-        if ($this->link)
-            $this->ds->close();
+        if ($this->connected)
+            $this->link->close();
 
         return $this;
     }

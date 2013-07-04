@@ -1,14 +1,17 @@
 <?php
 
-namespace Jieru\Data;
+namespace ExampleApp\Data;
 
-class Cache extends \Parith\Data\Source\Memcache
+use\Parith\Data\Source\Memcache as MC;
+
+class Cache extends MC
 {
-
     public function __construct($options = array())
     {
         $options or $options = \Parith\App::getOption('memcache');
 
-        parent::__construct($options);
+        $this->link = MC::connection($options);
+
+        //parent::__construct($options);
     }
 }

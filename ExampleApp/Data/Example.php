@@ -1,5 +1,5 @@
 <?php
-namespace Jieru\Data;
+namespace ExampleApp\Data;
 
 class Example extends CachedModel
 {

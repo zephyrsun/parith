@@ -28,7 +28,7 @@ abstract class Model extends \Parith\Result
         ':limit' => 0,
         ':page' => 0,
     )
-    , $ds
+    , $link
     , $fetch_mode = self::FETCH_ARRAY
     , $primary_key = 'id'
 

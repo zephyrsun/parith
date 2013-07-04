@@ -28,7 +28,7 @@ class Database extends \Parith\Data\Model
 
     public function connection($options, $query = array())
     {
-        return $this->ds = \Parith\Data\Source\Database::connection($options);
+        return $this->link = new \Parith\Data\Source\Database($options);
     }
 
     /**
@@ -51,7 +51,7 @@ class Database extends \Parith\Data\Model
     {
         $this->connection($connection, $query);
 
-        return $this->ds->query($query);
+        return $this->link->query($query);
     }
 
     /**
@@ -71,7 +71,7 @@ class Database extends \Parith\Data\Model
 
         $mode or $mode = $this->getFetchMode();
 
-        return $this->ds->fetch($mode);
+        return $this->link->fetch($mode);
     }
 
     /**
@@ -90,7 +90,7 @@ class Database extends \Parith\Data\Model
 
         $mode or $mode = $this->getFetchMode();
 
-        return $this->ds->fetchAll($mode);
+        return $this->link->fetchAll($mode);
     }
 
     /**
@@ -120,7 +120,7 @@ class Database extends \Parith\Data\Model
 
         $this->last_fetch_query = $query = $this->formatQuery($query);
 
-        $this->ds
+        $this->link
             ->table($this->source($query[':source'], $query))
             ->field($query[':fields'])
             ->limit($query[':limit'], $query[':page'])
@@ -146,10 +146,10 @@ class Database extends \Parith\Data\Model
 
                 $val += array('', '', '', 'AND');
 
-                $this->ds->where($val[0], $val[1], $val[2], $val[3]);
+                $this->link->where($val[0], $val[1], $val[2], $val[3]);
 
             } else {
-                $this->ds->where($key, $val);
+                $this->link->where($key, $val);
             }
         }
 
@@ -172,7 +172,7 @@ class Database extends \Parith\Data\Model
 
         $query = $this->formatQuery($query);
 
-        return $this->ds->table($this->source($query[':source'], $data))->insert($data, $modifier);
+        return $this->link->table($this->source($query[':source'], $data))->insert($data, $modifier);
     }
 
     /**
@@ -193,7 +193,7 @@ class Database extends \Parith\Data\Model
 
         $query = $this->formatQuery($query);
 
-        return $this->ds->table($this->source($query[':source'], $data))->update($data);
+        return $this->link->table($this->source($query[':source'], $data))->update($data);
     }
 
     /**
@@ -210,7 +210,7 @@ class Database extends \Parith\Data\Model
 
         $query = $this->formatQuery($query);
 
-        return $this->ds->table($this->source($query[':source'], $query))->delete();
+        return $this->link->table($this->source($query[':source'], $query))->delete();
     }
 
     /**
@@ -230,7 +230,7 @@ class Database extends \Parith\Data\Model
      */
     public function lastInsertId()
     {
-        return $this->ds->lastInsertId();
+        return $this->link->lastInsertId();
     }
 
     /**

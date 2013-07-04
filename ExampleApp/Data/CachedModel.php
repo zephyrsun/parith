@@ -1,8 +1,6 @@
 <?php
 
-namespace Jieru\Data;
-
-use \Jieru\Lib\Response;
+namespace ExampleApp\Data;
 
 abstract class CachedModel extends \Parith\Data\Model\Database
 {
@@ -21,7 +19,7 @@ abstract class CachedModel extends \Parith\Data\Model\Database
     {
         parent::__construct();
 
-        $this->cache = Cache::connection(array());
+        $this->cache = new Cache();
 
         $this->db_options = \Parith\App::getOption('database');
         $this->db_options['dbname'] = $this->db_name;
@@ -92,7 +90,7 @@ abstract class CachedModel extends \Parith\Data\Model\Database
     {
         $db_data = $this->prepareData($data);
 
-        $ret = parent::insert($db_data) or $this->ds->dumpParams();
+        $ret = parent::insert($db_data) or $this->link->dumpParams();
 
         if ($ret)
             $this->cache->set($this->cacheKey($this->makeKey($data)), $data);
@@ -104,7 +102,7 @@ abstract class CachedModel extends \Parith\Data\Model\Database
     {
         $db_data = $this->prepareData($data);
 
-        $ret = parent::update($db_data) or $this->ds->dumpParams();
+        $ret = parent::update($db_data) or $this->link->dumpParams();
 
         if ($ret)
             $this->cache->set($this->cacheKey($this->makeKey($data)), $data);
@@ -116,7 +114,7 @@ abstract class CachedModel extends \Parith\Data\Model\Database
     {
         $key or $key = $this->keys();
 
-        $ret = parent::delete($key) or $this->ds->dumpParams();
+        $ret = parent::delete($key) or $this->link->dumpParams();
 
         //force delete cache
         $this->cache->delete($this->cacheKey($key));

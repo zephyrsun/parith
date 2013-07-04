@@ -23,7 +23,13 @@ abstract class Source
 
     public $configs = array();
 
-    protected $link;
+    protected $link, $connected = false;
+
+    public function __construct(array $options = array())
+    {
+        if ($options)
+            $this->connect($options);
+    }
 
     /**
      * disconnect from server
@@ -38,12 +44,6 @@ abstract class Source
      */
     abstract public function connect(array $options);
 
-    public function __construct(array $options = array())
-    {
-        if ($options)
-            $this->connect($options);
-    }
-
     /**
      * singleton
      *
@@ -53,7 +53,7 @@ abstract class Source
      */
     public static function connection($options)
     {
-        return \Parith\Object::getInstance(\get_called_class(), func_get_args(), static::instanceKey($options));
+        return \Parith\Object::getInstance(\get_called_class(), \func_get_args(), static::instanceKey($options));
     }
 
     /**
