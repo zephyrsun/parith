@@ -21,7 +21,7 @@ class Database extends \Parith\Data\Source
         MODIFIER_INSERT_IGNORE = 'INSERT IGNORE INTO',
         MODIFIER_REPLACE = 'REPLACE INTO';
 
-    public $sth, $clauses = array(), $params = array();
+    public $sth, $clauses = array(), $params = array(), $fetch_mode = 0;
 
     public static $options = array(
         'driver' => 'mysql',
@@ -299,49 +299,39 @@ class Database extends \Parith\Data\Source
     }
 
     /**
-     * @param int $mode
+     * @param $query
+     * @param array $params
      * @return mixed
      */
-    public function fetch($mode = 0)
+    public function fetch($query, array $params = array())
     {
-        $this->query($this->_selectClause());
+        $this->query($query, $params);
 
-        if ($mode)
-            $this->setFetchMode($mode);
-
-        return $this->sth->fetch();
-    }
-
-    /**
-     * @param int $mode
-     * @return mixed
-     */
-    public function fetchAll($mode = 0)
-    {
-        $this->query($this->_selectClause());
-
-        if ($mode)
-            $this->setFetchMode($mode);
-
-        return $this->sth->fetchAll();
-    }
-
-    private function _selectClause()
-    {
-        $c = $this->clauses;
-
-        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['order'] . $c['limit'] . ';';
+        return $this->setPDOFetchMode()->fetch();
     }
 
     /**
      * @param $query
+     * @param array $params
      * @return mixed
      */
-    public function query($query)
+    public function fetchAll($query, array $params = array())
+    {
+        $this->query($query, $params);
+
+        return $this->setPDOFetchMode()->fetchAll();
+    }
+
+    /**
+     * @param $query
+     * @param array $params
+     * @return mixed
+     */
+    public function query($query, array $params = array())
     {
         $this->sth = $this->link->prepare($query);
 
-        $result = $this->sth->execute($this->params);
+        $result = $this->sth->execute($params);
 
         $this->initial();
 
@@ -349,17 +339,45 @@ class Database extends \Parith\Data\Source
     }
 
     /**
-     * @param int|array $mode
-     * @return Database
+     * @return array
      */
-    protected function setFetchMode($mode)
+    public function getParams()
     {
-        if (is_array($mode))
-            call_user_func_array(array($this->sth, 'setFetchMode'), $mode);
-        else
-            $this->sth->setFetchMode($mode);
+        return $this->params;
+    }
 
+    /**
+     * @return string
+     */
+    public function getSelectClause()
+    {
+        $c = & $this->clauses;
+        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['order'] . $c['limit'] . ';';
+    }
+
+    /**
+     * @param $mode
+     * @return $this
+     */
+    public function setFetchMode($mode)
+    {
+        $this->fetch_mode = $mode;
         return $this;
+    }
+
+    /**
+     * @return statement
+     */
+    protected function setPDOFetchMode()
+    {
+        if ($this->fetch_mode) {
+            if (is_array($this->fetch_mode))
+                call_user_func_array(array($this->sth, 'setFetchMode'), $this->fetch_mode);
+            else
+                $this->sth->setFetchMode($this->fetch_mode);
+        }
+
+        return $this->sth;
     }
 
     /**

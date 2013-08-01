@@ -34,24 +34,27 @@ class Database extends \Parith\Data\Model
     /**
      * @return array|int
      */
-    public function getFetchMode()
+    public function setFetchMode()
     {
         if ($this->fetch_mode === parent::FETCH_OBJECT)
-            return array(\PDO::FETCH_INTO, $this);
+            $mode = array(\PDO::FETCH_INTO, $this);
+        else
+            $mode = \PDO::FETCH_ASSOC;
 
-        return \PDO::FETCH_ASSOC;
+        return $this->link->setFetchMode($mode);
     }
 
     /**
      * @param $query
      * @param null $connection
+     * @param array $param
      * @return mixed
      */
-    public function query($query, $connection = null)
+    public function query($query, $connection = null, array $param = array())
     {
         $this->connection($connection, $query);
 
-        return $this->link->query($query);
+        return $this->link->query($query, $param);
     }
 
     /**
@@ -60,18 +63,19 @@ class Database extends \Parith\Data\Model
      *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
      *          - ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
      * @param mixed $connection
-     * @param int|array $mode
+     * @param array $params
      * @return mixed
      */
-    public function fetch($query, $connection = null, $mode = 0)
+    public function fetch($query, $connection = null, array $params = array())
     {
         $this->connection($connection, $query);
 
-        $this->getFetchQuery($query);
+        if (!is_string($query)) {
+            $query = $this->getFetchQuery($query, $params);
+            $params += $this->link->getParams();
+        }
 
-        $mode or $mode = $this->getFetchMode();
-
-        return $this->link->fetch($mode);
+        return $this->link->setFetchMode()->fetchAll($query, $params);
     }
 
     /**
@@ -79,18 +83,19 @@ class Database extends \Parith\Data\Model
      *
      * @param $query
      * @param mixed $connection
-     * @param int|array $mode
+     * @param array $params
      * @return mixed
      */
-    public function fetchAll($query, $connection = null, $mode = 0)
+    public function fetchAll($query, $connection = null, array $params = array())
     {
         $this->connection($connection, $query);
 
-        $this->getFetchQuery($query);
+        if (!is_string($query)) {
+            $query = $this->getFetchQuery($query, $params);
+            $params += $this->link->getParams();
+        }
 
-        $mode or $mode = $this->getFetchMode();
-
-        return $this->link->fetchAll($mode);
+        return $this->link->setFetchMode()->fetchAll($query, $params);
     }
 
     /**
@@ -128,7 +133,7 @@ class Database extends \Parith\Data\Model
             ->groupBy($query[':group'])
             ->join($this->join($query[':join'], $query));
 
-        return $this;
+        return $this->link->getSelectClause();
     }
 
     /**
