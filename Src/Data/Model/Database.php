@@ -75,7 +75,7 @@ class Database extends \Parith\Data\Model
             $params += $this->link->getParams();
         }
 
-        return $this->link->setFetchMode()->fetchAll($query, $params);
+        return $this->setFetchMode()->fetchAll($query, $params);
     }
 
     /**
@@ -95,7 +95,7 @@ class Database extends \Parith\Data\Model
             $params += $this->link->getParams();
         }
 
-        return $this->link->setFetchMode()->fetchAll($query, $params);
+        return $this->setFetchMode()->fetchAll($query, $params);
     }
 
     /**

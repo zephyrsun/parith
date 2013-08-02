@@ -255,7 +255,7 @@ class Database extends \Parith\Data\Source
         // adjust order
         $this->params = array_merge($params, $this->params);
 
-        $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . \implode(', ', $value) . $this->clauses['where'] . ';');
+        $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . \implode(', ', $value) . $this->clauses['where'] . ';', $this->params);
 
         return $this->rowCount();
     }
@@ -278,7 +278,7 @@ class Database extends \Parith\Data\Source
 
         $modifier or $modifier = self::MODIFIER_INSERT;
 
-        $ret = $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');');
+        $ret = $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');', $this->params);
 
         if ($ret) {
             $id = $this->lastInsertId();
@@ -294,7 +294,7 @@ class Database extends \Parith\Data\Source
      */
     public function delete()
     {
-        $this->query('DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';');
+        $this->query('DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';', $this->params);
         return $this->rowCount();
     }
 
