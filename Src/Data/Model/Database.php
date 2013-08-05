@@ -121,7 +121,7 @@ class Database extends \Parith\Data\Model
      */
     public function getFetchQuery($query)
     {
-        $query = $this->_resultQuery($query);
+        //$query = $this->_resultQuery($query);
 
         $this->last_fetch_query = $query = $this->formatQuery($query);
 
