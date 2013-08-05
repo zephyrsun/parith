@@ -18,9 +18,16 @@ class Database extends \Parith\Data\Model
 {
     public $last_fetch_query = array();
 
+    private $_fetch_mode = null;
+
     public function __construct()
     {
         parent::__construct();
+
+        if ($this->fetch_mode === parent::FETCH_OBJECT)
+            $this->_fetch_mode = array(\PDO::FETCH_INTO, $this);
+        else
+            $this->_fetch_mode = \PDO::FETCH_ASSOC;
 
         $this->options[':join'] = array();
         $this->options[':group'] = '';
@@ -34,12 +41,9 @@ class Database extends \Parith\Data\Model
     /**
      * @return array|int
      */
-    public function setFetchMode()
+    public function setFetchMode($mode)
     {
-        if ($this->fetch_mode === parent::FETCH_OBJECT)
-            $mode = array(\PDO::FETCH_INTO, $this);
-        else
-            $mode = \PDO::FETCH_ASSOC;
+        $mode or $mode = $this->_fetch_mode;
 
         return $this->link->setFetchMode($mode);
     }
@@ -64,9 +68,10 @@ class Database extends \Parith\Data\Model
      *          - ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
      * @param mixed $connection
      * @param array $params
+     * @param array|null $mode
      * @return mixed
      */
-    public function fetch($query, $connection = null, array $params = array())
+    public function fetch($query, $connection = null, array $params = array(), $mode = null)
     {
         $this->connection($connection, $query);
 
@@ -75,7 +80,7 @@ class Database extends \Parith\Data\Model
             $params += $this->link->getParams();
         }
 
-        return $this->setFetchMode()->fetchAll($query, $params);
+        return $this->setFetchMode($mode)->fetch($query, $params);
     }
 
     /**
@@ -84,9 +89,10 @@ class Database extends \Parith\Data\Model
      * @param $query
      * @param mixed $connection
      * @param array $params
+     * @param array|null $mode
      * @return mixed
      */
-    public function fetchAll($query, $connection = null, array $params = array())
+    public function fetchAll($query, $connection = null, array $params = array(), $mode = null)
     {
         $this->connection($connection, $query);
 
@@ -95,7 +101,7 @@ class Database extends \Parith\Data\Model
             $params += $this->link->getParams();
         }
 
-        return $this->setFetchMode()->fetchAll($query, $params);
+        return $this->setFetchMode($mode)->fetchAll($query, $params);
     }
 
     /**
@@ -112,7 +118,7 @@ class Database extends \Parith\Data\Model
         $query[':fields'] = 'COUNT(*)';
         $query[':limit'] = 1;
 
-        return $this->fetch($query, $connection, array(\PDO::FETCH_COLUMN, 0));
+        return $this->fetch($query, $connection, array(), array(\PDO::FETCH_COLUMN, 0));
     }
 
     /**

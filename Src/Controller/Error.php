@@ -47,7 +47,7 @@ class Error extends \Parith\Basic
     public function web()
     {
         echo '<pre>';
-        $this->cli();
+        echo PHP_EOL . $this->getText() . PHP_EOL . $this->exception->getTraceAsString() . PHP_EOL;
         echo '</pre>';
     }
 
@@ -56,7 +56,7 @@ class Error extends \Parith\Basic
      */
     public function cli()
     {
-        echo PHP_EOL . $this->getText() . PHP_EOL . $this->exception->getTraceAsString() . PHP_EOL;
+        echo PHP_EOL . $this->getText() . PHP_EOL;
     }
 
     /**
