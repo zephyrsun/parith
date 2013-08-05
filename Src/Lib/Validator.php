@@ -3,16 +3,18 @@
 /**
  * Validator
  *
- *
- * Way 1:
- * \Parith\Lib\Validator::isEmail('abc@def.com');
- * \Parith\Lib\Validator::isBetweenLength('Zephyr Sun', 3 ,16);
- *
- * Way 2:
+ * e.g.:
  * $validator = new \Parith\Lib\Validator($_POST);
- * $validator->email('email');
- * $validator->betweenLength('username', 3, 16);
- *
+ * $has_error = $validator->checkRules(array(
+ *      'email' => 'isEmail',
+ *      'username' => array('isLengthBetween', 3, 8),
+ * ));
+ * var_dump(
+ *      $has_error,
+ *      $validator->getLastBad(),
+ *      \Parith\Lib\Validator::isEmail('abc@def.com'),
+ *      \Parith\Lib\Validator::isLengthBetween('hello', 3, 16)
+ * );
  *
  * Parith :: a compact PHP framework
  *
@@ -27,7 +29,7 @@ namespace Parith\Lib;
 
 class Validator extends \Parith\Object
 {
-    public $data = array();
+    public $data = array(), $_error = null;
 
     public function __construct(array $data = array())
     {
@@ -37,19 +39,31 @@ class Validator extends \Parith\Object
             $this->data = $_POST;
     }
 
-    public function check(array $params)
+    public function checkRules(array $rules)
     {
-        foreach ($params as $method => $args) {
-            $ret = $this->$method($args);
+        $this->_error = null;
 
-            if (!$ret) {
-                if (is_array($args))
-                    $this->_last_bad = $args[0];
-                else
-                    $this->_last_bad = $args;
+        foreach ($rules as $field => $args) {
+            if (isset($this->data[$field])) {
 
-                return false;
+                $args = (array)$args;
+
+                $method = $args[0];
+
+                $args[0] = $this->data[$field];
+
+                $ret = \call_user_func_array(array($this, $method), $args);
+
+                if ($ret)
+                    continue;
+
+                $this->_error = array(
+                    'method' => $method,
+                    'arguments' => $args,
+                );
             }
+
+            return false;
         }
 
         return true;
@@ -57,11 +71,10 @@ class Validator extends \Parith\Object
 
     public function getLastBad()
     {
-        return $this->_last_bad;
+        return $this->_error;
     }
 
     /**
-     *
      * @param $name
      * @param $args
      * @return bool|mixed
@@ -69,12 +82,7 @@ class Validator extends \Parith\Object
      */
     public function __call($name, $args)
     {
-        $name = 'is' . $name;
-
-        if (method_exists($this, $name) && isset($this->data[$args[0]])) {
-            $args[0] = $this->data[$args[0]];
-            return \call_user_func_array(array($this, $name), $args);
-        }
+        throw new \Parith\Exception('Rule of Validator: "' . $name . '" not found');
 
         return false;
     }
@@ -101,6 +109,17 @@ class Validator extends \Parith\Object
     public static function isIP($ip)
     {
         return (bool)filter_var($ip, FILTER_VALIDATE_IP);
+    }
+
+    /**
+     * isset
+     *
+     * @param $val
+     * @return bool
+     */
+    public static function isDefined($val)
+    {
+        return isset($val);
     }
 
     /**
@@ -202,7 +221,7 @@ class Validator extends \Parith\Object
      * @param $max
      * @return bool
      */
-    public static function isLELength($str, $max)
+    public static function isLengthLE($str, $max)
     {
         return static::isLE(mb_strlen($str), $max);
     }
@@ -215,7 +234,7 @@ class Validator extends \Parith\Object
      * @param $min
      * @return bool
      */
-    public static function isGELength($str, $min)
+    public static function isLengthGE($str, $min)
     {
         return static::isGE(mb_strlen($str), $min);
     }
@@ -229,7 +248,7 @@ class Validator extends \Parith\Object
      * @param $max
      * @return bool
      */
-    public static function isBetweenLength($str, $min, $max)
+    public static function isLengthBetween($str, $min, $max)
     {
         return static::isBetween(mb_strlen($str), $min, $max);
     }

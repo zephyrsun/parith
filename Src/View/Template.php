@@ -22,8 +22,8 @@ class Template extends Basic
         'source_dir' => null,
         'source_ext' => 'html',
         'cache_dir' => null,
-        'ldelim' => '{',
-        'rdelim' => '}',
+        'ldelim' => '{{',
+        'rdelim' => '}}',
     );
 
 
@@ -123,10 +123,6 @@ class Template extends Basic
 
         // parse include
         $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::_parseInclude', $s);
-
-        // for js, css
-        if ($s === $str[1])
-            $s = '{' . $s . '}';
 
         return $s;
     }
