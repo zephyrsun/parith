@@ -21,7 +21,7 @@ class Cookie extends \Parith\Object
         'path' => '/',
         'domain' => '',
         'handler' => '\Parith\Lib\CookieHandler',
-        'handler_key' => null
+        'handler_key' => 'Parith'
     )
     , $handler;
 

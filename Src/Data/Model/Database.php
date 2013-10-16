@@ -31,6 +31,7 @@ class Database extends \Parith\Data\Model
 
         $this->options[':join'] = array();
         $this->options[':group'] = '';
+        $this->options[':having'] = '';
     }
 
     public function connection($options, $query = array())
@@ -135,8 +136,9 @@ class Database extends \Parith\Data\Model
             ->table($this->source($query[':source'], $query))
             ->field($query[':fields'])
             ->limit($query[':limit'], $query[':page'])
-            ->orderBy($query[':order'])
             ->groupBy($query[':group'])
+            ->having($query[':having'])
+            ->orderBy($query[':order'])
             ->join($this->join($query[':join'], $query));
 
         return $this->link->getSelectClause();

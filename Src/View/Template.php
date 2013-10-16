@@ -119,7 +119,7 @@ class Template extends Basic
         $s = \preg_replace($p, $r, $str[1]);
 
         // parse vars
-        $s = \preg_replace_callback('/(?<!::)\$[^\d\s}\(\)]+/', '\Parith\View\Template::_parseVar', $s);
+        $s = \preg_replace_callback('/(?<!::)\$[^_][^\d\s}\(\)]+/', '\Parith\View\Template::_parseVar', $s);
 
         // parse include
         $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::_parseInclude', $s);

@@ -87,6 +87,7 @@ class Database extends \Parith\Data\Source
             'join' => '',
             'where' => ' WHERE 1',
             'group' => '',
+            'having' => '',
             'order' => '',
             'limit' => '',
         );
@@ -212,6 +213,18 @@ class Database extends \Parith\Data\Source
         }
 
         $this->clauses['order'] = $clause;
+
+        return $this;
+    }
+
+    /**
+     * @param $where
+     * @return $this
+     */
+    public function having($where)
+    {
+        if ($where)
+            $this->clauses['having'] = ' HAVING  ' . $where;
 
         return $this;
     }
@@ -352,7 +365,7 @@ class Database extends \Parith\Data\Source
     public function getSelectClause()
     {
         $c = & $this->clauses;
-        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['order'] . $c['limit'] . ';';
+        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['having'] . $c['order'] . $c['limit'] . ';';
     }
 
     /**
