@@ -247,6 +247,14 @@ class Database extends \Parith\Data\Model
     }
 
     /**
+     * @return string
+     */
+    public function getLastSql()
+    {
+        return $this->link->getLastSql();
+    }
+
+    /**
      *
      * \Parith\Data\Model\Database::join('comment')
      *
