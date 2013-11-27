@@ -57,7 +57,7 @@ class URL
             \Parith\Lib\Char::isAscii($url) or $url = rawurlencode($url);
 
         } elseif ($url === '') {
-            $url = implode('/', \Parith\App::$query);
+            $url = CONTROLLER . '/' . ACTION; //implode('/', \Parith\App::$query);
         }
 
         return static::base() . $url;

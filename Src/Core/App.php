@@ -23,7 +23,6 @@ class App
     public static
         $tr_pairs = array()
     , $is_cli = false
-    , $query = array()
     , $options = array();
 
     /**
@@ -120,8 +119,12 @@ class App
      */
     public static function dispatch($url)
     {
-        self::$query = $params = Router::parse($url);
-        return self::getController($params[0])->$params[1]();
+        $query = Router::parse($url);
+
+        define('CONTROLLER', $query[0]);
+        define('ACTION', $query[1]);
+
+        return self::getController(CONTROLLER)->{ACTION}();
     }
 
     /**

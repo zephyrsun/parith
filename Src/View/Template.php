@@ -50,7 +50,6 @@ class Template extends Basic
         $target = $this->cache->filename(\rawurlencode($name));
         if (LibFile::isNewer($source, $target))
             LibFile::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
-
         include $target;
     }
 

@@ -136,7 +136,15 @@ class Database extends \Parith\Data\Source
     public function where($field, $operator, $value = '', $glue = 'AND')
     {
         if ($value) {
-            $operator .= ' ?';
+
+            if ($operator == 'IN') {
+                $in = substr(str_repeat(',?', count($value)), 1);
+                $operator = "IN ($in)";
+
+            } else {
+                $operator .= ' ?';
+            }
+
         } else {
             $value = $operator;
             if (strpos($field, '?') === false)
@@ -145,7 +153,7 @@ class Database extends \Parith\Data\Source
                 $operator = '';
         }
 
-        $this->clauses['where'] .= ' ' . $glue . ' ' . $field . $operator;
+        $this->clauses['where'] .= " $glue $field $operator";
 
         if (is_array($value))
             $this->params = array_merge($this->params, $value);
@@ -205,7 +213,7 @@ class Database extends \Parith\Data\Source
                     $expr = 'DESC';
                 }
 
-                $clause .= $glue . '`' . $col . '` ' . $expr;
+                $clause .= $glue . $col . ' ' . $expr;
                 $glue = ', ';
             }
         } else {

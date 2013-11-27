@@ -14,14 +14,12 @@
 
 namespace Parith\Data\Model;
 
-class Database extends \Parith\Data\Model
-{
-    public $last_fetch_query = array();
+class Database extends \Parith\Data\Model {
 
+    public $last_fetch_query = array();
     private $_fetch_mode = null;
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
 
         if ($this->fetch_mode === parent::FETCH_OBJECT)
@@ -34,16 +32,14 @@ class Database extends \Parith\Data\Model
         $this->options[':having'] = '';
     }
 
-    public function connection($options, $query = array())
-    {
+    public function connection($options, $query = array()) {
         return $this->link = new \Parith\Data\Source\Database($options);
     }
 
     /**
      * @return array|int
      */
-    public function setFetchMode($mode)
-    {
+    public function setFetchMode($mode) {
         $mode or $mode = $this->_fetch_mode;
 
         return $this->link->setFetchMode($mode);
@@ -55,8 +51,7 @@ class Database extends \Parith\Data\Model
      * @param array $param
      * @return mixed
      */
-    public function query($query, $connection = null, array $param = array())
-    {
+    public function query($query, $connection = null, array $param = array()) {
         $this->connection($connection, $query);
 
         return $this->link->query($query, $param);
@@ -72,8 +67,7 @@ class Database extends \Parith\Data\Model
      * @param array|null $mode
      * @return mixed
      */
-    public function fetch($query, $connection = null, array $params = array(), $mode = null)
-    {
+    public function fetch($query, $connection = null, array $params = array(), $mode = null) {
         $this->connection($connection, $query);
 
         if (!is_string($query)) {
@@ -93,8 +87,7 @@ class Database extends \Parith\Data\Model
      * @param array|null $mode
      * @return mixed
      */
-    public function fetchAll($query, $connection = null, array $params = array(), $mode = null)
-    {
+    public function fetchAll($query, $connection = null, array $params = array(), $mode = null) {
         $this->connection($connection, $query);
 
         if (!is_string($query)) {
@@ -112,12 +105,13 @@ class Database extends \Parith\Data\Model
      * @param $connection
      * @return mixed
      */
-    public function fetchCount($query = null, $connection = null)
-    {
+    public function fetchCount($query = null, $connection = null) {
         $query or $query = $this->last_fetch_query;
 
         $query[':fields'] = 'COUNT(*)';
         $query[':limit'] = 1;
+
+        unset($query[':page']);
 
         return $this->fetch($query, $connection, array(), array(\PDO::FETCH_COLUMN, 0));
     }
@@ -126,20 +120,19 @@ class Database extends \Parith\Data\Model
      * @param $query
      * @return array
      */
-    public function getFetchQuery($query)
-    {
+    public function getFetchQuery($query) {
         //$query = $this->_resultQuery($query);
 
         $this->last_fetch_query = $query = $this->formatQuery($query);
 
         $this->link
-            ->table($this->source($query[':source'], $query))
-            ->field($query[':fields'])
-            ->limit($query[':limit'], $query[':page'])
-            ->groupBy($query[':group'])
-            ->having($query[':having'])
-            ->orderBy($query[':order'])
-            ->join($this->join($query[':join'], $query));
+                ->table($this->source($query[':source'], $query))
+                ->field($query[':fields'])
+                ->limit($query[':limit'], $query[':page'])
+                ->groupBy($query[':group'])
+                ->having($query[':having'])
+                ->orderBy($query[':order'])
+                ->join($this->join($query[':join'], $query));
 
         return $this->link->getSelectClause();
     }
@@ -148,8 +141,7 @@ class Database extends \Parith\Data\Model
      * @param array $query
      * @return array
      */
-    public function formatQuery(array $query)
-    {
+    public function formatQuery(array $query) {
         foreach ($query as $key => $val) {
             if (isset($this->options[$key]))
                 continue;
@@ -160,7 +152,6 @@ class Database extends \Parith\Data\Model
                 $val += array('', '', '', 'AND');
 
                 $this->link->where($val[0], $val[1], $val[2], $val[3]);
-
             } else {
                 $this->link->where($key, $val);
             }
@@ -179,8 +170,7 @@ class Database extends \Parith\Data\Model
      * @param null $modifier
      * @return mixed
      */
-    public function insert(array $data, array $query = array(), $connection = null, $modifier = null)
-    {
+    public function insert(array $data, array $query = array(), $connection = null, $modifier = null) {
         $this->connection($connection, $data);
 
         $query = $this->formatQuery($query);
@@ -195,11 +185,10 @@ class Database extends \Parith\Data\Model
      * @param null $connection
      * @return mixed
      */
-    public function update(array $data = array(), array $query = array(), $connection = null)
-    {
+    public function update(array $data = array(), array $query = array(), $connection = null) {
         $data = $this->resultSet($data);
 
-        foreach ((array)$this->primary_key as $k)
+        foreach ((array) $this->primary_key as $k)
             $query[$k] = $this->resultGet($k);
 
         $this->connection($connection, $data);
@@ -215,8 +204,7 @@ class Database extends \Parith\Data\Model
      * @param null $connection
      * @return mixed
      */
-    public function delete($query = array(), $connection = null)
-    {
+    public function delete($query = array(), $connection = null) {
         $query = $this->_resultQuery($query);
 
         $this->connection($connection, $query);
@@ -233,24 +221,21 @@ class Database extends \Parith\Data\Model
      * @param $data
      * @return string returns table name
      */
-    public function source($source, $data)
-    {
+    public function source($source, $data) {
         return $source;
     }
 
     /**
      * @return int
      */
-    public function lastInsertId()
-    {
+    public function lastInsertId() {
         return $this->link->lastInsertId();
     }
 
     /**
      * @return string
      */
-    public function getLastSql()
-    {
+    public function getLastSql() {
         return $this->link->getLastSql();
     }
 
@@ -263,13 +248,17 @@ class Database extends \Parith\Data\Model
      * @return array
      * @throws \Parith\Exception
      */
-    public function join($join, $query)
-    {
+    public function join($join, $query) {
         $ret = array();
 
         if ($join) {
-            is_array($join) or $join = array($join);
-            foreach ($join as $name) {
+            $join = (array) $join;
+            foreach ($join as $key => $name) {
+
+                if (is_string($key)) {
+                    $ret[$key] = &$name;
+                    continue;
+                }
 
                 $relation = & $this->relations[$name];
 
@@ -286,8 +275,7 @@ class Database extends \Parith\Data\Model
         return $ret;
     }
 
-    private function _resultQuery($query)
-    {
+    private function _resultQuery($query) {
         if ($query) {
             if (is_array($query))
                 $query = $this->resultSet($query);
@@ -297,4 +285,5 @@ class Database extends \Parith\Data\Model
 
         return $query;
     }
+
 }
