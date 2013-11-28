@@ -31,7 +31,7 @@ class Database extends \Parith\Data\Source
         'username' => 'root',
         'password' => null,
         'options' => array(
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
 
             #overwrite 'options' if not using MySQL
