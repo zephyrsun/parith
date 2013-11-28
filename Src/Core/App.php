@@ -40,10 +40,8 @@ class App
      */
     public static function getPathInfo()
     {
-        if (isset($_SERVER['PATH_INFO']))
-            return $_SERVER['PATH_INFO'];
-
-        return str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']);
+        if (isset($_GET['URI']))
+            return $_GET['URI'];
     }
 
     /**
@@ -220,13 +218,8 @@ class Router
         $options = App::getOption('router', $options) + self::$options;
 
         if ($url) {
-            $url = explode('?', $url, 2);
-            $arr = self::parseURL(trim($url[0], '/'), $options) + $options['default']; // + $arr
-
-            //$c = $arr[0];
-            //  $a = $arr[1];
-
-            //unset($arr[0], $arr[1]);
+            //$url = explode('?', $url, 2);
+            $arr = self::parseURL(trim($url, '/'), $options) + $options['default'];
 
             $arr[0] = \ucfirst($arr[0]);
 

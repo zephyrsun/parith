@@ -61,22 +61,12 @@ Apache:
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-l
 
-    RewriteRule (.*) index.php/$1?%{QUERY_STRING} [L]
+    RewriteRule (.*) index.php?URL=$1&%{QUERY_STRING} [L]
 
 Nginx:
 
     location / {
-        try_files $uri $uri/ /index.php$uri?$args;
-    }
-
-    location ~ ^.+\.php {
-        fastcgi_pass unix:/tmp/php-fpm.sock; # depends on your machine
-        fastcgi_index index.php;
-
-        fastcgi_split_path_info ^((?U).+\.php)(/?.+)$;
-        fastcgi_param PATH_INFO $fastcgi_path_info;
-
-        include fastcgi_params;
+        try_files $uri $uri/ /index.php?URI=$uri&$args;
     }
 
 ###How to customize error pages
