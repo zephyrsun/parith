@@ -1,6 +1,7 @@
 <?php
 
 return array(
+    'namespace' => 'ExampleApp',
     'router' => array(
         'default' => array('Index', 'index'),
     ),

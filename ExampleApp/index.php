@@ -2,9 +2,12 @@
 
 //error_reporting(E_ALL);
 
-require \dirname(__DIR__) . '/Src/Bootstrap.php';
+include \dirname(__DIR__) . '/Parith/App.php';
 
-$config = require __DIR__ . '/Config/ExampleApp.php';
-\Parith\App::setOption($config);
+$config = include __DIR__ . '/Config/ExampleApp.php';
 
-\Parith\App::run(__DIR__);
+\Parith\App::registerAutoloader();
+
+$app = new \Parith\App($config);
+
+$app->run();

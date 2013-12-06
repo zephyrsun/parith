@@ -5,9 +5,12 @@
  * php cli.php 'Index/index?get1=foo&get2=bar' 'post1=1&post2=2'
  */
 
-require \dirname(__DIR__) . '/Src/Bootstrap.php';
+include \dirname(__DIR__) . '/Parith/App.php';
 
-$config = require __DIR__ . '/Config/ExampleApp.php';
-\Parith\App::setOption($config);
+$config = include __DIR__ . '/Config/ExampleApp.php';
 
-\Parith\App::cli(__DIR__);
+\Parith\App::registerAutoloader();
+
+$app = new \Parith\App($config);
+
+$app->cli();
