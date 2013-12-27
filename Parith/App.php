@@ -131,7 +131,7 @@ class App
     public static function exceptionHandler(\Exception $e)
     {
         $log = new self::$options['logger']();
-        $log->write($e);
+        $log->writeException($e);
     }
 
     /**
@@ -258,13 +258,20 @@ class Router
 
 class Log
 {
-    /**
-     * @param \Exception $e
-     */
-    public function write(\Exception $e)
+    public function __construct()
     {
-        $message = sprintf('%s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine());
+    }
 
+    public function writeException(\Exception $e)
+    {
+        $this->write(sprintf('%s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
+    }
+
+    /**
+     * write
+     */
+    public function write($message)
+    {
         if (App::getOption('debug')) {
             echo $message;
         } else {
