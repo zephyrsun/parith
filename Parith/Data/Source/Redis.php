@@ -14,9 +14,9 @@
 
 namespace Parith\Data\Source;
 
-use \Parith\Log;
+use \Parith\Data\Source;
 
-class Redis extends \Parith\Data\Source
+class Redis extends Source
 {
     public static $options = array(
         'host' => '127.0.0.1',
@@ -41,7 +41,7 @@ class Redis extends \Parith\Data\Source
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
         if ($this->connected === false)
-            Log::write('Redis could not connect to ' . $options['host'] . ':' . $options['port']);
+            throw new \Exception('Redis could not connect to ' . $options['host'] . ':' . $options['port']);
 
         return $this;
     }

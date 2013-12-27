@@ -6,7 +6,6 @@
 </head>
 
 <body>
-<?php echo $this->view_hello; ?>
-<p>I am body.html for View\Template</p>
+<?php echo $this->welcome_msg; ?>
 </body>
 </html>

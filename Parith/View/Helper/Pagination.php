@@ -13,9 +13,12 @@
  */
 
 namespace Parith\View\Helper;
-use \Parith\Lib\URL as LibURL;
 
-class Pagination extends \Parith\Object
+use \Parith\Lib\URL as ParithURL;
+use \Parith\Result;
+use \Parith\App;
+
+class Pagination extends Result
 {
     public $options = array(
         'per_page' => 10,
@@ -42,7 +45,7 @@ class Pagination extends \Parith\Object
      */
     public function __construct($total, $query = '', array $options = array())
     {
-        $this->options = $options + \Parith\App::getOption('pagination') + $this->options;
+        $this->options = $options + App::getOption('pagination') + $this->options;
 
         if ($this->options['source'])
             $source = $this->options['source'];
@@ -62,17 +65,17 @@ class Pagination extends \Parith\Object
             $query += $this->options['query'] + $source;
             $query['page'] = '__page__';
 
-            $this->url = LibURL::link('?' . LibURL::query($query));
+            $this->url = ParithURL::link('?' . ParithURL::query($query));
 
         } else {
-            $this->url = LibURL::link($query);
+            $this->url = ParithURL::link($query);
 
             $query = $this->options['query'] + $source;
             $query['page'] = '__page__';
 
             //unset($query[0], $query[1]);
 
-            $this->url .= '?' . LibURL::query($query);
+            $this->url .= '?' . ParithURL::query($query);
         }
     }
 

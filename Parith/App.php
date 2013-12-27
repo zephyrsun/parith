@@ -25,7 +25,11 @@ include __DIR__ . '/Controller/Basic.php';
 
 class App
 {
-    public static $options = array('namespace' => 'App', 'debug' => true);
+    public static $options = array(
+        'namespace' => 'App',
+        'debug' => true,
+        'logger' => '\Parith\Log',
+    );
 
     private static $_instances = array();
 
@@ -43,7 +47,7 @@ class App
 
     public static function getOption($key)
     {
-        $option = & self::$options[$key];
+        $option = & self::$options[$key] or $option = array();
 
         return $option;
     }
@@ -69,7 +73,7 @@ class App
         $argv = $_SERVER['argv'];
 
         if (!isset($argv[1]))
-            Log::write('Please input Controller/Action');
+            throw new \Exception('Please input Controller/Action');
 
         // treated as $_POST
         if (isset($argv[2]))
@@ -84,12 +88,19 @@ class App
         $this->_run($argv[0]);
     }
 
+    /**
+     * @param $url
+     * @return mixed
+     * @throws \Exception
+     */
     private function _run($url)
     {
         // now time
         define('APP_TS', \time());
 
-        define('APP_NS', self::getOption('namespace'));
+        //define APP_DIR
+        $namespace = self::getOption('namespace');
+        define('APP_DIR', BASE_DIR . $namespace . DIRECTORY_SEPARATOR);
 
         // timezone setup
         //\date_default_timezone_set(self::$options['app']['timezone']);
@@ -99,12 +110,19 @@ class App
 
         $query = Router::parse($url);
 
-        $this->getController($query[0])->{$query[1]}();
+        $class = $namespace . '\\Controller\\' . \ucfirst($query[0]);
+
+        if (self::import($class)) {
+            $object = new $class;
+            return $object->{$query[1]}();
+        }
+
+        throw new \Exception('Controller "' . $class . '" not found');
     }
 
     public static function errorHandler($code, $message, $file, $line)
     {
-        if (!($code & \error_reporting()))
+        if (!($code & error_reporting()))
             return;
 
         throw new \ErrorException($message, $code, 0, $file, $line);
@@ -112,9 +130,8 @@ class App
 
     public static function exceptionHandler(\Exception $e)
     {
-        $text = \sprintf('[%s] %s: %d', $e->getMessage(), $e->getFile(), $e->getLine());
-
-        Log::write($text);
+        $log = new self::$options['logger']();
+        $log->write($e);
     }
 
     /**
@@ -127,36 +144,15 @@ class App
     }
 
     /**
-     * @param $name
-     * @return bool|object
-     * @throws Exception
-     */
-    public function getController($name)
-    {
-        $class = APP_NS . '\\Controller\\' . $name;
-
-        if (\class_exists($class))
-            return new $class;
-
-        Log::write('Controller "' . $name . '" not found');
-
-        return false;
-    }
-
-    /**
      * @static
      * @param $name
-     * @param bool $throw
      * @return bool|mixed
-     * @throws Exception
      */
-    public static function import($name, $throw = true)
+    public static function import($name)
     {
-        $name = BASE_DIR . \str_replace('\\', DIRECTORY_SEPARATOR, $name) . '.php'; //\strtr($name, self::$name_pair);
+        $name = BASE_DIR . \str_replace('\\', DIRECTORY_SEPARATOR, $name) . '.php';
         if (\is_file($name))
             return include $name;
-
-        log::write('File "' . $name . '" not found');
 
         return false;
     }
@@ -165,10 +161,10 @@ class App
      * @static
      * @param $class
      * @param $args
-     * @param null $key
+     * @param string $key
      * @return mixed
      */
-    public static function getInstance($class, $args = array(), $key = null)
+    public static function getInstance($class, $args = array(), $key = '')
     {
         $key or $key = $class;
         $obj = & self::$_instances[$key];
@@ -210,9 +206,11 @@ class Router
     public static $options = array(
         'delimiter' => '/',
         'rules' => array(),
-        'accept' => array('controller', 'action'),
+        'index' => array('controller', 'action'),
         'default' => array('Index', 'index'),
     );
+
+    private static $_query = array();
 
     /**
      * @param string $url
@@ -224,20 +222,18 @@ class Router
         $options = $options + App::getOption('router') + self::$options;
 
         if ($url) {
-            //$url = explode('?', $url, 2);
-            $arr = self::parseURL(trim($url, '/'), $options) + $options['default'];
-
-            $arr[0] = \ucfirst($arr[0]);
-
-            return $arr;
+            return self::$_query = self::parseURL(trim($url, '/'), $options) + $options['default'];
         }
 
-        $arr = $_GET;
+        $c = & $_GET[$options['index'][0]] or $c = $options['default'][0];
+        $a = & $_GET[$options['index'][1]] or $a = $options['default'][1];
 
-        $c = & $arr[$options['accept'][0]] or $c = $options['default'][0];
-        $a = & $arr[$options['accept'][1]] or $a = $options['default'][1];
+        return self::$_query = array($c, $a);
+    }
 
-        return array(\ucfirst($c), $a);
+    public static function getQuery()
+    {
+        return self::$_query;
     }
 
     /**
@@ -263,16 +259,18 @@ class Router
 class Log
 {
     /**
-     * @param $message
+     * @param \Exception $e
      */
-    public static function write($message)
+    public function write(\Exception $e)
     {
+        $message = sprintf('%s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine());
+
         if (App::getOption('debug')) {
             echo $message;
         } else {
-            $message = \date(\DATE_RFC2822, APP_TS) . ' ' . $message . PHP_EOL;
+            $message = date(DATE_RFC2822, APP_TS) . ' ' . $message . PHP_EOL;
 
-            $file = BASE_DIR . 'log' . DIRECTORY_SEPARATOR . \date('Y-m-d', APP_TS) . '.log';
+            $file = APP_DIR . 'log' . DIRECTORY_SEPARATOR . date('Y-m-d', APP_TS) . '.log';
 
             \error_log($message, 3, $file);
         }

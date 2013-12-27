@@ -14,9 +14,9 @@
 
 namespace Parith\Data;
 
-use \Parith\Log;
+use \Parith\Result;
 
-abstract class Model extends \Parith\Result
+abstract class Model extends Result
 {
     CONST
         FETCH_ARRAY = 0,
@@ -144,9 +144,9 @@ abstract class Model extends \Parith\Result
                     isset($config['key']) or $config['key'] = array($name . '_id' => $config['class']->primary_key);
 
                 } else
-                    Log::write('Error type of relation "' . $name . '"');
+                    throw new \Exception('Error type of relation "' . $name . '"');
             } else
-                Log::write('Config of relation "' . $name . '" must be an array');
+                throw new \Exception('Config of relation "' . $name . '" must be an array');
         }
 
         return $this->relations;

@@ -27,9 +27,9 @@
 
 namespace Parith\Lib;
 
-use \Parith\Log;
+use \Parith\Result;
 
-class Validator extends \Parith\Object
+class Validator extends Result
 {
     public $data = array(), $_error = null;
 
@@ -84,7 +84,7 @@ class Validator extends \Parith\Object
      */
     public function __call($name, $args)
     {
-        Log::write('Rule of Validator: "' . $name . '" not found');
+        throw new \Exception('Rule of Validator: "' . $name . '" not found');
 
         return false;
     }

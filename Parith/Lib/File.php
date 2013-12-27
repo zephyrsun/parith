@@ -14,7 +14,9 @@
 
 namespace Parith\Lib;
 
-class File extends \Parith\Object
+use \Parith\Result;
+
+class File extends Result
 {
     /**
      * @static
@@ -28,7 +30,7 @@ class File extends \Parith\Object
             return true;
 
         if (self::mkdir(\dirname($dir), $mode))
-            return \mkdir($dir, $mode) or \Parith\Monitor::addLog('Failed to make directory: ' . $dir);
+            return \mkdir($dir, $mode);
     }
 
     /**

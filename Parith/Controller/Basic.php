@@ -12,20 +12,17 @@
  * @link http://www.parith.net/
  */
 
-namespace Parith;
+namespace Parith\Controller;
 
 abstract class Basic
 {
     /**
      * @param $name
      * @param $args
-     * @return bool
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function __call($name, $args)
     {
-        Log::write('Action "' . $name . '" not found');
-
-        return false;
+        throw new \Exception('Action "' . $name . '" not found');
     }
 }

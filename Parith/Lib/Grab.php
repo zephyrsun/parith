@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Char
+ * grab - CURL
  *
  * Parith :: a compact PHP framework
  * http://www.parith.net/
@@ -14,6 +14,8 @@
  */
 
 namespace Parith\Lib;
+
+use \Parith\App;
 
 class Grab
 {
@@ -28,7 +30,7 @@ class Grab
 
     public function __construct(array $options = array())
     {
-        $this->options = $options + \Parith\App::getOption('curl') + $this->options;
+        $this->options = $options + App::getOption('curl') + $this->options;
     }
 
     public function post($url, $args = array(), array $options = array())

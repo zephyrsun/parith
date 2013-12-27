@@ -14,12 +14,12 @@
 
 namespace Parith\Cache;
 
-use \Parith\Lib\File as LFile;
+use \Parith\Lib\File as ParithFile;
 
 class File extends Cache
 {
     public $options = array(
-        'dir' => null,
+        'dir' => '',
         'file_ext' => 'php',
     );
 
@@ -30,10 +30,7 @@ class File extends Cache
     {
         parent::__construct($options);
 
-        if ($this->options['dir'] === null)
-            $this->options['dir'] = BASE_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'file';
-
-        //\Parith\Lib\File::mkdir($this->options['dir']);
+        $this->options['dir'] or $this->options['dir'] = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'file';
     }
 
     /**
@@ -57,7 +54,7 @@ class File extends Cache
      */
     public function set($name, $val)
     {
-        return LFile::touch($this->filename($name), $val);
+        return ParithFile::touch($this->filename($name), $val);
     }
 
     /**
@@ -66,7 +63,7 @@ class File extends Cache
      */
     public function delete($name)
     {
-        return LFile::rm($this->filename($name));
+        return ParithFile::rm($this->filename($name));
     }
 
     /**
@@ -74,7 +71,7 @@ class File extends Cache
      */
     public function flush()
     {
-        return LFile::rm($this->options['dir']);
+        return ParithFile::rm($this->options['dir']);
     }
 
     /**

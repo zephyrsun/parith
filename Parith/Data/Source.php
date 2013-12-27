@@ -14,6 +14,8 @@
 
 namespace Parith\Data;
 
+use \Parith\App;
+
 abstract class Source
 {
     public static $options = array(
@@ -53,7 +55,7 @@ abstract class Source
      */
     public static function connection($options)
     {
-        return \Parith\Object::getInstance(\get_called_class(), \func_get_args(), static::instanceKey($options));
+        return App::getInstance(\get_called_class(), \func_get_args(), static::instanceKey($options));
     }
 
     /**
@@ -91,7 +93,7 @@ abstract class Source
         if (is_array($options))
             return $options + static::$options;
 
-        Log::write('options must be an Array');
+        throw new \Exception('options must be an Array');
 
         return false;
     }

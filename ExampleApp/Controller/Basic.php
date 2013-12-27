@@ -1,28 +1,39 @@
 <?php
 
 namespace ExampleApp\Controller;
-use ExampleApp\Lib;
 
-class Basic extends \Parith\Basic
+use \ExampleApp\Lib;
+use \Parith\Controller\Basic as ParithController;
+use \Parith\View\Template;
+
+class Basic extends ParithController
 {
+    protected $input, $output = array(), $format = 'html';
+
     public function __construct()
     {
-        echo '<p>Welcome, I am Basic::__construct().</p>';
-        $this->beforeAction();
-    }
+        $this->input = file_get_contents('php://input');
 
-    public function beforeAction()
-    {
-        echo '<p>Hello, I am Basic::beforeAction().Remove Me, never mind.</p>';
+        $format = & $_GET['format'];
+        if ($format)
+            $this->format = $format;
     }
 
     public function __destruct()
     {
-        $this->afterAction();
+        $this->{$this->format}();
     }
 
-    public function afterAction()
+    protected function json()
     {
-        echo '<p>Hello, I am Basic::afterAction().Remove Me,too.</p>';
+        echo json_encode($this->output);
+    }
+
+    protected function html()
+    {
+        //$view_lib = \Parith\View\Template::factory();
+        $view_lib = new Template();
+        $view_lib->resultSet($this->output);
+        $view_lib->render('body');
     }
 }

@@ -14,12 +14,13 @@
 
 namespace Parith\View;
 
-use \Parith\Log;
+use \Parith\App;
+use \Parith\Result;
 
-class Basic extends \Parith\Result
+class Basic extends Result
 {
     public $options = array(
-        'source_dir' => null,
+        'source_dir' => '',
         'source_ext' => 'php',
     );
 
@@ -28,9 +29,9 @@ class Basic extends \Parith\Result
      */
     public function __construct(array $options = array())
     {
-        $this->options = $options + \Parith\App::getOption('view') + $this->options;
+        $this->options = $options + App::getOption('view') + $this->options;
 
-        $this->options['source_dir'] or $this->options['source_dir'] = BASE_DIR . 'View';
+        $this->options['source_dir'] or $this->options['source_dir'] =  APP_DIR . 'View';
     }
 
     /**
@@ -38,7 +39,7 @@ class Basic extends \Parith\Result
      * @param string $ext
      * @return void
      */
-    public function render($name, $ext = null)
+    public function render($name, $ext = '')
     {
         $name = $this->getSourceFile($name, $ext);
 
@@ -74,6 +75,6 @@ class Basic extends \Parith\Result
         if (\is_file($name))
             return $name;
 
-        Log::write('View file "' . $name . '" not found');
+        throw new \Exception('View file "' . $name . '" not found');
     }
 }

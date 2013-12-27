@@ -14,7 +14,11 @@
 
 namespace Parith\Lib;
 
-class Request extends \Parith\Object
+use \Parith\Result;
+
+use \Parith\Arr;
+
+class Request extends Result
 {
     /**
      * @param string $key
@@ -25,7 +29,7 @@ class Request extends \Parith\Object
         if ($key === null)
             return $_GET;
 
-        return \Parith\Arr::get($_GET, $key);
+        return Arr::get($_GET, $key);
     }
 
     /**
@@ -37,7 +41,7 @@ class Request extends \Parith\Object
         if ($key === null)
             return $_POST;
 
-        return \Parith\Arr::get($_POST, $key);
+        return Arr::get($_POST, $key);
     }
 
     /**
@@ -51,7 +55,7 @@ class Request extends \Parith\Object
         if ($key === null)
             return $env;
 
-        return \Parith\Arr::get($env, $key);
+        return Arr::get($env, $key);
     }
 
     /**

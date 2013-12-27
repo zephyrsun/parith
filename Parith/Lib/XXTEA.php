@@ -14,9 +14,10 @@
 
 namespace Parith\Lib;
 
-use \Parith\Log;
+use \Parith\Result;
+use \Parith\String;
 
-class XXTEA extends \Parith\Object
+class XXTEA extends Result
 {
     protected $key = array(1234567890, 1234567890, 1234567890, 1234567890), $delta = 0x9E3779B9;
 
@@ -40,7 +41,7 @@ class XXTEA extends \Parith\Object
         if (\is_string($key))
             $key = self::_str2long($key, false);
         elseif (!\is_array($key))
-            Log::write('XXTEA key must be String or Array');
+            throw new \Exception('XXTEA key must be String or Array');
 
         if (\count($key) < 4)
             $this->key = $key + $this->key;
@@ -50,12 +51,12 @@ class XXTEA extends \Parith\Object
 
     public function encode($val)
     {
-        return $this->encrypt(\Parith\String::encode($val));
+        return $this->encrypt(String::encode($val));
     }
 
     public function decode($val)
     {
-        return \Parith\String::decode($this->decrypt($val));
+        return String::decode($this->decrypt($val));
     }
 
     /**
@@ -70,7 +71,7 @@ class XXTEA extends \Parith\Object
         elseif (\is_array($val))
             return $this->_encryptArray($val);
 
-        Log::write('encrypt data must be String or Array');
+        throw new \Exception('encrypt data must be String or Array');
     }
 
     /**

@@ -14,7 +14,9 @@
 
 namespace Parith\Lib\Image;
 
-abstract class Basic extends \Parith\Object
+use \Parith\Result;
+
+abstract class Basic extends Result
 {
     public static $image_types = array(
         'jpg' => 'jpeg',

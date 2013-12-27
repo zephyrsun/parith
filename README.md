@@ -79,24 +79,3 @@ Nginx:
         include fastcgi_params;
     }
 
-###How to customize error pages
-
-Below is an example. getText() returns what error messages to be showed by cli().
-Web applications can use web() to instead of cli(). You can invoke module \Parith\View to customize it.
-
-    <?php
-    namespace App\Controller;
-
-    class Error extends \Parith\Controller\Error
-    {
-        public function cli($text = 'error')
-        {
-            echo PHP_EOL . $text . PHP_EOL;
-        }
-
-        public function getText()
-        {
-            return \Parith\Exception::text($this->exception, '[%s] [%s]');
-        }
-    }
-

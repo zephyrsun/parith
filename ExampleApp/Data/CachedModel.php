@@ -2,7 +2,10 @@
 
 namespace ExampleApp\Data;
 
-abstract class CachedModel extends \Parith\Data\Model\Database
+use \Parith\App;
+use \Parith\Data\Model\Database;
+
+abstract class CachedModel extends Database
 {
     public
         $cache = null,
@@ -21,7 +24,7 @@ abstract class CachedModel extends \Parith\Data\Model\Database
 
         $this->cache = new Cache();
 
-        $this->db_options = \Parith\App::getOption('database');
+        $this->db_options = App::getOption('database');
         $this->db_options['dbname'] = $this->db_name;
     }
 

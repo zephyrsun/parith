@@ -14,7 +14,8 @@
 
 namespace Parith\View;
 
-use \Parith\Lib\File as LibFile;
+use \Parith\Lib\File as ParithFile;
+use \Parith\Cache\File as CacheFile;
 
 class Template extends Basic
 {
@@ -34,9 +35,9 @@ class Template extends Basic
     {
         parent::__construct($options);
 
-        $dir = $this->options['cache_dir'] or $dir = BASE_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'template';
+        $dir = $this->options['cache_dir'] or $dir = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'template';
 
-        $this->cache = new \Parith\Cache\File(array('dir' => $dir));
+        $this->cache = new CacheFile(array('dir' => $dir));
     }
 
     /**
@@ -46,10 +47,10 @@ class Template extends Basic
     public function render($name, $ext = '')
     {
         $source = $this->getSourceFile($name, $ext);
-
         $target = $this->cache->filename(\rawurlencode($name));
-        if (LibFile::isNewer($source, $target))
-            LibFile::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
+        if (ParithFile::isNewer($source, $target))
+            ParithFile::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
+
         include $target;
     }
 

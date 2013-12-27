@@ -16,6 +16,8 @@
 
 namespace Parith\Lib;
 
+use Parith\Router;
+
 class URL
 {
     /**
@@ -54,10 +56,10 @@ class URL
         if ($url) {
             $url = trim($url, '/');
 
-            \Parith\Lib\Char::isAscii($url) or $url = rawurlencode($url);
+            Char::isAscii($url) or $url = rawurlencode($url);
 
         } elseif ($url === '') {
-            $url = CONTROLLER . '/' . ACTION; //implode('/', \Parith\App::$query);
+            $url = implode('/', Router::getQuery()); //CONTROLLER . '/' . ACTION;
         }
 
         return static::base() . $url;

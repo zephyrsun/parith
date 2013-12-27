@@ -14,7 +14,9 @@
 
 namespace Parith\View\Helper;
 
-class HTML extends \Parith\Object
+use \Parith\Result;
+
+class HTML extends Result
 {
     public static function tag($tag, $text = '', array $attributes = array())
     {
@@ -42,7 +44,7 @@ class HTML extends \Parith\Object
 
     public static function link($url, $text = '', array $attributes = array())
     {
-        isset($attributes['href']) or $attributes['href'] = $url; //\Parith\Lib\URL::link($uri);
+        isset($attributes['href']) or $attributes['href'] = $url;
 
         return self::tag('a', $text, $attributes);
     }

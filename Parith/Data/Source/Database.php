@@ -14,7 +14,9 @@
 
 namespace Parith\Data\Source;
 
-class Database extends \Parith\Data\Source
+use \Parith\Data\Source;
+
+class Database extends Source
 {
     const
         MODIFIER_INSERT = 'INSERT INTO',
@@ -63,7 +65,7 @@ class Database extends \Parith\Data\Source
                 $options['options']
             );
         } catch (\PDOException $e) {
-            \Parith\Exception::handler($e);
+            \Exception::handler($e);
         }
     }
 

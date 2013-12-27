@@ -16,9 +16,9 @@
 
 namespace Parith\Data\Source;
 
-use \Parith\Log;
+use \Parith\Data\Source;
 
-class Memcache extends \Parith\Data\Source
+class Memcache extends Source
 {
     public static $options = array(
         'host' => '127.0.0.1',
@@ -52,7 +52,7 @@ class Memcache extends \Parith\Data\Source
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
 
         if ($this->connected === false)
-            Log::write('Memcache could not connect to: ' . $options['host'] . ':' . $options['port']);
+            throw new \Exception('Memcache could not connect to: ' . $options['host'] . ':' . $options['port']);
 
         $this->setCompress($options['compress']);
 
@@ -72,7 +72,7 @@ class Memcache extends \Parith\Data\Source
             $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
 
         if ($this->connected === false)
-            Log::write('Memcache could not addServer: ' . $options['host'] . ':' . $options['port']);
+            throw new \Exception('Memcache could not addServer: ' . $options['host'] . ':' . $options['port']);
 
         $this->setCompress($options['compress']);
 

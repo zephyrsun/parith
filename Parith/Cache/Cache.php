@@ -14,15 +14,16 @@
 
 namespace Parith\Cache;
 
-class Cache
+use \Parith\App;
+use \Parith\Result;
+
+class Cache extends Result
 {
     public $options = array();
 
-    private $_cache = array();
-
     public function __construct(array $options = array())
     {
-        $this->options = $options + \Parith\App::getOption('cache') + $this->options;
+        $this->options = $options + App::getOption('cache') + $this->options;
     }
 
     /**
@@ -31,7 +32,7 @@ class Cache
      */
     public function get($key)
     {
-        return \Parith\Arr::get($this->_cache, $key, null);
+        return parent::resultGet($key);
     }
 
     /**
@@ -41,8 +42,7 @@ class Cache
      */
     public function set($key, $val)
     {
-        $this->_cache[$key] = $val;
-        return true;
+      return parent::resultSet($key, $val);
     }
 
     /**
@@ -51,8 +51,7 @@ class Cache
      */
     public function delete($key)
     {
-        unset($this->_cache[$key]);
-        return true;
+        return parent::resultDelete($key);
     }
 
     /**
@@ -60,7 +59,6 @@ class Cache
      */
     public function flush()
     {
-        $this->_cache = array();
-        return true;
+        return parent::resultFlush();
     }
 }

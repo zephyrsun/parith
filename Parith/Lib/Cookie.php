@@ -14,7 +14,11 @@
 
 namespace Parith\Lib;
 
-class Cookie extends \Parith\Object
+use \Parith\Result;
+use \Parith\App;
+use \Parith\String;
+
+class Cookie extends Result
 {
     public $options = array(
         'expire' => 7200,
@@ -31,7 +35,7 @@ class Cookie extends \Parith\Object
      */
     public function __construct(array $options = array())
     {
-        $this->options = $options + \Parith\App::getOption('cookie') + $this->options;
+        $this->options = $options + App::getOption('cookie') + $this->options;
 
         if ($this->options['handler'])
             $this->handler = new $this->options['handler']($this->options['handler_key']);
@@ -123,7 +127,7 @@ class CookieHandler
 
     public function encode($val)
     {
-        $val = \Parith\String::encode($val);
+        $val = String::encode($val);
 
         $ret = '';
         $length = strlen($val);
@@ -141,6 +145,6 @@ class CookieHandler
             $ret .= chr($v ^ $this->key);
         }
 
-        return \Parith\String::decode($ret);
+        return String::decode($ret);
     }
 }
