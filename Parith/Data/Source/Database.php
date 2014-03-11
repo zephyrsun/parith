@@ -135,9 +135,18 @@ class Database extends Source
      * @param $glue
      * @return Database
      */
-    public function where($field, $operator, $value = '', $glue = 'AND')
+    public function where($field, $operator, $value = null, $glue = 'AND')
     {
-        if ($value) {
+        if ($value===null) {
+
+            $value = $operator;
+            if (strpos($field, '?') === false)
+                $operator = '= ?';
+            else
+                $operator = '';
+
+        } else {
+
 
             if ($operator == 'IN') {
                 $in = substr(str_repeat(',?', count($value)), 1);
@@ -147,12 +156,6 @@ class Database extends Source
                 $operator .= ' ?';
             }
 
-        } else {
-            $value = $operator;
-            if (strpos($field, '?') === false)
-                $operator = '= ?';
-            else
-                $operator = '';
         }
 
         $this->clauses['where'] .= " $glue $field $operator";
