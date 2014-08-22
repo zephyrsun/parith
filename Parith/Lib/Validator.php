@@ -5,13 +5,12 @@
  *
  * e.g.:
  * $validator = new \Parith\Lib\Validator($_POST);
- * $has_error = $validator->checkRules(array(
+ * $error = $validator->checkRules(array(
  *      'email' => 'isEmail',
  *      'username' => array('isLengthBetween', 3, 8),
  * ));
  * var_dump(
- *      $has_error,
- *      $validator->getLastBad(),
+ *      $error,
  *      \Parith\Lib\Validator::isEmail('abc@def.com'),
  *      \Parith\Lib\Validator::isLengthBetween('hello', 3, 16)
  * );
@@ -31,7 +30,9 @@ use \Parith\Result;
 
 class Validator extends Result
 {
-    public $data = array(), $_error = null;
+    public $data = array();
+
+    private $_err = array();
 
     public function __construct(array $data = array())
     {
@@ -43,50 +44,50 @@ class Validator extends Result
 
     public function checkRules(array $rules)
     {
-        $this->_error = null;
+        $this->_err = array();
 
+        $ret = array();
         foreach ($rules as $field => $args) {
-            if (isset($this->data[$field])) {
 
-                $args = (array)$args;
+            $v = & $this->data[$field];
 
-                $method = $args[0];
+            $args = (array)$args;
 
-                $args[0] = $this->data[$field];
+            $method = $args[0];
 
-                $ret = \call_user_func_array(array($this, $method), $args);
+            $args[0] = $v;
 
-                if ($ret)
-                    continue;
+            $ret = \call_user_func_array(array($this, $method), $args);
 
-                $this->_error = array(
-                    'method' => $method,
-                    'arguments' => $args,
-                );
+            if ($ret) {
+                $ret[$field] = $v;
+            } else {
+                $this->_err[] = array('method' => $method, 'arguments' => $args);
             }
-
-            return false;
         }
 
-        return true;
+        if ($this->_err)
+            return false;
+
+        return $ret;
     }
 
-    public function getLastBad()
+    /**
+     * @return array
+     */
+    public function getError()
     {
-        return $this->_error;
+        return $this->_err;
     }
 
     /**
      * @param $name
      * @param $args
-     * @return bool|mixed
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function __call($name, $args)
     {
         throw new \Exception('Rule of Validator: "' . $name . '" not found');
-
-        return false;
     }
 
     /**
@@ -96,7 +97,7 @@ class Validator extends Result
      * @param $email
      * @return bool
      */
-    public static function isEmail($email)
+    public static function email($email)
     {
         return (bool)filter_var($email, FILTER_VALIDATE_EMAIL);
     }
@@ -108,20 +109,20 @@ class Validator extends Result
      * @param $ip
      * @return bool
      */
-    public static function isIP($ip)
+    public static function ip($ip)
     {
         return (bool)filter_var($ip, FILTER_VALIDATE_IP);
     }
 
     /**
-     * isset
+     * not null
      *
      * @param $val
      * @return bool
      */
-    public static function isDefined($val)
+    public static function required($val)
     {
-        return isset($val);
+        return $val != null; //isset($val);
     }
 
     /**
@@ -131,9 +132,9 @@ class Validator extends Result
      * @param $val
      * @return bool
      */
-    public static function isNotEmpty($val)
+    public static function notEmpty($val)
     {
-        return !empty($val);
+        return (bool)$val; //!empty($val);
     }
 
     /**
@@ -144,7 +145,7 @@ class Validator extends Result
      * @param $ref
      * @return bool
      */
-    public static function isEqual($val, $ref)
+    public static function equal($val, $ref)
     {
         return $val === $ref;
     }
@@ -157,7 +158,7 @@ class Validator extends Result
      * @param $ref
      * @return bool
      */
-    public static function isUnequal($val, $ref)
+    public static function unequal($val, $ref)
     {
         return $val !== $ref;
     }
@@ -169,7 +170,7 @@ class Validator extends Result
      * @param $val
      * @return bool
      */
-    public static function isNum($val)
+    public static function num($val)
     {
         return is_numeric($val);
     }
@@ -182,7 +183,7 @@ class Validator extends Result
      * @param $ref
      * @return bool
      */
-    public static function isLE($val, $ref)
+    public static function le($val, $ref)
     {
         return (int)$val <= (int)$ref;
     }
@@ -195,7 +196,7 @@ class Validator extends Result
      * @param $ref
      * @return bool
      */
-    public static function isGE($val, $ref)
+    public static function ge($val, $ref)
     {
         return (int)$val >= (int)$ref;
     }
@@ -209,7 +210,7 @@ class Validator extends Result
      * @param $max
      * @return bool
      */
-    public static function isBetween($val, $min, $max)
+    public static function between($val, $min, $max)
     {
         $val = (int)$val;
         return $val >= (int)$min && $val <= (int)$max;
@@ -223,9 +224,9 @@ class Validator extends Result
      * @param $max
      * @return bool
      */
-    public static function isLengthLE($str, $max)
+    public static function lengthLE($str, $max)
     {
-        return static::isLE(mb_strlen($str), $max);
+        return static::le(mb_strlen($str), $max);
     }
 
     /**
@@ -236,9 +237,9 @@ class Validator extends Result
      * @param $min
      * @return bool
      */
-    public static function isLengthGE($str, $min)
+    public static function lengthGE($str, $min)
     {
-        return static::isGE(mb_strlen($str), $min);
+        return static::ge(mb_strlen($str), $min);
     }
 
     /**
@@ -250,9 +251,9 @@ class Validator extends Result
      * @param $max
      * @return bool
      */
-    public static function isLengthBetween($str, $min, $max)
+    public static function lengthBetween($str, $min, $max)
     {
-        return static::isBetween(mb_strlen($str), $min, $max);
+        return static::between(mb_strlen($str), $min, $max);
     }
 
     /**
@@ -263,7 +264,7 @@ class Validator extends Result
      * @param $regex
      * @return bool
      */
-    public static function isMatch($val, $regex)
+    public static function match($val, $regex)
     {
         return (bool)preg_match($regex, $val);
     }
@@ -275,7 +276,7 @@ class Validator extends Result
      * @param $url
      * @return bool
      */
-    public static function isURL($url)
+    public static function url($url)
     {
         return (bool)filter_var($url, FILTER_VALIDATE_URL);
     }
