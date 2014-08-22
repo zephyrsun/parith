@@ -167,6 +167,18 @@ class Pagination extends Result
     }
 
     /**
+     * @param \Parith\Data\Model\Database $model
+     * @param string $query
+     * @param array $options
+     * @return Pagination
+     */
+    public static function withModel(\Parith\Data\Model\Database $model, $query = '', array $options = array())
+    {
+        $options = array('per_page' => $model->per_page) + $options;
+        return new Pagination($model->fetchCount(), $query, $options);
+    }
+
+    /**
      * @return string
      */
     public function __toString()

@@ -86,7 +86,7 @@ abstract class Source
      * @static
      * @param array $options
      * @return array|bool
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public static function option($options)
     {

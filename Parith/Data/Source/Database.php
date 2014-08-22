@@ -29,7 +29,7 @@ class Database extends Source
         'driver' => 'mysql',
         'host' => '127.0.0.1',
         'port' => 3306,
-        'dbname' => null,
+        'db_name' => null,
         'username' => 'root',
         'password' => null,
         'options' => array(
@@ -59,7 +59,7 @@ class Database extends Source
 
         try {
             $this->link = new \PDO(
-                "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['dbname']}",
+                "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
                 $options['username'],
                 $options['password'],
                 $options['options']
@@ -370,6 +370,10 @@ class Database extends Source
     public function getParams()
     {
         return $this->params;
+    }
+
+    public function getWhere(){
+        return $this->clauses['where'];
     }
 
     /**

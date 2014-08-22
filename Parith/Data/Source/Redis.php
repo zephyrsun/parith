@@ -33,7 +33,7 @@ class Redis extends Source
     /**
      * @param array $options
      * @return mixed|Redis
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function connect(array $options)
     {

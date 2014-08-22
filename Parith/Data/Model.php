@@ -58,13 +58,14 @@ abstract class Model extends Result
         'has_many' => 1,
     );
 
-    abstract public function fetch($query, $connection = null);
 
-    abstract public function insert(array $data, array $query = array(), $connection = null);
+    abstract public function fetch($query);
 
-    abstract public function update(array $data = array(), array $query = array(), $connection = null);
+    abstract public function insert(array $data, array $query = array());
 
-    abstract public function delete($query = array(), $connection = null);
+    abstract public function update(array $data = array(), array $query = array());
+
+    abstract public function delete($query = array());
 
     /**
      * an Overwrite example:
@@ -79,11 +80,10 @@ abstract class Model extends Result
      *      return $this->ds = \Parith\Data\Source\Database::connection($servers[$cfg_id]);
      * }
      *
-     * @param $connection
      * @param array $query
      * @return mixed
      */
-    abstract public function connection($connection, $query = array());
+    abstract public function connection($query = array());
 
     public function __construct()
     {
@@ -130,7 +130,7 @@ abstract class Model extends Result
 
     /**
      * @return array
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function initRelations()
     {

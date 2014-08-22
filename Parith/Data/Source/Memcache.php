@@ -43,7 +43,7 @@ class Memcache extends Source
     /**
      * @param array $options
      * @return mixed|Memcache
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function connect(array $options)
     {
@@ -62,7 +62,7 @@ class Memcache extends Source
     /**
      * @param array $options
      * @return Memcache
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function addServer(array $options)
     {

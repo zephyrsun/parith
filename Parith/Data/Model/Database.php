@@ -19,6 +19,11 @@ use \Parith\Data\Model;
 class Database extends Model
 {
     public $last_fetch_query = array();
+    public $per_page = 10;
+
+    public $db_name = '';
+    public $table_name = '';
+
     private $_fetch_mode = null;
 
     public function __construct()
@@ -33,11 +38,14 @@ class Database extends Model
         $this->options[':join'] = array();
         $this->options[':group'] = '';
         $this->options[':having'] = '';
+        $this->options[':source'] = $this->table_name;
     }
 
-    public function connection($options, $query = array())
+    public function connection($query = array())
     {
-        return $this->link = new \Parith\Data\Source\Database($options);
+        return $this->link = new \Parith\Data\Source\Database(array(
+            'db_name' => $this->db_name
+        ));
     }
 
     /**
@@ -52,13 +60,12 @@ class Database extends Model
 
     /**
      * @param $query
-     * @param null $connection
      * @param array $param
      * @return mixed
      */
-    public function query($query, $connection = null, array $param = array())
+    public function query($query, array $param = array())
     {
-        $this->connection($connection, $query);
+        $this->connection($query);
 
         return $this->link->query($query, $param);
     }
@@ -68,14 +75,13 @@ class Database extends Model
      *          - 1 // means find $primary_key = 1
      *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
      *          - ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
-     * @param mixed $connection
      * @param array $params
      * @param array|null $mode
      * @return mixed
      */
-    public function fetch($query, $connection = null, array $params = array(), $mode = null)
+    public function fetch($query, array $params = array(), $mode = null)
     {
-        $this->connection($connection, $query);
+        $this->connection($query);
 
         if (!is_string($query)) {
             $query = $this->getFetchQuery($query, $params);
@@ -89,14 +95,13 @@ class Database extends Model
      * params see fetch()
      *
      * @param $query
-     * @param mixed $connection
      * @param array $params
      * @param array|null $mode
      * @return mixed
      */
-    public function fetchAll($query, $connection = null, array $params = array(), $mode = null)
+    public function fetchAll($query, array $params = array(), $mode = null)
     {
-        $this->connection($connection, $query);
+        $this->connection($query);
 
         if (!is_string($query)) {
             $query = $this->getFetchQuery($query, $params);
@@ -110,10 +115,9 @@ class Database extends Model
      * params see fetch()
      *
      * @param $query
-     * @param $connection
      * @return mixed
      */
-    public function fetchCount($query = null, $connection = null)
+    public function fetchCount($query = null)
     {
         $query or $query = $this->last_fetch_query;
 
@@ -122,7 +126,7 @@ class Database extends Model
 
         unset($query[':page']);
 
-        return $this->fetch($query, $connection, array(), array(\PDO::FETCH_COLUMN, 0));
+        return $this->fetch($query, array(), array(\PDO::FETCH_COLUMN, 0));
     }
 
     /**
@@ -135,8 +139,9 @@ class Database extends Model
 
         $this->last_fetch_query = $query = $this->formatQuery($query);
 
+        $this->table($query[':source'], $query);
+
         $this->link
-            ->table($this->source($query[':source'], $query))
             ->field($query[':fields'])
             ->limit($query[':limit'], $query[':page'])
             ->groupBy($query[':group'])
@@ -174,70 +179,88 @@ class Database extends Model
     }
 
     /**
+     * overwrite it, sharding etc.
+     *
+     * @param $table
+     * @param $data
+     */
+    public function table($table, $data)
+    {
+        $this->link->table($table);
+    }
+
+
+    /**
      * @param array $data
      * @param array $query
      *              - see fetch()
-     * @param null $connection
      * @param null $modifier
      * @return mixed
      */
-    public function insert(array $data, array $query = array(), $connection = null, $modifier = null)
+    public function insert(array $data, array $query = array(), $modifier = null)
     {
-        $this->connection($connection, $data);
-
-        $query = $this->formatQuery($query);
-
-        return $this->link->table($this->source($query[':source'], $data))->insert($data, $modifier);
+        return $this->prepare($data, $query)->insert($data, $modifier);
     }
 
     /**
      * @param $data
      * @param array $query
      *              - see fetch()
-     * @param null $connection
+     * @param bool $auto
      * @return mixed
      */
-    public function update(array $data = array(), array $query = array(), $connection = null)
+    public function update(array $data = array(), array $query = array(), $auto = false)
     {
         $data = $this->resultSet($data);
 
         foreach ((array)$this->primary_key as $k)
             $query[$k] = $this->resultGet($k);
 
-        $this->connection($connection, $data);
+        $this->prepare($data, $query);
 
-        $query = $this->formatQuery($query);
+        if ($auto && !$this->link->getWhere())
+            return $this->link->insert($data);
 
-        return $this->link->table($this->source($query[':source'], $data))->update($data);
+        return $this->link->update($data);
+    }
+
+    /**
+     * @param $data
+     * @param array $query
+     *              - see fetch()
+     * @return mixed
+     */
+    public function save(array $data = array(), array $query = array())
+    {
+        return $this->update($data, $query, true);
     }
 
     /**
      * @param array $query
      *              - see fetch()
-     * @param null $connection
      * @return mixed
      */
-    public function delete($query = array(), $connection = null)
+    public function delete($query = array())
     {
         $query = $this->_resultQuery($query);
 
-        $this->connection($connection, $query);
-
-        $query = $this->formatQuery($query);
-
-        return $this->link->table($this->source($query[':source'], $query))->delete();
+        return $this->prepare($query, $query)->delete();
     }
 
     /**
-     * just overwrite it
-     *
-     * @param $source
      * @param $data
-     * @return string returns table name
+     * @param $query
+     * @return \Parith\Data\Source\Database
      */
-    public function source($source, $data)
+    protected function prepare($data, $query)
     {
-        return $source;
+        $this->connection($data);
+
+        $query = $this->formatQuery($query);
+
+        $this->table($query[':source'], $data);
+
+        return $this->link;
     }
 
     /**
@@ -263,7 +286,7 @@ class Database extends Model
      * @param $join
      * @param $query
      * @return array
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function join($join, $query)
     {
