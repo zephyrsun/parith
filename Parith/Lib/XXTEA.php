@@ -34,7 +34,7 @@ class XXTEA extends Result
     /**
      * @param $key
      * @return XXTEA
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function setKey($key)
     {
@@ -62,7 +62,7 @@ class XXTEA extends Result
     /**
      * @param $val
      * @return array|string
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function encrypt($val)
     {

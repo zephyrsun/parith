@@ -64,7 +64,7 @@ class Basic extends Result
      * @param $name
      * @param $ext
      * @return string
-     * @throws \Parith\Exception
+     * @throws \Exception
      */
     public function getSourceFile($name, $ext)
     {

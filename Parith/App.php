@@ -23,6 +23,8 @@ define('BASE_DIR', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 include __DIR__ . '/Common.php';
 include __DIR__ . '/Controller/Basic.php';
 
+\spl_autoload_register('\Parith\App::import');
+
 class App
 {
     public static $options = array(
@@ -42,7 +44,7 @@ class App
     {
         self::$options = $options + self::$options;
 
-        return self::$options;
+        self::$options;
     }
 
     public static function getOption($key)
@@ -50,11 +52,6 @@ class App
         $option = & self::$options[$key] or $option = array();
 
         return $option;
-    }
-
-    public static function registerAutoloader()
-    {
-        \spl_autoload_register('\Parith\App::import');
     }
 
     /**
@@ -103,10 +100,10 @@ class App
         define('APP_DIR', BASE_DIR . $namespace . DIRECTORY_SEPARATOR);
 
         // timezone setup
-        //\date_default_timezone_set(self::$options['app']['timezone']);
+        //\date_default_timezone_set(self::getOption('timezone'));
 
-        \set_error_handler('\Parith\App::errorHandler');
-        \set_exception_handler('\Parith\App::exceptionHandler');
+        //\set_error_handler('\Parith\App::errorHandler');
+        //\set_exception_handler('\Parith\App::exceptionHandler');
 
         $query = Router::parse($url);
 
