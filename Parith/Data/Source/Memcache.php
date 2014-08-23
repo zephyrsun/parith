@@ -52,7 +52,7 @@ class Memcache extends Source
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
 
         if ($this->connected === false)
-            throw new \Exception('Memcache could not connect to: ' . $options['host'] . ':' . $options['port']);
+            throw new \Exception('Fail to connect Memcache server: ' . $options['host'] . ':' . $options['port']);
 
         $this->setCompress($options['compress']);
 

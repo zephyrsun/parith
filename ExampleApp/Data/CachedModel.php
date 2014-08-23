@@ -28,7 +28,7 @@ abstract class CachedModel extends Database
         $this->db_options['dbname'] = $this->db_name;
     }
 
-    public function connection($options, $query = array())
+    public function connection($query = array())
     {
         return parent::connection($this->db_options);
     }

@@ -29,12 +29,13 @@ class Database extends Source
         'driver' => 'mysql',
         'host' => '127.0.0.1',
         'port' => 3306,
-        'db_name' => null,
+        'db_name' => '',
         'username' => 'root',
-        'password' => null,
+        'password' => '',
         'options' => array(
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            \PDO::ATTR_EMULATE_PREPARES => false,
 
             #overwrite 'options' if not using MySQL
             \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
@@ -43,30 +44,27 @@ class Database extends Source
         )
     );
 
-    public function __construct(array $options = array())
-    {
-        parent::__construct($options);
-        $this->initial();
-    }
+    public $db_name = '';
+    public $table_name = '';
 
     /**
      * @param array $options
-     * @return mixed|void
+     * @return mixed
      */
     public function connect(array $options)
     {
+        $this->initial();
+
         $options = static::option($options);
 
-        try {
-            $this->link = new \PDO(
-                "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
-                $options['username'],
-                $options['password'],
-                $options['options']
-            );
-        } catch (\PDOException $e) {
-            \Exception::handler($e);
-        }
+        $options['db_name'] or $options['db_name'] = $this->db_name;
+
+        $this->link = new \PDO(
+            "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
+            $options['username'],
+            $options['password'],
+            $options['options']
+        );
     }
 
     /**
@@ -85,7 +83,7 @@ class Database extends Source
     {
         $this->clauses = array(
             'fields' => '*',
-            'table' => '',
+            'table' => $this->table_name,
             'join' => '',
             'where' => ' WHERE 1',
             'group' => '',
@@ -137,7 +135,7 @@ class Database extends Source
      */
     public function where($field, $operator, $value = null, $glue = 'AND')
     {
-        if ($value===null) {
+        if ($value === null) {
 
             $value = $operator;
             if (strpos($field, '?') === false)
@@ -372,7 +370,8 @@ class Database extends Source
         return $this->params;
     }
 
-    public function getWhere(){
+    public function getWhere()
+    {
         return $this->clauses['where'];
     }
 
@@ -465,7 +464,9 @@ class Database extends Source
 
     public function close()
     {
-        $this->link = null;
+        if ($this->link)
+            $this->link = null;
+
         return $this;
     }
 

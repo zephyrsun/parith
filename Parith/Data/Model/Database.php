@@ -15,6 +15,7 @@
 namespace Parith\Data\Model;
 
 use \Parith\Data\Model;
+use \Parith\Data\Source\Database as source;
 
 class Database extends Model
 {
@@ -41,15 +42,21 @@ class Database extends Model
         $this->options[':source'] = $this->table_name;
     }
 
+    /**
+     * do overwrite, sharding etc.
+     * @param array $query
+     * @return \Parith\Data\Source\Database
+     */
     public function connection($query = array())
     {
-        return $this->link = new \Parith\Data\Source\Database(array(
+        return $this->link = source::connection(array(
             'db_name' => $this->db_name
         ));
     }
 
     /**
-     * @return array|int
+     * @param $mode
+     * @return mixed
      */
     public function setFetchMode($mode)
     {
@@ -179,7 +186,7 @@ class Database extends Model
     }
 
     /**
-     * overwrite it, sharding etc.
+     * do overwrite, sharding etc.
      *
      * @param $table
      * @param $data
