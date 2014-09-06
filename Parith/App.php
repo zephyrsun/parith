@@ -63,7 +63,7 @@ class App
     }
 
     /**
-     * cli()
+     *  php cli.php "?c=index&a=cli" "key1=value1&key2=value2"
      */
     public function cli()
     {

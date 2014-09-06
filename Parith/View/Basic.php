@@ -31,7 +31,7 @@ class Basic extends Result
     {
         $this->options = $options + App::getOption('view') + $this->options;
 
-        $this->options['source_dir'] or $this->options['source_dir'] =  APP_DIR . 'View';
+        $this->options['source_dir'] or $this->options['source_dir'] = \APP_DIR . 'View';
     }
 
     /**
@@ -46,6 +46,20 @@ class Basic extends Result
         \extract($this->resultGet(), EXTR_SKIP);
 
         include $name;
+    }
+
+    /**
+     * 设置变量
+     *
+     * @param $key
+     * @param null $val
+     * @return $this
+     */
+    public function assign($key, $val = null)
+    {
+        parent::resultSet($key, $val);
+
+        return $this;
     }
 
     /**
