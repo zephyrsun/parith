@@ -24,10 +24,10 @@ class Cookie extends Result
         'expire' => 7200,
         'path' => '/',
         'domain' => '',
-        'handler' => '\Parith\Lib\CookieHandler',
-        'handler_key' => 'Parith'
+        'crypt' => '\Parith\Lib\CookieHandler',
+        'crypt_key' => 'crypt.cookie.parith'
     )
-    , $handler;
+    , $crypt;
 
     /**
      * @param array $options
@@ -37,8 +37,8 @@ class Cookie extends Result
     {
         $this->options = $options + App::getOption('cookie') + $this->options;
 
-        if ($this->options['handler'])
-            $this->handler = new $this->options['handler']($this->options['handler_key']);
+        if ($this->options['crypt'])
+            $this->crypt = new $this->options['crypt']($this->options['crypt_key']);
     }
 
     /**
@@ -50,8 +50,8 @@ class Cookie extends Result
         if (isset($_COOKIE[$key])) {
             $ret = $_COOKIE[$key];
 
-            if ($this->handler)
-                return $this->handler->decode($ret);
+            if ($this->crypt)
+                return $this->crypt->decrypt($ret);
 
             return $ret;
         }
@@ -67,8 +67,8 @@ class Cookie extends Result
      */
     public function set($key, $val, $expire = 0)
     {
-        if ($this->handler)
-            $val = $this->handler->encode($val);
+        if ($this->crypt)
+            $val = $this->crypt->encrypt($val);
 
         if ($expire > 0)
             $expire += APP_TS;
@@ -125,7 +125,7 @@ class CookieHandler
         $this->key_length = strlen(\ord('/') ^ $this->key);
     }
 
-    public function encode($val)
+    public function encrypt($val)
     {
         $val = String::encode($val);
 
@@ -138,7 +138,7 @@ class CookieHandler
         return $ret;
     }
 
-    public function decode($val)
+    public function decrypt($val)
     {
         $ret = '';
         foreach (\str_split($val, $this->key_length) as $v) {
