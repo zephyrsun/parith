@@ -15,7 +15,7 @@
 namespace Parith\Data\Model;
 
 use \Parith\Data\Model;
-use \Parith\Data\Source\Database as source;
+use \Parith\Data\Source\Database as DBSource;
 
 class Database extends Model
 {
@@ -49,20 +49,9 @@ class Database extends Model
      */
     public function connection($query = array())
     {
-        return $this->link = source::connection(array(
+        return $this->link = DBSource::singleton(array(
             'db_name' => $this->db_name
         ));
-    }
-
-    /**
-     * @param $mode
-     * @return mixed
-     */
-    public function setFetchMode($mode)
-    {
-        $mode or $mode = $this->_fetch_mode;
-
-        return $this->link->setFetchMode($mode);
     }
 
     /**
@@ -79,23 +68,29 @@ class Database extends Model
 
     /**
      * @param $query
-     *          - 1 // means find $primary_key = 1
-     *          - array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
-     *          - ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
+     *
+     * e.g.:
+     *
+     *  1 // find $primary_key = 1
+     *  array('id' => array('<', 6), array('gender' => array('=', 'male', 'OR'), ':limit' => 5)
+     *
+     *  ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
+     *
      * @param array $params
-     * @param array|null $mode
+     * @param int $mode
+     * @param null $mode_param
      * @return mixed
      */
-    public function fetch($query, array $params = array(), $mode = null)
+    public function fetch($query, array $params = array(), $mode = 0, $mode_param = null)
     {
         $this->connection($query);
 
         if (!is_string($query)) {
-            $query = $this->getFetchQuery($query, $params);
-            $params += $this->link->getParams();
+            $this->link->setParams($params);
+            $this->getFetchQuery($query);
         }
 
-        return $this->setFetchMode($mode)->fetch($query, $params);
+        return $this->fetch($mode, $mode_param);
     }
 
     /**
@@ -103,19 +98,20 @@ class Database extends Model
      *
      * @param $query
      * @param array $params
-     * @param array|null $mode
-     * @return mixed
+     * @param int $mode
+     * @param null $mode_param
+     * @return array|false
      */
-    public function fetchAll($query, array $params = array(), $mode = null)
+    public function fetchAll($query, array $params = array(), $mode = 0, $mode_param = null)
     {
         $this->connection($query);
 
         if (!is_string($query)) {
-            $query = $this->getFetchQuery($query, $params);
-            $params += $this->link->getParams();
+            $this->link->setParams($params);
+            $this->getFetchQuery($query);
         }
 
-        return $this->setFetchMode($mode)->fetchAll($query, $params);
+        return $this->link->fetchAll($mode, $mode_param);
     }
 
     /**
@@ -133,7 +129,7 @@ class Database extends Model
 
         unset($query[':page']);
 
-        return $this->fetch($query, array(), array(\PDO::FETCH_COLUMN, 0));
+        return $this->fetch($query, array(), \PDO::FETCH_COLUMN, 0);
     }
 
     /**
@@ -155,8 +151,6 @@ class Database extends Model
             ->having($query[':having'])
             ->orderBy($query[':order'])
             ->join($this->join($query[':join'], $query));
-
-        return $this->link->getSelectClause();
     }
 
     /**

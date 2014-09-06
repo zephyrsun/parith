@@ -18,14 +18,25 @@ use \Parith\Data\Source;
 
 class Database extends Source
 {
+
     const
         MODIFIER_INSERT = 'INSERT INTO',
         MODIFIER_INSERT_IGNORE = 'INSERT IGNORE INTO',
         MODIFIER_REPLACE = 'REPLACE INTO';
 
-    public $sth, $clauses = array(), $params = array(), $fetch_mode = 0;
+    /**
+     * @var \PDOStatement
+     */
+    public $sth;
 
-    public static $options = array(
+    /**
+     * @var \PDO
+     */
+    public $link;
+
+    public $clauses = array(), $params = array();
+
+    public $options = array(
         'driver' => 'mysql',
         'host' => '127.0.0.1',
         'port' => 3306,
@@ -48,18 +59,15 @@ class Database extends Source
     public $table_name = '';
 
     /**
-     * @param array $options
-     * @return mixed
+     * @return \PDO
      */
-    public function connect(array $options)
+    protected function connect()
     {
         $this->initial();
 
-        $options = static::option($options);
+        $options = & $this->options;
 
-        $options['db_name'] or $options['db_name'] = $this->db_name;
-
-        $this->link = new \PDO(
+        return new \PDO(
             "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
             $options['username'],
             $options['password'],
@@ -67,13 +75,21 @@ class Database extends Source
         );
     }
 
+    public function option(array $options)
+    {
+        $this->options = $options + $this->options;
+
+        $this->options['db_name'] or $this->options['db_name'] = $this->db_name;
+
+        return $this;
+    }
+
     /**
-     * @param $options
      * @return string
      */
-    public static function instanceKey($options)
+    public function instanceKey()
     {
-        return $options['host'] . ':' . $options['port'] . ':' . $options['dbname'];
+        return $this->options['host'] . ':' . $this->options['port'] . ':' . $this->options['db_name'];
     }
 
     /**
@@ -127,42 +143,36 @@ class Database extends Source
      * handle as a full clause when has "?"
      * where('(age >= ? OR age <= ?)', array(18, 30))
      *
-     * @param $field
-     * @param $operator
+     * @param $clause
+     * @param $condition
      * @param $value
      * @param $glue
      * @return Database
      */
-    public function where($field, $operator, $value = null, $glue = 'AND')
+    public function where($clause, $condition, $value = null, $glue = 'AND')
     {
         if ($value === null) {
 
-            $value = $operator;
-            if (strpos($field, '?') === false)
-                $operator = '= ?';
+            $value = $condition;
+            if (strpos($clause, '?') === false)
+                $condition = '= ?';
             else
-                $operator = '';
+                $condition = '';
+
+        } elseif ($condition == 'IN') {
+            $in = substr(str_repeat(',?', count($value)), 1);
+            $condition = "IN ($in)";
 
         } else {
-
-
-            if ($operator == 'IN') {
-                $in = substr(str_repeat(',?', count($value)), 1);
-                $operator = "IN ($in)";
-
-            } else {
-                $operator .= ' ?';
-            }
-
+            $condition .= ' ?';
         }
 
-        $this->clauses['where'] .= " $glue $field $operator";
+        $this->clauses['where'] .= " $glue $clause $condition";
 
         if (is_array($value))
             $this->params = array_merge($this->params, $value);
         else
             $this->params[] = $value;
-
         return $this;
     }
 
@@ -287,7 +297,7 @@ class Database extends Source
     /**
      * @param $data
      * @param string $modifier
-     * @return mixed
+     * @return int|bool
      */
     public function insert(array $data, $modifier = null)
     {
@@ -301,7 +311,6 @@ class Database extends Source
         }
 
         $modifier or $modifier = self::MODIFIER_INSERT;
-
         $ret = $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');', $this->params);
 
         if ($ret) {
@@ -323,44 +332,67 @@ class Database extends Source
     }
 
     /**
-     * @param $query
-     * @param array $params
+     * @param int $mode
+     * @param mixed $mode_param
      * @return mixed
      */
-    public function fetch($query, array $params = array())
+    public function fetch($mode = 0, $mode_param = null)
     {
-        $this->query($query, $params);
+        $this->query($this->getSelectClause(), $this->params);
+        return $this->_setFetchMode($mode, $mode_param)->fetch();
+    }
 
-        return $this->setPDOFetchMode()->fetch();
+    /**
+     * @param int $mode
+     * @param mixed $mode_param
+     * @param bool $reset set as false，when need fetchAllCount()
+     *            $array = $this->fetchAll(0, null, false)
+     *            $count = $this->fetchAllCount()
+     * @return array
+     */
+    public function fetchAll($mode = 0, $mode_param = null, $reset = true)
+    {
+        $this->query($this->getSelectClause(), $this->params, $reset);
+        return $this->_setFetchMode($mode, $mode_param)->fetchAll();
+    }
+
+    public function fetchAllCount()
+    {
+        return $this->field('count(*)')->limit(1)->fetch(\PDO::FETCH_COLUMN, 0);
     }
 
     /**
      * @param $query
      * @param array $params
-     * @return mixed
+     * @param bool $reset
+     * @return bool
      */
-    public function fetchAll($query, array $params = array())
-    {
-        $this->query($query, $params);
-
-        return $this->setPDOFetchMode()->fetchAll();
-    }
-
-    /**
-     * @param $query
-     * @param array $params
-     * @return mixed
-     */
-    public function query($query, array $params = array())
+    public function query($query, array $params = array(), $reset = true)
     {
         $this->sth = $this->link->prepare($query);
 
-        $result = $this->sth->execute($params);
+        if ($this->sth) {
+            $result = $this->sth->execute($params);
 
-        $this->initial();
+            if ($reset)
+                $this->initial();
 
-        return $result;
+            return $result;
+        }
+
+        return false;
     }
+
+    /**
+     * @param $params
+     * @return $this
+     */
+    public function setParams($params)
+    {
+        $this->params += $params;
+        return $this;
+    }
+
 
     /**
      * @return array
@@ -385,25 +417,17 @@ class Database extends Source
     }
 
     /**
-     * @param $mode
-     * @return $this
+     * @param int $mode
+     * @param mixed $mode_param
+     * @return \PDOStatement
      */
-    public function setFetchMode($mode)
+    private function _setFetchMode($mode, $mode_param)
     {
-        $this->fetch_mode = $mode;
-        return $this;
-    }
-
-    /**
-     * @return statement
-     */
-    protected function setPDOFetchMode()
-    {
-        if ($this->fetch_mode) {
-            if (is_array($this->fetch_mode))
-                call_user_func_array(array($this->sth, 'setFetchMode'), $this->fetch_mode);
+        if ($mode) {
+            if ($mode_param === null)
+                $this->sth->setFetchMode($mode);
             else
-                $this->sth->setFetchMode($this->fetch_mode);
+                $this->sth->setFetchMode($mode, $mode_param);
         }
 
         return $this->sth;
@@ -439,7 +463,7 @@ class Database extends Source
      */
     public function errorInfo()
     {
-        return $this->sth->errorInfo();
+        return $this->link->errorInfo();
     }
 
     /**
@@ -464,8 +488,7 @@ class Database extends Source
 
     public function close()
     {
-        if ($this->link)
-            $this->link = null;
+        $this->link = null;
 
         return $this;
     }

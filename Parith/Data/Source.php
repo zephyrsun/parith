@@ -18,19 +18,30 @@ use \Parith\App;
 
 abstract class Source
 {
-    public static $options = array(
+    public $options = array(
         'host' => '127.0.0.1',
         'port' => 0
     );
 
-    public $configs = array();
+    public $configs = array(), $connected = false, $link;
 
-    protected $link, $connected = false;
+    public static $pool = array();
 
     public function __construct(array $options = array())
     {
-        if ($options)
-            $this->connect($options);
+        if ($options) {
+            $this->option($options);
+            $this->pool();
+        }
+    }
+
+    public function pool()
+    {
+        $link = & $pool[$this->instanceKey()] or $link = $this->connect();
+
+        $this->link = $link;
+
+        return $this;
     }
 
     /**
@@ -44,7 +55,7 @@ abstract class Source
      * @param array $options
      * @return mixed
      */
-    abstract public function connect(array $options);
+    abstract protected function connect();
 
     /**
      * singleton
@@ -53,21 +64,17 @@ abstract class Source
      * @param array $options
      * @return \get_called_class
      */
-    public static function connection($options)
+    public static function singleton(array $options)
     {
-        return App::getInstance(\get_called_class(), \func_get_args(), static::instanceKey($options));
+        return App::getInstance(\get_called_class(), \func_get_args());
     }
 
     /**
-     * @param $options
      * @return string
      */
-    public static function instanceKey($options)
+    public function instanceKey()
     {
-        if (is_array($options))
-            return $options['host'] . ':' . $options['port'];
-
-        return $options;
+        return $this->options['host'] . ':' . $this->options['port'];
     }
 
     /**
@@ -85,16 +92,12 @@ abstract class Source
      *
      * @static
      * @param array $options
-     * @return array|bool
-     * @throws \Exception
+     * @return \Parith\Data\Source
      */
-    public static function option($options)
+    public function option(array $options)
     {
-        if (is_array($options))
-            return $options + static::$options;
+        $this->options = $options + $this->options;
 
-        throw new \Exception('options must be an Array');
-
-        return false;
+        return $this;
     }
 }

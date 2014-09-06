@@ -20,7 +20,7 @@ use \Parith\Data\Source;
 
 class Memcache extends Source
 {
-    public static $options = array(
+    public $options = array(
         'host' => '127.0.0.1',
         'port' => 11211,
         'timeout' => 1,
@@ -32,6 +32,11 @@ class Memcache extends Source
         'failure_callback' => null,
     );
 
+    /**
+     * @var \Memcache
+     */
+    public $link;
+
     private $_compress;
 
     public function __construct(array $options = array())
@@ -41,27 +46,26 @@ class Memcache extends Source
     }
 
     /**
-     * @param array $options
-     * @return mixed|Memcache
+     * @return \Memcache
      * @throws \Exception
      */
-    public function connect(array $options)
+    protected function connect()
     {
-        $options = static::option($options);
+        $options = & $this->options;
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
 
-        if ($this->connected === false)
-            throw new \Exception('Fail to connect Memcache server: ' . $options['host'] . ':' . $options['port']);
-
         $this->setCompress($options['compress']);
 
-        return $this;
+        //if (!$this->connected)
+        //    throw new \Exception('Fail to connect Memcache server: ' . $this->instanceKey());
+
+        return $this->link;
     }
 
     /**
      * @param array $options
-     * @return Memcache
+     * @return bool|\Memcache
      * @throws \Exception
      */
     public function addServer(array $options)
@@ -71,12 +75,12 @@ class Memcache extends Source
         $this->connected = $this->link->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
             $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
 
-        if ($this->connected === false)
-            throw new \Exception('Memcache could not addServer: ' . $options['host'] . ':' . $options['port']);
-
         $this->setCompress($options['compress']);
 
-        return $this;
+        //if (!$this->connected)
+        //    throw new \Exception('Fail to add Memcache server: ' . $this->instanceKey());
+
+        return $this->link;
     }
 
     /**

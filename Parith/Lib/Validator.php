@@ -3,18 +3,6 @@
 /**
  * Validator
  *
- * e.g.:
- * $validator = new \Parith\Lib\Validator($_POST);
- * $error = $validator->checkRules(array(
- *      'email' => 'isEmail',
- *      'username' => array('isLengthBetween', 3, 8),
- * ));
- * var_dump(
- *      $error,
- *      \Parith\Lib\Validator::isEmail('abc@def.com'),
- *      \Parith\Lib\Validator::isLengthBetween('hello', 3, 16)
- * );
- *
  * Parith :: a compact PHP framework
  *
  * @package Parith
@@ -42,6 +30,18 @@ class Validator extends Result
             $this->data = $_POST;
     }
 
+    /**
+     *
+     * $validator = new \Parith\Lib\Validator($_POST);
+     * $error = $validator->checkRules(array(
+     *      'email' => 'email',
+     *      'username' => array('lengthBetween', 3, 8),
+     *
+     * ));
+     *
+     * @param array $rules
+     * @return array|bool
+     */
     public function checkRules(array $rules)
     {
         $this->_err = array();
@@ -62,7 +62,7 @@ class Validator extends Result
             if ($ret) {
                 $ret[$field] = $v;
             } else {
-                $this->_err[] = array('method' => $method, 'arguments' => $args);
+                $this->_err[] = $field;
             }
         }
 
@@ -72,12 +72,19 @@ class Validator extends Result
         return $ret;
     }
 
-    /**
-     * @return array
-     */
     public function getError()
     {
         return $this->_err;
+    }
+
+    public function getFirstError()
+    {
+        return \current($this->_err);
+    }
+
+    public function getLastError()
+    {
+        return \end($this->_err);
     }
 
     /**

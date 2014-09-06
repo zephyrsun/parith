@@ -30,9 +30,13 @@ abstract class Model extends Result
         ':limit' => 0,
         ':page' => 0,
     )
-    , $link
     , $fetch_mode = self::FETCH_ARRAY
-    , $primary_key = 'id'
+    , $primary_key = 'id';
+
+    /**
+     * @var \Parith\Data\Source\Database
+     */
+    public $link;
 
         /**
          * array(
@@ -41,7 +45,7 @@ abstract class Model extends Result
          * @var array
          *          - type: belongs_to, has_one, has_many
          */
-    , $relations = array();
+    public $relations = array();
 
     public static $method_alias = array(
         'find' => 'fetch',

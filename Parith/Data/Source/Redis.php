@@ -18,11 +18,16 @@ use \Parith\Data\Source;
 
 class Redis extends Source
 {
-    public static $options = array(
+    public $options = array(
         'host' => '127.0.0.1',
         'port' => 6379,
         'timeout' => 0.0,
     );
+
+    /**
+     * @var \Redis
+     */
+    public $link;
 
     public function __construct(array $options = array())
     {
@@ -31,19 +36,19 @@ class Redis extends Source
     }
 
     /**
-     * @param array $options
-     * @return mixed|Redis
+     * @return \Redis
      * @throws \Exception
      */
-    public function connect(array $options)
+    protected function connect()
     {
-        $options = static::option($options);
+        $options = & $this->options;
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
-        if ($this->connected === false)
-            throw new \Exception('Redis could not connect to ' . $options['host'] . ':' . $options['port']);
 
-        return $this;
+        if (!$this->connected)
+            throw new \Exception('Fail to connect Redis server: ' . $this->instanceKey());
+
+        return $this->link;
     }
 
     /**
