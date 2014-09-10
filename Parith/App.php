@@ -63,9 +63,9 @@ class App
     }
 
     /**
-     *  php cli.php "?c=index&a=cli" "key1=value1&key2=value2"
+     *  php cmd.php "?c=index&a=cli" "key1=value1&key2=value2"
      */
-    public function cli()
+    public function cmd()
     {
         $argv = $_SERVER['argv'];
 

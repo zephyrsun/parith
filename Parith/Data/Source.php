@@ -64,7 +64,7 @@ abstract class Source
      * @param array $options
      * @return \get_called_class
      */
-    public static function singleton(array $options)
+    public static function singleton(array $options = array())
     {
         return App::getInstance(\get_called_class(), \func_get_args());
     }

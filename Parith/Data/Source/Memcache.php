@@ -24,7 +24,6 @@ class Memcache extends Source
         'host' => '127.0.0.1',
         'port' => 11211,
         'timeout' => 1,
-        'compress' => 0,
         'persistent' => true,
         'weight' => 1,
         'retry_interval' => 15,
@@ -37,7 +36,7 @@ class Memcache extends Source
      */
     public $link;
 
-    private $_compress;
+    public $compress = 0; //\MEMCACHE_COMPRESSED
 
     public function __construct(array $options = array())
     {
@@ -54,8 +53,6 @@ class Memcache extends Source
         $options = & $this->options;
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
-
-        $this->setCompress($options['compress']);
 
         //if (!$this->connected)
         //    throw new \Exception('Fail to connect Memcache server: ' . $this->instanceKey());
@@ -75,31 +72,10 @@ class Memcache extends Source
         $this->connected = $this->link->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
             $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
 
-        $this->setCompress($options['compress']);
-
         //if (!$this->connected)
         //    throw new \Exception('Fail to add Memcache server: ' . $this->instanceKey());
 
         return $this->link;
-    }
-
-    /**
-     * @param $compress
-     * @return Memcache
-     */
-    public function setCompress($compress)
-    {
-        $this->_compress = $compress;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCompress()
-    {
-        $ret = & $this->_compress;
-        return $ret; // ? \MEMCACHE_COMPRESSED : 0;
     }
 
     /**
@@ -108,7 +84,7 @@ class Memcache extends Source
      */
     public function get($key)
     {
-        return $this->link->get($key, $this->getCompress());
+        return $this->link->get($key, $this->compress);
     }
 
     /**
@@ -119,7 +95,7 @@ class Memcache extends Source
      */
     public function set($key, $val, $expire = 0)
     {
-        return $this->link->set($key, $val, $this->getCompress(), $expire);
+        return $this->link->set($key, $val, $this->compress, $expire);
     }
 
     /**
@@ -130,7 +106,7 @@ class Memcache extends Source
      */
     public function add($key, $val, $expire = 0)
     {
-        return $this->link->add($key, $val, $this->getCompress(), $expire);
+        return $this->link->add($key, $val, $this->compress, $expire);
     }
 
     /**
@@ -141,7 +117,7 @@ class Memcache extends Source
      */
     public function replace($key, $val, $expire = 0)
     {
-        return $this->link->replace($key, $val, $this->getCompress(), $expire);
+        return $this->link->replace($key, $val, $this->compress, $expire);
     }
 
     /**

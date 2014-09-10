@@ -31,7 +31,7 @@ class Basic extends Result
     {
         $this->options = $options + App::getOption('view') + $this->options;
 
-        $this->options['source_dir'] or $this->options['source_dir'] = \APP_DIR . 'View';
+        $this->options['source_dir'] or $this->options['source_dir'] = APP_DIR . 'View';
     }
 
     /**
