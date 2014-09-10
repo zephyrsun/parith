@@ -342,11 +342,16 @@ class Database extends Source
         return $this->_setFetchMode($mode, $mode_param)->fetch();
     }
 
+    public function fetchColumn($col = 0)
+    {
+        return $this->fetch(\PDO::FETCH_COLUMN, $col);
+    }
+
     /**
      * @param int $mode
      * @param mixed $mode_param
      * @param bool $reset set as false，when need fetchAllCount()
-     *            $array = $this->fetchAll(0, null, false)
+     *            $data = $this->fetchAll(0, null, false)
      *            $count = $this->fetchAllCount()
      * @return array
      */
@@ -358,7 +363,7 @@ class Database extends Source
 
     public function fetchAllCount()
     {
-        return $this->field('count(*)')->limit(1)->fetch(\PDO::FETCH_COLUMN, 0);
+        return $this->field('count(*)')->limit(1)->fetchColumn(0);
     }
 
     /**
@@ -381,6 +386,30 @@ class Database extends Source
         }
 
         return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function beginTransaction()
+    {
+        return $this->link->beginTransaction();
+    }
+
+    /**
+     * @return bool
+     */
+    public function commit()
+    {
+        return $this->link->commit();
+    }
+
+    /**
+     * @return bool
+     */
+    public function rollback()
+    {
+        return $this->link->rollBack();
     }
 
     /**
