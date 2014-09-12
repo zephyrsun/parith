@@ -47,6 +47,7 @@ class Database extends Source
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             \PDO::ATTR_EMULATE_PREPARES => false,
+            //\PDO::ATTR_PERSISTENT => false,
 
             #overwrite 'options' if not using MySQL
             \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
