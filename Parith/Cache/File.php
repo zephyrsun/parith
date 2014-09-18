@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Cache;
@@ -35,6 +35,7 @@ class File extends Cache
 
     /**
      * @param $name
+     *
      * @return mixed
      */
     public function get($name)
@@ -50,6 +51,7 @@ class File extends Cache
     /**
      * @param $name
      * @param $val
+     *
      * @return bool|int
      */
     public function set($name, $val)
@@ -59,6 +61,7 @@ class File extends Cache
 
     /**
      * @param $name
+     *
      * @return bool
      */
     public function delete($name)
@@ -76,6 +79,7 @@ class File extends Cache
 
     /**
      * @param $name
+     *
      * @return string
      */
     public function filename($name)

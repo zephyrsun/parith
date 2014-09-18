@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib;
@@ -22,6 +22,7 @@ class Request extends Result
 {
     /**
      * @param string $key
+     *
      * @return mixed
      */
     public static function get($key = null)
@@ -34,6 +35,7 @@ class Request extends Result
 
     /**
      * @param string $key
+     *
      * @return mixed
      */
     public static function post($key = null)
@@ -46,6 +48,7 @@ class Request extends Result
 
     /**
      * @param string $key
+     *
      * @return mixed
      */
     public static function env($key = null)
@@ -60,6 +63,7 @@ class Request extends Result
 
     /**
      * @param string $method
+     *
      * @return bool
      */
     public static function method($method = null)

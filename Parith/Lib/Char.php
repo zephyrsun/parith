@@ -6,11 +6,11 @@
  * Parith :: a compact PHP framework
  * http://www.parith.net/
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib;
@@ -22,9 +22,11 @@ class Char
      * not DJBX33A (Daniel J. Bernstein, Times 33 with Addition) hash function
      *
      * @static
+     *
      * @param string $str
-     * @param int $s In my test, number 5381 distributes better than number 131
-     * @param int $hash
+     * @param int    $s In my test, number 5381 distributes better than number 131
+     * @param int    $hash
+     *
      * @return int
      */
     public static function hash($str, $s = 5381, $hash = 0)
@@ -37,7 +39,9 @@ class Char
 
     /**
      * @static
+     *
      * @param $str
+     *
      * @return string
      */
     public static function sanitize($str)
@@ -47,7 +51,9 @@ class Char
 
     /**
      * @static
+     *
      * @param $str
+     *
      * @return bool
      */
     public static function isAscii($str)
@@ -57,9 +63,11 @@ class Char
 
     /**
      * @static
-     * @param $str
-     * @param string $delimiter
+     *
+     * @param          $str
+     * @param string   $delimiter
      * @param function $filter
+     *
      * @return array
      */
     public static function toArray($str, $delimiter = ',', $filter = null)

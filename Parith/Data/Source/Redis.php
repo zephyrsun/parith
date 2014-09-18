@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Data\Source;
@@ -29,18 +29,15 @@ class Redis extends Source
      */
     public $link;
 
-    public function __construct(array $options = array())
-    {
-        $this->link = new \Redis();
-        parent::__construct($options);
-    }
 
     /**
      * @return \Redis
      * @throws \Exception
      */
-    protected function connect()
+    protected function getLink()
     {
+        $this->link = new \Redis();
+
         $options = & $this->options;
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
@@ -53,7 +50,8 @@ class Redis extends Source
 
     /**
      * @param string $method
-     * @param array $args
+     * @param array  $args
+     *
      * @return mixed
      */
     public function call($method, $args)

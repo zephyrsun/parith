@@ -7,11 +7,11 @@
  * Parith :: a compact PHP framework
  * http://www.parith.net/
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib;
@@ -22,7 +22,9 @@ class URL
 {
     /**
      * @static
+     *
      * @param null $url
+     *
      * @return string
      */
     public static function base($url = null)
@@ -48,7 +50,9 @@ class URL
 
     /**
      * @static
+     *
      * @param string $url
+     *
      * @return string
      */
     public static function link($url = '')
@@ -67,7 +71,9 @@ class URL
 
     /**
      * @static
+     *
      * @param array $query
+     *
      * @return string
      */
     public static function query(array $query)

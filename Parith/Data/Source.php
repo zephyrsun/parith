@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Data;
@@ -31,13 +31,13 @@ abstract class Source
     {
         if ($options) {
             $this->option($options);
-            $this->pool();
+            $this->connect();
         }
     }
 
-    public function pool()
+    public function connect()
     {
-        $this->link = & self::$pool[$this->instanceKey()] or $this->link = $this->connect();
+        $this->link = & self::$pool[$this->instanceKey()] or $this->link = $this->getLink();
 
         return $this;
     }
@@ -52,13 +52,15 @@ abstract class Source
      * @abstract
      * @return mixed
      */
-    abstract protected function connect();
+    abstract protected function getLink();
 
     /**
      * singleton
      *
      * @static
+     *
      * @param array $options
+     *
      * @return \get_called_class
      */
     public static function singleton(array $options = array())
@@ -88,7 +90,9 @@ abstract class Source
      * }
      *
      * @static
+     *
      * @param array $options
+     *
      * @return \Parith\Data\Source
      */
     public function option(array $options)

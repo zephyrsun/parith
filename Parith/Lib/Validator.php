@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib;
@@ -40,6 +40,7 @@ class Validator extends Result
      * ));
      *
      * @param array $rules
+     *
      * @return array|bool
      */
     public function checkRules(array $rules)
@@ -90,6 +91,7 @@ class Validator extends Result
     /**
      * @param $name
      * @param $args
+     *
      * @throws \Exception
      */
     public function __call($name, $args)
@@ -101,7 +103,9 @@ class Validator extends Result
      * email address
      *
      * @static
+     *
      * @param $email
+     *
      * @return bool
      */
     public static function email($email)
@@ -113,7 +117,9 @@ class Validator extends Result
      * IPv4 or Ipv6 address
      *
      * @static
+     *
      * @param $ip
+     *
      * @return bool
      */
     public static function ip($ip)
@@ -125,6 +131,7 @@ class Validator extends Result
      * not null
      *
      * @param $val
+     *
      * @return bool
      */
     public static function required($val)
@@ -136,7 +143,9 @@ class Validator extends Result
      * not empty
      *
      * @static
+     *
      * @param $val
+     *
      * @return bool
      */
     public static function notEmpty($val)
@@ -148,8 +157,10 @@ class Validator extends Result
      * must match equal
      *
      * @static
+     *
      * @param $val
      * @param $ref
+     *
      * @return bool
      */
     public static function equal($val, $ref)
@@ -161,8 +172,10 @@ class Validator extends Result
      * must not match equal
      *
      * @static
+     *
      * @param $val
      * @param $ref
+     *
      * @return bool
      */
     public static function unequal($val, $ref)
@@ -174,7 +187,9 @@ class Validator extends Result
      * is numeric
      *
      * @static
+     *
      * @param $val
+     *
      * @return bool
      */
     public static function num($val)
@@ -186,8 +201,10 @@ class Validator extends Result
      * Less than or Equivalent with
      *
      * @static
+     *
      * @param $val
      * @param $ref
+     *
      * @return bool
      */
     public static function le($val, $ref)
@@ -199,8 +216,10 @@ class Validator extends Result
      * Greater than or Equivalent with
      *
      * @static
+     *
      * @param $val
      * @param $ref
+     *
      * @return bool
      */
     public static function ge($val, $ref)
@@ -212,9 +231,11 @@ class Validator extends Result
      * range of number
      *
      * @static
+     *
      * @param $val
      * @param $min
      * @param $max
+     *
      * @return bool
      */
     public static function between($val, $min, $max)
@@ -227,8 +248,10 @@ class Validator extends Result
      *  Less than or Equivalent with length
      *
      * @static
+     *
      * @param $str
      * @param $max
+     *
      * @return bool
      */
     public static function lengthLE($str, $max)
@@ -240,8 +263,10 @@ class Validator extends Result
      * Greater than or Equivalent with length
      *
      * @static
+     *
      * @param $str
      * @param $min
+     *
      * @return bool
      */
     public static function lengthGE($str, $min)
@@ -253,9 +278,11 @@ class Validator extends Result
      * range of length
      *
      * @static
+     *
      * @param $str
      * @param $min
      * @param $max
+     *
      * @return bool
      */
     public static function lengthBetween($str, $min, $max)
@@ -267,8 +294,10 @@ class Validator extends Result
      * regex match
      *
      * @static
+     *
      * @param $val
      * @param $regex
+     *
      * @return bool
      */
     public static function match($val, $regex)
@@ -280,7 +309,9 @@ class Validator extends Result
      * url
      *
      * @static
+     *
      * @param $url
+     *
      * @return bool
      */
     public static function url($url)

@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib\Image;
@@ -30,6 +30,7 @@ class GD extends Basic
 
     /**
      * @param $image
+     *
      * @return Image
      */
     protected function setImageData($image)
@@ -40,8 +41,10 @@ class GD extends Basic
 
     /**
      * @static
+     *
      * @param $width
      * @param $height
+     *
      * @return resource
      */
     protected function create($width, $height)
@@ -59,6 +62,7 @@ class GD extends Basic
 
     /**
      * @param $image
+     *
      * @return bool
      */
     public function loadImage($image)
@@ -95,9 +99,10 @@ class GD extends Basic
     }
 
     /**
-     * @param $width
-     * @param $height
+     * @param      $width
+     * @param      $height
      * @param bool $center
+     *
      * @return GD
      */
     public function resize($width, $height, $center = false)
@@ -138,6 +143,7 @@ class GD extends Basic
      * @param $height
      * @param $src_x
      * @param $src_y
+     *
      * @return GD
      */
     public function crop($width, $height, $src_x, $src_y)
@@ -154,8 +160,9 @@ class GD extends Basic
     }
 
     /**
-     * @param $angle
+     * @param     $angle
      * @param int $background
+     *
      * @return GD
      */
     public function rotate($angle, $background = 127)
@@ -178,9 +185,10 @@ class GD extends Basic
     }
 
     /**
-     * @param $image
+     * @param     $image
      * @param int $x
      * @param int $y
+     *
      * @return GD
      */
     public function watermark($image, $x = 0, $y = 0)
@@ -202,11 +210,12 @@ class GD extends Basic
     }
 
     /**
-     * @param $filename
+     * @param      $filename
      *                  - full filename, will save to a file
      *                  - jpg/png/gif, will trigger render mode
      *
      * @param null $quality
+     *
      * @return bool
      */
     public function save($filename, $quality = null)
@@ -215,9 +224,10 @@ class GD extends Basic
     }
 
     /**
-     * @param $type
+     * @param      $type
      * @param null $quality
      * @param bool $render
+     *
      * @return bool|string
      */
     public function export($type, $quality = null, $render = true)
@@ -251,7 +261,7 @@ class GD extends Basic
         }
 
         $types = static::$image_types;
-        $ext = &$types[$ext];
+        $ext = & $types[$ext];
 
         if ($ext)
             $call = 'image' . $ext;

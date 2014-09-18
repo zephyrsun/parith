@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib;
@@ -63,8 +63,9 @@ class Response extends Result
     );
 
     /**
-     * @param int $code
+     * @param int    $code
      * @param string $msg
+     *
      * @return bool
      */
     public static function httpStatus($code = 404, $msg = '')
@@ -82,8 +83,9 @@ class Response extends Result
 
     /**
      * @static
+     *
      * @param string $url
-     * @param int $status_code
+     * @param int    $status_code
      */
     public static function redirect($url = '', $status_code = 302)
     {
@@ -93,6 +95,7 @@ class Response extends Result
 
     /**
      * @param int $seconds
+     *
      * @return void
      */
     public static function expires($seconds = 1800)
@@ -102,6 +105,7 @@ class Response extends Result
 
     /**
      * @param string $etag
+     *
      * @return void
      */
     public static function etag($etag)
@@ -111,6 +115,7 @@ class Response extends Result
 
     /**
      * @param int $timestamp
+     *
      * @return void
      */
     public static function lastModified($timestamp = null)
@@ -121,6 +126,7 @@ class Response extends Result
     /**
      * @param int $since_time
      * @param int $seconds
+     *
      * @return void
      */
     public function cache($since_time, $seconds = 1800)
@@ -145,6 +151,7 @@ class Response extends Result
 
     /**
      * @param string $filename
+     *
      * @return void
      */
     public static function download($filename)
@@ -154,6 +161,7 @@ class Response extends Result
 
     /**
      * @param int $timestamp
+     *
      * @return string
      */
     public static function httpDate($timestamp = null)

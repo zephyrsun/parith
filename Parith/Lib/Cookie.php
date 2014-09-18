@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib;
@@ -31,6 +31,7 @@ class Cookie extends Result
 
     /**
      * @param array $options
+     *
      * @return \Parith\Lib\Cookie
      */
     public function __construct(array $options = array())
@@ -43,6 +44,7 @@ class Cookie extends Result
 
     /**
      * @param string $key
+     *
      * @return mixed
      */
     public function get($key)
@@ -61,8 +63,9 @@ class Cookie extends Result
 
     /**
      * @param string $key
-     * @param mixed $val
-     * @param int $expire could be negative number
+     * @param mixed  $val
+     * @param int    $expire could be negative number
+     *
      * @return bool
      */
     public function set($key, $val, $expire = 0)
@@ -86,6 +89,7 @@ class Cookie extends Result
 
     /**
      * @param string $key
+     *
      * @return bool
      */
     public function delete($key)

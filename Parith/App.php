@@ -8,11 +8,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith;
@@ -87,6 +87,7 @@ class App
 
     /**
      * @param $url
+     *
      * @return mixed
      * @throws \Exception
      */
@@ -142,7 +143,9 @@ class App
 
     /**
      * @static
+     *
      * @param $name
+     *
      * @return bool|mixed
      */
     public static function import($name)
@@ -156,9 +159,11 @@ class App
 
     /**
      * @static
-     * @param $class
-     * @param $args
+     *
+     * @param        $class
+     * @param        $args
      * @param string $key
+     *
      * @return mixed
      */
     public static function getInstance($class, $args = array(), $key = '')
@@ -192,11 +197,11 @@ class App
  *      'rules' => array('\d+' => 'Article/view/${0}'),
  *  );
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 class Router
 {
@@ -211,7 +216,8 @@ class Router
 
     /**
      * @param string $url
-     * @param array $options
+     * @param array  $options
+     *
      * @return array
      */
     public static function parse($url = '', array $options = array())
@@ -236,6 +242,7 @@ class Router
     /**
      * @param $url
      * @param $options
+     *
      * @return array
      */
     public static function parseURL($url, $options)

@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Data;
@@ -38,13 +38,13 @@ abstract class Model extends Result
      */
     public $link;
 
-        /**
-         * array(
-         * 'comment' => array('type' => 'has_many', 'key' => array('comment_id' => 'id')),
-         * );
-         * @var array
-         *          - type: belongs_to, has_one, has_many
-         */
+    /**
+     * array(
+     * 'comment' => array('type' => 'has_many', 'key' => array('comment_id' => 'id')),
+     * );
+     * @var array
+     *          - type: belongs_to, has_one, has_many
+     */
     public $relations = array();
 
     public static $method_alias = array(
@@ -85,6 +85,7 @@ abstract class Model extends Result
      * }
      *
      * @param array $query
+     *
      * @return mixed
      */
     abstract public function connection($query = array());
@@ -96,8 +97,10 @@ abstract class Model extends Result
 
     /**
      * @static
+     *
      * @param string $name
-     * @param array $args
+     * @param array  $args
+     *
      * @return bool|mixed
      */
     public static function __callStatic($name, $args)
@@ -111,6 +114,7 @@ abstract class Model extends Result
     /**
      * @param $name
      * @param $args
+     *
      * @return bool|mixed
      */
     public function __call($name, $args)

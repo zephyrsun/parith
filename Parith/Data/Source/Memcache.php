@@ -2,16 +2,14 @@
 
 /**
  * Memcache
- *
  * for compatible with Memcached protocol (Memcached, Tokyo Tyrant, Tencent CMEM, etc.)
- *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Data\Source;
@@ -28,7 +26,7 @@ class Memcache extends Source
         'weight' => 1,
         'retry_interval' => 15,
         'status' => true,
-        'failure_callback' => null,
+        'failure_callback' => NULL,
     );
 
     /**
@@ -40,16 +38,16 @@ class Memcache extends Source
 
     public function __construct(array $options = array())
     {
-        $this->link = new \Memcache();
         parent::__construct($options);
     }
 
     /**
      * @return \Memcache
-     * @throws \Exception
      */
-    protected function connect()
+    protected function getLink()
     {
+        $this->link = new \Memcache();
+
         $options = & $this->options;
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
@@ -61,25 +59,32 @@ class Memcache extends Source
     }
 
     /**
-     * @param array $options
+     * addServer(array(1 => $options, 2 => $options))
+     *
+     * @param array $server_array
+     *
      * @return bool|\Memcache
-     * @throws \Exception
      */
-    public function addServer(array $options)
+    public function addServer(array $server_array)
     {
-        $options = $this->option($options);
+        $this->link = new \Memcache();
 
-        $this->connected = $this->link->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
-            $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
+        foreach ($server_array as $options) {
+            $options = $this->option($options);
 
-        //if (!$this->connected)
-        //    throw new \Exception('Fail to add Memcache server: ' . $this->instanceKey());
+            $this->connected = $this->link->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
+                $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
+
+            //if (!$this->connected)
+            //    throw new \Exception('Fail to add Memcache server: ' . $this->instanceKey());
+        }
 
         return $this->link;
     }
 
     /**
      * @param $key
+     *
      * @return mixed
      */
     public function get($key)
@@ -88,9 +93,10 @@ class Memcache extends Source
     }
 
     /**
-     * @param $key
-     * @param $val
+     * @param     $key
+     * @param     $val
      * @param int $expire
+     *
      * @return bool
      */
     public function set($key, $val, $expire = 0)
@@ -99,9 +105,10 @@ class Memcache extends Source
     }
 
     /**
-     * @param $key
-     * @param $val
+     * @param     $key
+     * @param     $val
      * @param int $expire
+     *
      * @return bool
      */
     public function add($key, $val, $expire = 0)
@@ -111,8 +118,9 @@ class Memcache extends Source
 
     /**
      * @param string $key
-     * @param mixed $val
-     * @param int $expire
+     * @param mixed  $val
+     * @param int    $expire
+     *
      * @return bool
      */
     public function replace($key, $val, $expire = 0)
@@ -122,7 +130,8 @@ class Memcache extends Source
 
     /**
      * @param string $key
-     * @param int $int
+     * @param int    $int
+     *
      * @return int
      */
     public function increment($key, $int = 1)
@@ -132,7 +141,8 @@ class Memcache extends Source
 
     /**
      * @param string $key
-     * @param int $int
+     * @param int    $int
+     *
      * @return int
      */
     public function decrement($key, $int = 1)
@@ -142,6 +152,7 @@ class Memcache extends Source
 
     /**
      * @param $key
+     *
      * @return bool
      */
     public function delete($key)
@@ -167,8 +178,9 @@ class Memcache extends Source
      */
     public function close()
     {
-        if ($this->connected)
+        if ($this->connected) {
             $this->link->close();
+        }
 
         return $this;
     }

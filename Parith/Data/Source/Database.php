@@ -2,14 +2,13 @@
 
 /**
  * Database, Based on PDO
- *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Data\Source;
@@ -62,13 +61,13 @@ class Database extends Source
     /**
      * @return \PDO
      */
-    protected function connect()
+    protected function getLink()
     {
         $this->initial();
 
         $options = & $this->options;
 
-        return new \PDO(
+        return $this->link = new \PDO(
             "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
             $options['username'],
             $options['password'],
@@ -116,6 +115,7 @@ class Database extends Source
 
     /**
      * @param $fields
+     *
      * @return Database
      */
     public function field($fields)
@@ -127,6 +127,7 @@ class Database extends Source
 
     /**
      * @param $table
+     *
      * @return Database
      */
     public function table($table)
@@ -138,9 +139,7 @@ class Database extends Source
 
     /**
      * where('gender', 'male')
-     *
      * where('email', 'LIKE', '%@abc.com', 'OR')
-     *
      * handle as a full clause when has "?"
      * where('(age >= ? OR age <= ?)', array(18, 30))
      *
@@ -148,17 +147,19 @@ class Database extends Source
      * @param $condition
      * @param $value
      * @param $glue
+     *
      * @return Database
      */
-    public function where($clause, $condition, $value = null, $glue = 'AND')
+    public function where($clause, $condition, $value = NULL, $glue = 'AND')
     {
-        if ($value === null) {
+        if ($value === NULL) {
 
             $value = $condition;
-            if (strpos($clause, '?') === false)
+            if (strpos($clause, '?') === false) {
                 $condition = '= ?';
-            else
+            } else {
                 $condition = '';
+            }
 
         } elseif ($condition == 'IN') {
             $in = substr(str_repeat(',?', count($value)), 1);
@@ -170,34 +171,39 @@ class Database extends Source
 
         $this->clauses['where'] .= " $glue $clause $condition";
 
-        if (is_array($value))
+        if (is_array($value)) {
             $this->params = array_merge($this->params, $value);
-        else
+        } else {
             $this->params[] = $value;
+        }
         return $this;
     }
 
     /**
-     * @param $limit
+     * @param     $limit
      * @param int $offset
+     *
      * @return Database
      */
     public function limit($limit, $offset = 0)
     {
-        if ($limit)
+        if ($limit) {
             $this->clauses['limit'] = ' LIMIT ' . $offset . ', ' . $limit;
+        }
 
         return $this;
     }
 
     /**
      * @param $group
+     *
      * @return Database
      */
     public function groupBy($group)
     {
-        if ($group)
+        if ($group) {
             $this->clauses['group'] = ' GROUP BY ' . $group;
+        }
 
         return $this;
     }
@@ -211,8 +217,9 @@ class Database extends Source
      */
     public function orderBy($order)
     {
-        if (!$order)
+        if (!$order) {
             return $this;
+        }
 
         $clause = ' ORDER BY ';
 
@@ -241,12 +248,14 @@ class Database extends Source
 
     /**
      * @param $where
+     *
      * @return $this
      */
     public function having($where)
     {
-        if ($where)
+        if ($where) {
             $this->clauses['having'] = ' HAVING  ' . $where;
+        }
 
         return $this;
     }
@@ -260,8 +269,9 @@ class Database extends Source
      */
     public function join(array $join)
     {
-        if (!$join)
+        if (!$join) {
             return $this;
+        }
 
         $clause = '';
         foreach ($join as $table => $expr) {
@@ -277,6 +287,7 @@ class Database extends Source
 
     /**
      * @param $data
+     *
      * @return int
      */
     public function update(array $data)
@@ -296,11 +307,12 @@ class Database extends Source
     }
 
     /**
-     * @param $data
+     * @param        $data
      * @param string $modifier
+     *
      * @return int|bool
      */
-    public function insert(array $data, $modifier = null)
+    public function insert(array $data, $modifier = NULL)
     {
         $col = $value = array();
         foreach ($data as $k => $v) {
@@ -316,8 +328,9 @@ class Database extends Source
 
         if ($ret) {
             $id = $this->lastInsertId();
-            if ($id)
+            if ($id) {
                 return $id;
+            }
         }
 
         return $ret;
@@ -333,11 +346,12 @@ class Database extends Source
     }
 
     /**
-     * @param int $mode
+     * @param int   $mode
      * @param mixed $mode_param
+     *
      * @return mixed
      */
-    public function fetch($mode = 0, $mode_param = null)
+    public function fetch($mode = 0, $mode_param = NULL)
     {
         $this->query($this->getSelectClause(), $this->params);
         return $this->_setFetchMode($mode, $mode_param)->fetch();
@@ -349,14 +363,15 @@ class Database extends Source
     }
 
     /**
-     * @param int $mode
+     * @param int   $mode
      * @param mixed $mode_param
-     * @param bool $reset set as false，when need fetchAllCount()
-     *            $data = $this->fetchAll(0, null, false)
-     *            $count = $this->fetchAllCount()
+     * @param bool  $reset set as false，when need fetchAllCount()
+     *                     $data = $this->fetchAll(0, null, false)
+     *                     $count = $this->fetchAllCount()
+     *
      * @return array
      */
-    public function fetchAll($mode = 0, $mode_param = null, $reset = true)
+    public function fetchAll($mode = 0, $mode_param = NULL, $reset = true)
     {
         $this->query($this->getSelectClause(), $this->params, $reset);
         return $this->_setFetchMode($mode, $mode_param)->fetchAll();
@@ -368,9 +383,10 @@ class Database extends Source
     }
 
     /**
-     * @param $query
+     * @param       $query
      * @param array $params
-     * @param bool $reset
+     * @param bool  $reset
+     *
      * @return bool
      */
     public function query($query, array $params = array(), $reset = true)
@@ -380,8 +396,9 @@ class Database extends Source
         if ($this->sth) {
             $result = $this->sth->execute($params);
 
-            if ($reset)
+            if ($reset) {
                 $this->initial();
+            }
 
             return $result;
         }
@@ -415,6 +432,7 @@ class Database extends Source
 
     /**
      * @param $params
+     *
      * @return $this
      */
     public function setParams($params)
@@ -447,17 +465,19 @@ class Database extends Source
     }
 
     /**
-     * @param int $mode
+     * @param int   $mode
      * @param mixed $mode_param
+     *
      * @return \PDOStatement
      */
     private function _setFetchMode($mode, $mode_param)
     {
         if ($mode) {
-            if ($mode_param === null)
+            if ($mode_param === NULL) {
                 $this->sth->setFetchMode($mode);
-            else
+            } else {
                 $this->sth->setFetchMode($mode, $mode_param);
+            }
         }
 
         return $this->sth;
@@ -481,9 +501,10 @@ class Database extends Source
 
     /**
      * @param $name
+     *
      * @return int
      */
-    public function lastInsertId($name = null)
+    public function lastInsertId($name = NULL)
     {
         return $this->link->lastInsertId($name);
     }
@@ -518,7 +539,7 @@ class Database extends Source
 
     public function close()
     {
-        $this->link = null;
+        $this->link = NULL;
 
         return $this;
     }

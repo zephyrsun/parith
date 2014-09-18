@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\View;
@@ -41,7 +41,7 @@ class Template extends Basic
     }
 
     /**
-     * @param $name
+     * @param        $name
      * @param string $ext
      */
     public function render($name, $ext = '')
@@ -56,9 +56,11 @@ class Template extends Basic
 
     /**
      * @static
+     *
      * @param $tag
      * @param $ldelim
      * @param $rdelim
+     *
      * @return mixed
      */
     public static function parse($tag, $ldelim, $rdelim)
@@ -71,7 +73,9 @@ class Template extends Basic
 
     /**
      * @static
+     *
      * @param $str
+     *
      * @return mixed|string
      */
     public static function parseBrace($str)
@@ -129,7 +133,9 @@ class Template extends Basic
 
     /**
      * @static
+     *
      * @param $val
+     *
      * @return mixed
      */
     private static function _parseVar($val)
@@ -147,7 +153,9 @@ class Template extends Basic
 
     /**
      * @static
+     *
      * @param $val
+     *
      * @return string
      */
     private static function _parseInclude($val)
@@ -157,7 +165,9 @@ class Template extends Basic
 
     /**
      * @static
+     *
      * @param $str
+     *
      * @return string
      */
     public static function propExport($str)
@@ -173,6 +183,7 @@ class Template extends Basic
 
     /**
      * @param $data
+     *
      * @return Template
      */
     public function load($data)

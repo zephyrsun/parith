@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\View\Helper;
@@ -37,11 +37,11 @@ class Pagination extends Result
     , $url = '';
 
     /**
-     * @param $total
+     * @param              $total
      * @param array|string $query
      *                  - array: array('controller' => 'search', 'action' => 'index', 'catalog' => 1)
      *                  - string: /search /index, 'catalog' passed by $options['query']
-     * @param array $options
+     * @param array        $options
      */
     public function __construct($total, $query = '', array $options = array())
     {
@@ -81,6 +81,7 @@ class Pagination extends Result
 
     /**
      * @param $page
+     *
      * @return string
      */
     public function link($page)
@@ -90,9 +91,11 @@ class Pagination extends Result
 
     /**
      * @static
-     * @param $page
-     * @param $text
+     *
+     * @param       $page
+     * @param       $text
      * @param array $attributes
+     *
      * @return string
      */
     public static function tag($page, $text, $attributes = array())
@@ -153,9 +156,11 @@ class Pagination extends Result
 
     /**
      * @static
-     * @param $total
+     *
+     * @param              $total
      * @param array|string $query
-     * @param array $options
+     * @param array        $options
+     *
      * @return mixed
      */
     public static function generate($total, $query = '', array $options = array())
@@ -168,8 +173,9 @@ class Pagination extends Result
 
     /**
      * @param \Parith\Data\Model\Database $model
-     * @param string $query
-     * @param array $options
+     * @param string                      $query
+     * @param array                       $options
+     *
      * @return Pagination
      */
     public static function withModel(\Parith\Data\Model\Database $model, $query = '', array $options = array())

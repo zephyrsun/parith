@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Data\Model;
@@ -44,7 +44,9 @@ class Database extends Model
 
     /**
      * do overwrite, sharding etc.
+     *
      * @param array $query
+     *
      * @return \Parith\Data\Source\Database
      */
     public function connection($query = array())
@@ -55,8 +57,9 @@ class Database extends Model
     }
 
     /**
-     * @param $query
+     * @param       $query
      * @param array $param
+     *
      * @return mixed
      */
     public function query($query, array $param = array())
@@ -67,7 +70,7 @@ class Database extends Model
     }
 
     /**
-     * @param $query
+     * @param       $query
      *
      * e.g.:
      *
@@ -77,8 +80,9 @@ class Database extends Model
      *  ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
      *
      * @param array $params
-     * @param int $mode
-     * @param null $mode_param
+     * @param int   $mode
+     * @param null  $mode_param
+     *
      * @return mixed
      */
     public function fetch($query, array $params = array(), $mode = 0, $mode_param = null)
@@ -96,10 +100,11 @@ class Database extends Model
     /**
      * params see fetch()
      *
-     * @param $query
+     * @param       $query
      * @param array $params
-     * @param int $mode
-     * @param null $mode_param
+     * @param int   $mode
+     * @param null  $mode_param
+     *
      * @return array|false
      */
     public function fetchAll($query, array $params = array(), $mode = 0, $mode_param = null)
@@ -118,6 +123,7 @@ class Database extends Model
      * params see fetch()
      *
      * @param $query
+     *
      * @return mixed
      */
     public function fetchCount($query = null)
@@ -134,6 +140,7 @@ class Database extends Model
 
     /**
      * @param $query
+     *
      * @return array
      */
     public function getFetchQuery($query)
@@ -155,6 +162,7 @@ class Database extends Model
 
     /**
      * @param array $query
+     *
      * @return array
      */
     public function formatQuery(array $query)
@@ -195,7 +203,8 @@ class Database extends Model
      * @param array $data
      * @param array $query
      *              - see fetch()
-     * @param null $modifier
+     * @param null  $modifier
+     *
      * @return mixed
      */
     public function insert(array $data, array $query = array(), $modifier = null)
@@ -204,10 +213,11 @@ class Database extends Model
     }
 
     /**
-     * @param $data
+     * @param       $data
      * @param array $query
      *              - see fetch()
-     * @param bool $auto
+     * @param bool  $auto
+     *
      * @return mixed
      */
     public function update(array $data = array(), array $query = array(), $auto = false)
@@ -226,9 +236,10 @@ class Database extends Model
     }
 
     /**
-     * @param $data
+     * @param       $data
      * @param array $query
      *              - see fetch()
+     *
      * @return mixed
      */
     public function save(array $data = array(), array $query = array())
@@ -239,6 +250,7 @@ class Database extends Model
     /**
      * @param array $query
      *              - see fetch()
+     *
      * @return mixed
      */
     public function delete($query = array())
@@ -251,6 +263,7 @@ class Database extends Model
     /**
      * @param $data
      * @param $query
+     *
      * @return \Parith\Data\Source\Database
      */
     protected function prepare($data, $query)
@@ -286,6 +299,7 @@ class Database extends Model
      *
      * @param $join
      * @param $query
+     *
      * @return array
      * @throws \Exception
      */

@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib\Image;
@@ -34,6 +34,7 @@ class Imagick extends Basic
 
     /**
      * @param $image
+     *
      * @return Imagick
      */
     public function loadImage($image)
@@ -62,9 +63,10 @@ class Imagick extends Basic
     }
 
     /**
-     * @param $width
-     * @param $height
+     * @param      $width
+     * @param      $height
      * @param bool $center
+     *
      * @return Imagick
      */
     public function resize($width, $height, $center = false)
@@ -97,6 +99,7 @@ class Imagick extends Basic
      * @param $height
      * @param $src_x
      * @param $src_y
+     *
      * @return Imagick
      */
     public function crop($width, $height, $src_x, $src_y)
@@ -107,10 +110,11 @@ class Imagick extends Basic
     }
 
     /**
-     * @param $angle
+     * @param        $angle
      * @param string $background
      *                      - '#FFF'
      *                      - new \ImagickPixel('transparent')
+     *
      * @return Imagick
      */
     public function rotate($angle, $background = '#FFF')
@@ -121,11 +125,12 @@ class Imagick extends Basic
     }
 
     /**
-     * @param $x
-     * @param $y
-     * @param $width if <= 0, use the width of $this->image
-     * @param $height if <= 0, use the height of $this->image
+     * @param       $x
+     * @param       $y
+     * @param       $width  if <= 0, use the width of $this->image
+     * @param       $height if <= 0, use the height of $this->image
      * @param array $color
+     *
      * @return Imagick
      */
     public function overlay($x, $y, $width, $height, array $color = array())
@@ -164,9 +169,10 @@ class Imagick extends Basic
     }
 
     /**
-     * @param $image
+     * @param     $image
      * @param int $x
      * @param int $y
+     *
      * @return Imagick
      */
     public function watermark($image, $x = 0, $y = 0)
@@ -183,11 +189,12 @@ class Imagick extends Basic
     }
 
     /**
-     * @param $filename
+     * @param      $filename
      *                  - full filename, will save to a file
      *                  - jpg/png/gif, will trigger render mode
      *
      * @param null $quality
+     *
      * @return bool
      */
     public function save($filename, $quality = null)
@@ -199,9 +206,10 @@ class Imagick extends Basic
     }
 
     /**
-     * @param $type
+     * @param      $type
      * @param null $quality
      * @param bool $render
+     *
      * @return bool|string
      */
     public function export($type, $quality = null, $render = true)
@@ -226,7 +234,7 @@ class Imagick extends Basic
         $ext = $this->getExtension($filename) or $ext = $filename;
 
         $types = static::$image_types;
-        $ext = &$types[$ext];
+        $ext = & $types[$ext];
 
         if ($ext)
             $this->lib->setFormat($ext);

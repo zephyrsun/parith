@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\Lib;
@@ -20,8 +20,10 @@ class File extends Result
 {
     /**
      * @static
+     *
      * @param string $dir
      * @param string $mode
+     *
      * @return bool
      */
     public static function mkdir($dir, $mode = '0777')
@@ -35,7 +37,9 @@ class File extends Result
 
     /**
      * @static
+     *
      * @param string $filename
+     *
      * @return bool
      */
     public static function rm($filename)
@@ -55,8 +59,10 @@ class File extends Result
 
     /**
      * @static
+     *
      * @param string $dir
-     * @param bool $r
+     * @param bool   $r
+     *
      * @return array|bool
      */
     public static function ls($dir, $r = false)
@@ -82,9 +88,11 @@ class File extends Result
 
     /**
      * @static
-     * @param $filename
+     *
+     * @param       $filename
      * @param mixed $val
-     * @param bool $php_code
+     * @param bool  $php_code
+     *
      * @return int
      */
     public static function touch($filename, $val, $php_code = true)
@@ -97,7 +105,9 @@ class File extends Result
 
     /**
      * @static
+     *
      * @param string $filename
+     *
      * @return bool|string
      */
     public static function get($filename)
@@ -110,8 +120,10 @@ class File extends Result
 
     /**
      * @static
+     *
      * @param string $file1
      * @param string $file2
+     *
      * @return bool
      */
     public static function isNewer($file1, $file2)

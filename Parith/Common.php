@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith;
@@ -21,6 +21,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     /**
      * @param $key
      * @param $val
+     *
      * @return Result
      */
     public function __set($key, $val)
@@ -32,6 +33,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
+     *
      * @return mixed
      */
     public function &__get($key)
@@ -41,6 +43,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
+     *
      * @return bool
      */
     public function __isset($key)
@@ -50,6 +53,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
+     *
      * @return Result
      */
     public function __unset($key)
@@ -60,8 +64,9 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     }
 
     /**
-     * @param $key
+     * @param       $key
      * @param mixed $val
+     *
      * @return Array
      */
     public function resultSet($key, $val = null)
@@ -76,6 +81,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param mixed $key
+     *
      * @return mixed
      */
     public function resultGet($key = null)
@@ -88,6 +94,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
+     *
      * @return Result
      */
     public function resultDelete($key)
@@ -168,6 +175,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     /**
      * @param $key
      * @param $val
+     *
      * @return Result
      */
     public function offsetSet($key, $val)
@@ -177,6 +185,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
+     *
      * @return mixed
      */
     public function offsetGet($key)
@@ -186,6 +195,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
+     *
      * @return bool
      */
     public function offsetExists($key)
@@ -195,6 +205,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
+     *
      * @return Result
      */
     public function offsetUnset($key)
@@ -216,19 +227,21 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 abstract class Arr
 {
     /**
      * @static
-     * @param array $arr
+     *
+     * @param array  $arr
      * @param string $key
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public static function get(array $arr, $key, $default = null)
@@ -241,10 +254,12 @@ abstract class Arr
 
     /**
      * @static
-     * @param array $arr
+     *
+     * @param array  $arr
      * @param string $key
-     * @param mixed $val
+     * @param mixed  $val
      * @param string $delimiter
+     *
      * @return array
      */
     public static function pathSet(array &$arr, $key, $val, $delimiter = ',')
@@ -257,9 +272,11 @@ abstract class Arr
 
     /**
      * @static
-     * @param array $arr
+     *
+     * @param array  $arr
      * @param string $key
      * @param string $delimiter
+     *
      * @return mixed
      */
     public static function pathGet(array &$arr, $key, $delimiter = ',')
@@ -273,8 +290,10 @@ abstract class Arr
 
     /**
      * @static
-     * @param array $arr
+     *
+     * @param array  $arr
      * @param string $key
+     *
      * @return void
      */
     public static function pathDelete(array &$arr, $key)
@@ -294,9 +313,11 @@ abstract class Arr
      * Arr::unshift($array, 'first element', 'element value')
      *
      * @static
-     * @param array $arr
+     *
+     * @param array  $arr
      * @param string $key
-     * @param mixed $val
+     * @param mixed  $val
+     *
      * @return array
      */
     public static function unshift(array &$arr, $key, $val)
@@ -310,9 +331,11 @@ abstract class Arr
      * check value whether exists in array
      *
      * @static
-     * @param array $arr
+     *
+     * @param array  $arr
      * @param string $key
-     * @param mixed $val
+     * @param mixed  $val
+     *
      * @return bool
      */
     public static function find($arr, $key, $val)
@@ -328,9 +351,11 @@ abstract class Arr
      * Arr::extract($_POST, array('username', 'password'))
      *
      * @static
+     *
      * @param array $arr
      * @param array $keys
      * @param mixed $default
+     *
      * @return array
      */
     public static function extract(array $arr, array $keys, $default = null)
@@ -346,8 +371,10 @@ abstract class Arr
      * Arr::pluck($orm_result, 'username')
      *
      * @static
+     *
      * @param array $arr
-     * @param $key
+     * @param       $key
+     *
      * @return array
      */
     public static function pluck(array $arr, $key)
@@ -367,17 +394,17 @@ abstract class Arr
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
-
 abstract class String
 {
     /**
      * @param $val
+     *
      * @return string
      */
     public static function encode($val)
@@ -387,6 +414,7 @@ abstract class String
 
     /**
      * @param $val
+     *
      * @return mixed
      */
     public static function decode($val)

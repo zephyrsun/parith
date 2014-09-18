@@ -5,11 +5,11 @@
  *
  * Parith :: a compact PHP framework
  *
- * @package Parith
- * @author Zephyr Sun
+ * @package   Parith
+ * @author    Zephyr Sun
  * @copyright 2009-2013 Zephyr Sun
- * @license http://www.parith.net/license
- * @link http://www.parith.net/
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
  */
 
 namespace Parith\View;
@@ -37,6 +37,7 @@ class Basic extends Result
     /**
      * @param string $name
      * @param string $ext
+     *
      * @return void
      */
     public function render($name, $ext = '')
@@ -51,8 +52,9 @@ class Basic extends Result
     /**
      * 设置变量
      *
-     * @param $key
+     * @param      $key
      * @param null $val
+     *
      * @return $this
      */
     public function assign($key, $val = null)
@@ -65,6 +67,7 @@ class Basic extends Result
     /**
      * @param string $name
      * @param string $ext
+     *
      * @return mixed
      */
     public function fetch($name, $ext = null)
@@ -77,6 +80,7 @@ class Basic extends Result
     /**
      * @param $name
      * @param $ext
+     *
      * @return string
      * @throws \Exception
      */
