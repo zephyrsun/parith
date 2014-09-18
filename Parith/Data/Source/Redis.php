@@ -55,11 +55,11 @@ class Redis extends Source
      * @param string $method
      * @param array $args
      * @return mixed
-    public function __call($method, $args)
+     */
+    public function call($method, $args)
     {
         return \call_user_func_array(array($this->link, $method), $args);
     }
-    */
 
     /**
      * @return Redis

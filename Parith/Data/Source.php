@@ -37,9 +37,7 @@ abstract class Source
 
     public function pool()
     {
-        $link = & $pool[$this->instanceKey()] or $link = $this->connect();
-
-        $this->link = $link;
+        $this->link = & self::$pool[$this->instanceKey()] or $this->link = $this->connect();
 
         return $this;
     }
@@ -52,7 +50,6 @@ abstract class Source
 
     /**
      * @abstract
-     * @param array $options
      * @return mixed
      */
     abstract protected function connect();
