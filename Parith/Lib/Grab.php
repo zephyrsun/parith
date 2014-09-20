@@ -35,29 +35,48 @@ class Grab
 
     public function post($url, $args = array(), array $options = array())
     {
-        return $this->exec($url, 'post', $args, $options);
+        $options += array(
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $args,
+        );
+
+        return $this->exec($url, $options);
     }
 
     public function get($url, $args = array(), array $options = array())
     {
-        return $this->exec($url, 'get', $args, $options);
-    }
-
-    public function exec($url, $method = 'get', $args = array(), array $options = array())
-    {
-        $ch = curl_init();
-
-        $options += $this->options;
-
-        if ($method == 'post') {
-            $options[CURLOPT_POST] = true;
-            $options[CURLOPT_POSTFIELDS] = $args;
-        } elseif ($method = 'get' && $args) {
+        if ($args) {
             if (is_array($args))
                 $args = http_build_query($args);
 
             $url .= '?' . $args;
         }
+
+        return $this->exec($url, $options);
+    }
+
+    public function put($url, $args = array(), array $options = array())
+    {
+        $options += array(
+            CURLOPT_CUSTOMREQUEST => 'PUT',
+            CURLOPT_POSTFIELDS => $args,
+        );
+        return $this->exec($url, $options);
+    }
+
+    public function delete($url, array $options = array())
+    {
+        $options += array(
+            CURLOPT_CUSTOMREQUEST => 'DELETE',
+        );
+        return $this->exec($url, $options);
+    }
+
+    protected function exec($url, array $options = array())
+    {
+        $ch = curl_init();
+
+        $options += $this->options;
 
         $options[CURLOPT_URL] = $url;
 
