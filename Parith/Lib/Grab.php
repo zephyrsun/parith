@@ -76,11 +76,9 @@ class Grab
     {
         $ch = curl_init();
 
-        $options += $this->options;
-
         $options[CURLOPT_URL] = $url;
 
-        curl_setopt_array($ch, $this->params = $options);
+        curl_setopt_array($ch, $this->params = $options + $this->options);
 
         $result = curl_exec($ch);
 
