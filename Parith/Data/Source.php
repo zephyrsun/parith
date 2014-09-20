@@ -37,7 +37,13 @@ abstract class Source
 
     public function connect()
     {
-        $this->link = & self::$pool[$this->instanceKey()] or $this->link = $this->getLink();
+        $k = $this->instanceKey();
+
+        if (isset(self::$pool[$k])) {
+            $this->link = self::$pool[$k];
+        } else {
+            $this->link = $this->getLink();
+        }
 
         return $this;
     }

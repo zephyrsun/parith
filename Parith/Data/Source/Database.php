@@ -286,27 +286,6 @@ class Database extends Source
     }
 
     /**
-     * @param $data
-     *
-     * @return int
-     */
-    public function update(array $data)
-    {
-        $value = $params = array();
-        foreach ($data as $col => $val) {
-            $value[] = '`' . $col . '`= ?';
-            $params[] = $val;
-        }
-
-        // adjust order
-        $this->params = array_merge($params, $this->params);
-
-        $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . \implode(', ', $value) . $this->clauses['where'] . ';', $this->params);
-
-        return $this->rowCount();
-    }
-
-    /**
      * @param        $data
      * @param string $modifier
      *
@@ -335,6 +314,68 @@ class Database extends Source
 
         return $ret;
     }
+
+    /**
+     * @param array|string $data
+     *
+     * @return int
+     */
+    public function update($data)
+    {
+        if (is_array($data)) {
+            $value = $params = array();
+            foreach ($data as $col => $val) {
+                $value[] = '`' . $col . '`= ?';
+                $params[] = $val;
+            }
+
+            // adjust order
+            $this->params = array_merge($params, $this->params);
+
+            $data = \implode(', ', $value);
+        }
+
+        $ret = $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . $data . $this->clauses['where'], $this->params);
+
+        if ($ret)
+            return $this->rowCount();
+
+        return false;
+    }
+
+    /**
+     * increase a field
+     *
+     * @param string $field
+     * @param int    $num
+     *
+     * @return int
+     */
+    public function increment($field, $num)
+    {
+        if ($num > 0)
+            return $this->update("`$field`=`$field`+$num");
+
+        return false;
+    }
+
+
+    /**
+     * decrease a field
+     *
+     * @param string $field
+     * @param int    $num
+     *
+     * @return int
+     */
+    public function decrement($field, $num)
+    {
+        if ($num > 0)
+            return $this->update("`$field`=`$field`-$num");
+
+        return false;
+    }
+
 
     /**
      * @return int
@@ -388,6 +429,7 @@ class Database extends Source
      * @param bool  $reset
      *
      * @return bool
+     * @throws \Exception
      */
     public function query($query, array $params = array(), $reset = true)
     {
@@ -396,12 +438,13 @@ class Database extends Source
         if ($this->sth) {
             $result = $this->sth->execute($params);
 
-            if ($reset) {
+            if ($reset)
                 $this->initial();
-            }
 
             return $result;
         }
+
+        throw new \Exception($this->errorInfo());
 
         return false;
     }
