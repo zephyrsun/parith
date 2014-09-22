@@ -33,7 +33,10 @@ class Database extends Source
      */
     public $link;
 
-    public $clauses = array(), $params = array();
+    public $clauses = array();
+
+    public $sql = '';
+    public $params = array();
 
     public $options = array(
         'driver' => 'mysql',
@@ -303,7 +306,10 @@ class Database extends Source
         }
 
         $modifier or $modifier = self::MODIFIER_INSERT;
-        $ret = $this->query($modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');', $this->params);
+
+        $this->sql = $modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');';
+
+        $ret = $this->exec();
 
         if ($ret) {
             $id = $this->lastInsertId();
@@ -335,7 +341,9 @@ class Database extends Source
             $data = \implode(', ', $value);
         }
 
-        $ret = $this->query('UPDATE ' . $this->clauses['table'] . ' SET ' . $data . $this->clauses['where'], $this->params);
+        $this->sql = 'UPDATE ' . $this->clauses['table'] . ' SET ' . $data . $this->clauses['where'];
+
+        $ret = $this->exec();
 
         if ($ret)
             return $this->rowCount();
@@ -382,7 +390,8 @@ class Database extends Source
      */
     public function delete()
     {
-        $this->query('DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';', $this->params);
+        $this->sql = 'DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';';
+        $this->exec();
         return $this->rowCount();
     }
 
@@ -394,7 +403,8 @@ class Database extends Source
      */
     public function fetch($mode = 0, $mode_param = NULL)
     {
-        $this->query($this->getSelectClause(), $this->params);
+        $this->sql = $this->getSelectClause();
+        $this->exec();
         return $this->_setFetchMode($mode, $mode_param)->fetch();
     }
 
@@ -414,7 +424,8 @@ class Database extends Source
      */
     public function fetchAll($mode = 0, $mode_param = NULL, $reset = true)
     {
-        $this->query($this->getSelectClause(), $this->params, $reset);
+        $this->sql = $this->getSelectClause();
+        $this->exec($reset);
         return $this->_setFetchMode($mode, $mode_param)->fetchAll();
     }
 
@@ -424,19 +435,25 @@ class Database extends Source
     }
 
     /**
-     * @param       $query
-     * @param array $params
-     * @param bool  $reset
+     * @param string $query
+     * @param array  $params
      *
      * @return bool
-     * @throws \Exception
      */
-    public function query($query, array $params = array(), $reset = true)
+    public function query($query, array $params = array())
     {
-        $this->sth = $this->link->prepare($query);
+        $this->sql = $query;
+        $this->params = $params;
+
+        return $this->exec();
+    }
+
+    public function exec($reset = true)
+    {
+        $this->sth = $this->link->prepare($this->sql);
 
         if ($this->sth) {
-            $result = $this->sth->execute($params);
+            $result = $this->sth->execute($this->params);
 
             if ($reset)
                 $this->initial();
@@ -444,7 +461,7 @@ class Database extends Source
             return $result;
         }
 
-        throw new \Exception($this->errorInfo());
+        //return false here, please use $this->getError() to show Error
 
         return false;
     }
@@ -539,7 +556,8 @@ class Database extends Source
      */
     public function getLastSql()
     {
-        return $this->sth->queryString;
+        return $this->sql;
+        //return $this->sth->queryString;
     }
 
     /**
@@ -555,9 +573,14 @@ class Database extends Source
     /**
      * @return array
      */
-    public function errorInfo()
+    public function getError()
     {
-        return $this->link->errorInfo();
+        return array(
+            'error' => $this->link->errorInfo(),
+            'code' => $this->link->errorCode(),
+            'sql' => $this->getLastSql(),
+            'params' => $this->getParams(),
+        );
     }
 
     /**
