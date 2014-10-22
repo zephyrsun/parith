@@ -34,12 +34,9 @@ class Memcache extends Source
      */
     public $link;
 
-    public $compress = 0; //\MEMCACHE_COMPRESSED
+    public $connected = false;
 
-    public function __construct(array $options = array())
-    {
-        parent::__construct($options);
-    }
+    public $compress = 0; //\MEMCACHE_COMPRESSED
 
     /**
      * @return \Memcache

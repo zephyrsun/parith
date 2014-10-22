@@ -17,7 +17,6 @@ use \Parith\Data\Source;
 
 class Database extends Source
 {
-
     const
         MODIFIER_INSERT = 'INSERT INTO',
         MODIFIER_INSERT_IGNORE = 'INSERT IGNORE INTO',
@@ -34,9 +33,11 @@ class Database extends Source
     public $link;
 
     public $clauses = array();
-
     public $sql = '';
     public $params = array();
+
+    public $db_name = '';
+    public $table_name = '';
 
     public $options = array(
         'driver' => 'mysql',
@@ -45,36 +46,40 @@ class Database extends Source
         'db_name' => '',
         'username' => 'root',
         'password' => '',
-        'options' => array(
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT,
-            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-            \PDO::ATTR_EMULATE_PREPARES => false,
-            //\PDO::ATTR_PERSISTENT => false,
-
-            #overwrite 'options' if not using MySQL
-            \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
-            \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8', //1002
-            \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
-        )
+        'options' => array(),
     );
 
-    public $db_name = '';
-    public $table_name = '';
+    public $server_options = array(
+        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT,
+        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+        \PDO::ATTR_EMULATE_PREPARES => false,
+        //\PDO::ATTR_PERSISTENT => false,
+
+        #overwrite 'options' if not using MySQL
+        \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
+        \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8', //1002
+        \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
+    );
+
+    public function __construct(array $options = array())
+    {
+        $this->initial();
+
+        parent::__construct($options);
+    }
 
     /**
      * @return \PDO
      */
     protected function getLink()
     {
-        $this->initial();
-
         $options = & $this->options;
 
         return $this->link = new \PDO(
             "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
             $options['username'],
             $options['password'],
-            $options['options']
+            $this->server_options
         );
     }
 
@@ -82,7 +87,10 @@ class Database extends Source
     {
         $this->options = $options + $this->options;
 
-        $this->options['db_name'] or $this->options['db_name'] = $this->db_name;
+        $this->server_options = $this->options['options'] + $this->server_options;
+
+        if ($this->db_name)
+            $this->options['db_name'] = $this->db_name;
 
         return $this;
     }
@@ -268,7 +276,7 @@ class Database extends Source
      *          - array('comment' => 'blog.comment_id=comment.id')
      *          - array('comment' => array('on' => 'blog.comment_id=comment.id', 'type' => 'INNER JOIN'))
      *
-     * @return string
+     * @return $this
      */
     public function join(array $join)
     {
@@ -280,10 +288,10 @@ class Database extends Source
         foreach ($join as $table => $expr) {
             \is_array($expr) or $expr = array('on' => $expr, 'type' => 'INNER JOIN');
 
-            $clause .= ' ' . $expr['type'] . ' `' . $table . '` ON ' . $expr['on'];
+            $clause .= ' ' . $expr['type'] . ' ' . $table . ' ON ' . $expr['on'];
         }
 
-        $this->clauses['join'] = $clause;
+        $this->clauses['join'] .= $clause;
 
         return $this;
     }

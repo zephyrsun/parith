@@ -29,6 +29,7 @@ class Redis extends Source
      */
     public $link;
 
+    public $connected = false;
 
     /**
      * @return \Redis
@@ -46,17 +47,6 @@ class Redis extends Source
             throw new \Exception('Fail to connect Redis server: ' . $this->instanceKey());
 
         return $this->link;
-    }
-
-    /**
-     * @param string $method
-     * @param array  $args
-     *
-     * @return mixed
-     */
-    public function call($method, $args)
-    {
-        return \call_user_func_array(array($this->link, $method), $args);
     }
 
     /**

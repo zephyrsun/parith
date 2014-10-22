@@ -23,7 +23,7 @@ abstract class Source
         'port' => 0
     );
 
-    public $configs = array(), $connected = false, $link;
+    public $configs = array(), $link;
 
     public static $pool = array();
 
@@ -42,7 +42,7 @@ abstract class Source
         if (isset(self::$pool[$k])) {
             $this->link = self::$pool[$k];
         } else {
-            $this->link = $this->getLink();
+            $this->link = self::$pool[$k] = $this->getLink();
         }
 
         return $this;
@@ -72,6 +72,17 @@ abstract class Source
     public static function singleton(array $options = array())
     {
         return App::getInstance(\get_called_class(), \func_get_args());
+    }
+
+    /**
+     * @param string $method
+     * @param array  $args
+     *
+     * @return mixed
+     */
+    public function call($method, $args)
+    {
+        return \call_user_func_array(array($this->link, $method), $args);
     }
 
     /**

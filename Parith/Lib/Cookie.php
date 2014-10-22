@@ -131,7 +131,7 @@ class CookieHandler
 
     public function encrypt($val)
     {
-        $val = String::encode($val);
+        $val = \json_encode($val);
 
         $ret = '';
         $length = strlen($val);
@@ -149,6 +149,6 @@ class CookieHandler
             $ret .= chr($v ^ $this->key);
         }
 
-        return String::decode($ret);
+        return \json_decode($val, true);
     }
 }

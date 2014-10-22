@@ -33,6 +33,8 @@ class App
         'logger' => '\Parith\Log',
     );
 
+    public static $query = array();
+
     private static $_instances = array();
 
     public function __construct(array $options = array())
@@ -55,14 +57,6 @@ class App
     }
 
     /**
-     * run()
-     */
-    public function run()
-    {
-        $this->_run($this->getPathInfo());
-    }
-
-    /**
      *  php cmd.php "?c=index&a=cli" "key1=value1&key2=value2"
      */
     public function cmd()
@@ -82,17 +76,20 @@ class App
         if (isset($argv[1]))
             \parse_str($argv[1], $_GET);
 
-        $this->_run($argv[0]);
+        $this->run($argv[0]);
     }
 
     /**
-     * @param $url
+     * @param $uri
      *
      * @return mixed
      * @throws \Exception
      */
-    private function _run($url)
+    public function run($uri = '')
     {
+        if (!$uri && isset($_GET['URI']))
+            $uri = $_GET['URI'];
+
         // now time
         define('APP_TS', \time());
 
@@ -106,13 +103,13 @@ class App
         //\set_error_handler('\Parith\App::errorHandler');
         //\set_exception_handler('\Parith\App::exceptionHandler');
 
-        $query = Router::parse($url);
+        self::$query = Router::parse($uri);
 
-        $class = $namespace . '\\Controller\\' . \ucfirst($query[0]);
+        $class = $namespace . '\\Controller\\' . \ucfirst(self::$query[0]);
 
         if (self::import($class)) {
             $object = new $class;
-            return $object->{$query[1]}();
+            return $object->{self::$query[1]}();
         }
 
         throw new \Exception('Controller "' . $class . '" not found');
@@ -130,15 +127,6 @@ class App
     {
         $log = new self::$options['logger']();
         $log->writeException($e);
-    }
-
-    /**
-     * @return string
-     */
-    public function getPathInfo()
-    {
-        if (isset($_GET['URI']))
-            return $_GET['URI'];
     }
 
     /**
@@ -212,76 +200,71 @@ class Router
         'default' => array('Index', 'index'),
     );
 
-    private static $_query = array();
+    private static $query = array();
 
     /**
-     * @param string $url
+     * @param string $uri
      * @param array  $options
      *
      * @return array
      */
-    public static function parse($url = '', array $options = array())
+    public static function parse($uri = '', array $options = array())
     {
         $options = $options + App::getOption('router') + self::$options;
 
-        if ($url) {
-            return self::$_query = self::parseURL(trim($url, '/'), $options) + $options['default'];
+        if ($uri) {
+            return self::$query = self::parseURI(trim($uri, '/'), $options) + $options['default'];
         }
 
         $c = & $_GET[$options['index'][0]] or $c = $options['default'][0];
         $a = & $_GET[$options['index'][1]] or $a = $options['default'][1];
 
-        return self::$_query = array($c, $a);
-    }
-
-    public static function getQuery()
-    {
-        return self::$_query;
+        return array($c, $a);
     }
 
     /**
-     * @param $url
+     * @param $uri
      * @param $options
      *
      * @return array
      */
-    public static function parseURL($url, $options)
+    public static function parseURI($uri, $options)
     {
         foreach ($options['rules'] as $key => $val) {
-            $r = \preg_replace('/^' . $key . '$/i', $val, $url, -1, $n);
+            $r = \preg_replace('/^' . $key . '$/i', $val, $uri, -1, $n);
             if ($n) {
-                $url = $r;
+                $uri = $r;
                 break;
             }
         }
 
-        return \explode($options['delimiter'], $url);
+        return \explode($options['delimiter'], $uri);
     }
 }
 
 
 class Log
 {
-    public function __construct()
+    /**
+     * @param \Exception $e
+     */
+    public static function writeException(\Exception $e)
     {
-    }
-
-    public function writeException(\Exception $e)
-    {
-        $this->write(sprintf('%s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
+        self::write(sprintf('%s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
     }
 
     /**
-     * write
+     * @param string $message
+     * @param string $file
      */
-    public function write($message)
+    public static function write($message, $file = '')
     {
         if (App::getOption('debug')) {
             echo $message;
         } else {
-            $message = date(DATE_RFC2822, APP_TS) . ' ' . $message . PHP_EOL;
+            $message = date(DATE_RFC3339, APP_TS) . ' ' . $message . PHP_EOL;
 
-            $file = APP_DIR . 'log' . DIRECTORY_SEPARATOR . date('Y-m-d', APP_TS) . '.log';
+            $file or $file = APP_DIR . 'log' . DIRECTORY_SEPARATOR . date('Y-m-d', APP_TS) . '.log';
 
             \error_log($message, 3, $file);
         }

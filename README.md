@@ -25,24 +25,29 @@ Your directory structure could be:
         │      Router.php
         │
         ├─Controller
-        │      Home.php
-        │      Error.php
+        │      Index.php
         │
         ...
 
-###How to use from PHP 5.3.0 to PHP 5.3.2
+###Code
 
-if you use PHP below 5.3.3, can reference here:
+index.php:
 
-    \Parith\App::setOption('router', array('default' => array('Home', 'index')));
+	$config = array(
+        'namespace' => 'App',
+        'router' => array(
+            'index' => array('c', 'a'),
+            'default' => array('Index', 'index'),
+        ),
+    );
+    $app = new \Parith\App($config);
+	$app->run();
 
-    \Parith\App::run(__DIR__ . '/App');
-
-Here is the controller 'Home.php':
+Controller/Index.php:
 
     <?php
     namespace App\Controller;
-    
+
     class Home
     {
         public function index()
@@ -53,29 +58,8 @@ Here is the controller 'Home.php':
 
 ###How to set URL rewrite
 
-Apache:
-
-    RewriteEngine On
-
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-l
-
-    RewriteRule (.*) index.php/$1?%{QUERY_STRING} [L]
-
 Nginx:
 
     location / {
-        try_files $uri $uri/ /index.php$uri?$args;
+        try_files $uri $uri/ /?URI=$uri;
     }
-
-    location ~ ^.+\.php {
-        fastcgi_pass unix:/tmp/php-fpm.sock; # depends on your machine
-        fastcgi_index index.php;
-
-        fastcgi_split_path_info ^((?U).+\.php)(/?.+)$;
-        fastcgi_param PATH_INFO $fastcgi_path_info;
-
-        include fastcgi_params;
-    }
-

@@ -63,7 +63,7 @@ class URL
             Char::isAscii($url) or $url = rawurlencode($url);
 
         } elseif ($url === '') {
-            $url = implode('/', Router::getQuery()); //CONTROLLER . '/' . ACTION;
+            $url = implode('/', \Parith\App::$query); //CONTROLLER . '/' . ACTION;
         }
 
         return static::base() . $url;
