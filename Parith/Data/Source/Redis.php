@@ -39,7 +39,7 @@ class Redis extends Source
     {
         $this->link = new \Redis();
 
-        $options = & $this->options;
+        $options = $this->options;
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
 

@@ -11,15 +11,15 @@ class Memcached extends \Parith\Data\Source
 {
 
     public $options = array(
-        'servers' => array(
-            array('127.0.0.1', 11211, 0)
-        ),
+        'host' => '127.0.0.1',
+        'port' => 11211,
+        'weight' => 0,
         'options' => array(),
     );
 
     public $server_options = array(
         \Memcached::OPT_COMPRESSION => true,
-        \Memcached::OPT_SERIALIZER => \Memcached::SERIALIZER_PHP , //\Memcached::SERIALIZER_IGBINARY
+        \Memcached::OPT_SERIALIZER => \Memcached::SERIALIZER_PHP, //\Memcached::SERIALIZER_IGBINARY
         \Memcached::OPT_HASH => \Memcached::HASH_DEFAULT,
         \Memcached::OPT_DISTRIBUTION => \Memcached::DISTRIBUTION_CONSISTENT,
         \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
@@ -37,7 +37,7 @@ class Memcached extends \Parith\Data\Source
     {
         $this->link = new \Memcached();
 
-        $this->link->addServers($this->options['servers']);
+        $this->link->addServer($this->options['host'], $this->options['port'], $this->options['weight']);
 
         $this->link->setOptions($this->server_options);
 
@@ -53,15 +53,10 @@ class Memcached extends \Parith\Data\Source
         return $this;
     }
 
-    public function instanceKey()
-    {
-        return '';
-    }
-
     /**
-     * @param string   $key
+     * @param string $key
      * @param callable $cache_cb
-     * @param float    $cas_token
+     * @param float $cas_token
      *
      * @return mixed
      */
@@ -72,20 +67,20 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param array $keys
-     * @param int   $flags
+     * @param int $flags
      * @param array $cas_tokens
      *
      * @return mixed
      */
-    public function getMulti(array $keys, $flags = 0, array &$cas_tokens = array())
+    public function getMulti(array $keys, $flags = \Memcached::GET_PRESERVE_ORDER, array &$cas_tokens = array())
     {
         return $this->link->getMulti($keys, $cas_tokens, $flags);
     }
 
     /**
      * @param string $key
-     * @param mixed  $value
-     * @param int    $expiration
+     * @param mixed $value
+     * @param int $expiration
      *
      * @return bool
      */
@@ -96,7 +91,7 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param array $items
-     * @param int   $expiration
+     * @param int $expiration
      *
      * @return bool
      */
@@ -107,8 +102,8 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param string $key
-     * @param mixed  $value
-     * @param int    $expiration
+     * @param mixed $value
+     * @param int $expiration
      *
      * @return bool
      */
@@ -119,7 +114,7 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param string $key
-     * @param int    $time
+     * @param int $time
      *
      * @return bool
      */
@@ -130,7 +125,7 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param array $keys
-     * @param int   $time
+     * @param int $time
      */
     public function deleteMulti(array $keys, $time = 0)
     {
@@ -139,8 +134,8 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param string $key
-     * @param mixed  $value
-     * @param int    $expiration
+     * @param mixed $value
+     * @param int $expiration
      *
      * @return mixed
      */
@@ -173,7 +168,7 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param string $key
-     * @param int    $offset
+     * @param int $offset
      *
      * @return int
      */
@@ -184,7 +179,7 @@ class Memcached extends \Parith\Data\Source
 
     /**
      * @param string $key
-     * @param int    $offset
+     * @param int $offset
      *
      * @return int
      */

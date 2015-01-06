@@ -26,7 +26,7 @@ class Memcache extends Source
         'weight' => 1,
         'retry_interval' => 15,
         'status' => true,
-        'failure_callback' => NULL,
+        'failure_callback' => null,
     );
 
     /**
@@ -45,9 +45,11 @@ class Memcache extends Source
     {
         $this->link = new \Memcache();
 
-        $options = & $this->options;
-
-        $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
+        $this->connected = $this->link->connect(
+            $this->options['host'],
+            $this->options['port'],
+            $this->options['timeout']
+        );
 
         //if (!$this->connected)
         //    throw new \Exception('Fail to connect Memcache server: ' . $this->instanceKey());
@@ -69,8 +71,16 @@ class Memcache extends Source
         foreach ($server_array as $options) {
             $options = $this->option($options);
 
-            $this->connected = $this->link->addServer($options['host'], $options['port'], $options['persistent'], $options['weight'],
-                $options['timeout'], $options['retry_interval'], $options['status'], $options['failure_callback']);
+            $this->connected = $this->link->addServer(
+                $options['host'],
+                $options['port'],
+                $options['persistent'],
+                $options['weight'],
+                $options['timeout'],
+                $options['retry_interval'],
+                $options['status'],
+                $options['failure_callback']
+            );
 
             //if (!$this->connected)
             //    throw new \Exception('Fail to add Memcache server: ' . $this->instanceKey());
@@ -115,8 +125,8 @@ class Memcache extends Source
 
     /**
      * @param string $key
-     * @param mixed  $val
-     * @param int    $expire
+     * @param mixed $val
+     * @param int $expire
      *
      * @return bool
      */
@@ -127,7 +137,7 @@ class Memcache extends Source
 
     /**
      * @param string $key
-     * @param int    $int
+     * @param int $int
      *
      * @return int
      */
@@ -138,7 +148,7 @@ class Memcache extends Source
 
     /**
      * @param string $key
-     * @param int    $int
+     * @param int $int
      *
      * @return int
      */

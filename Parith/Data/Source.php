@@ -66,17 +66,18 @@ abstract class Source
      * @static
      *
      * @param array $options
+     * @param string $key
      *
      * @return \get_called_class
      */
-    public static function singleton(array $options = array())
+    public static function singleton(array $options = array(), $key = '')
     {
-        return App::getInstance(\get_called_class(), \func_get_args());
+        return App::getInstance(\get_called_class(), \func_get_args(), $key);
     }
 
     /**
      * @param string $method
-     * @param array  $args
+     * @param array $args
      *
      * @return mixed
      */

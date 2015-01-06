@@ -32,12 +32,10 @@ class Database extends Source
      */
     public $link;
 
-    public $clauses = array();
-    public $sql = '';
-    public $params = array();
-
-    public $db_name = '';
     public $table_name = '';
+    public $clauses    = array();
+    public $sql        = '';
+    public $params     = array();
 
     public $options = array(
         'driver' => 'mysql',
@@ -46,6 +44,7 @@ class Database extends Source
         'db_name' => '',
         'username' => 'root',
         'password' => '',
+        'charset' => 'utf8',
         'options' => array(),
     );
 
@@ -57,14 +56,14 @@ class Database extends Source
 
         #overwrite 'options' if not using MySQL
         \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
-        \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8', //1002
         \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
     );
+
+    private $_info = null;
 
     public function __construct(array $options = array())
     {
         $this->initial();
-
         parent::__construct($options);
     }
 
@@ -73,14 +72,20 @@ class Database extends Source
      */
     protected function getLink()
     {
-        $options = & $this->options;
+        $options = $this->options;
 
-        return $this->link = new \PDO(
-            "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
-            $options['username'],
-            $options['password'],
-            $this->server_options
-        );
+        try {
+            $this->link = new \PDO(
+                "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['db_name']}",
+                $options['username'],
+                $options['password'],
+                $this->server_options
+            );
+        } catch (\PDOException $e) {
+            $this->link = null;
+        }
+
+        return $this->link;
     }
 
     public function option(array $options)
@@ -89,8 +94,8 @@ class Database extends Source
 
         $this->server_options = $this->options['options'] + $this->server_options;
 
-        if ($this->db_name)
-            $this->options['db_name'] = $this->db_name;
+        if ($this->options['charset'])
+            $this->server_options[\PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->options['charset'];
 
         return $this;
     }
@@ -161,9 +166,9 @@ class Database extends Source
      *
      * @return Database
      */
-    public function where($clause, $condition, $value = NULL, $glue = 'AND')
+    public function where($clause, $condition, $value = null, $glue = 'AND')
     {
-        if ($value === NULL) {
+        if ($value === null) {
 
             $value = $condition;
             if (strpos($clause, '?') === false) {
@@ -187,6 +192,7 @@ class Database extends Source
         } else {
             $this->params[] = $value;
         }
+
         return $this;
     }
 
@@ -302,7 +308,7 @@ class Database extends Source
      *
      * @return int|bool
      */
-    public function insert(array $data, $modifier = NULL)
+    public function insert(array $data, $modifier = null)
     {
         $col = $value = array();
         foreach ($data as $k => $v) {
@@ -339,7 +345,7 @@ class Database extends Source
         if (is_array($data)) {
             $value = $params = array();
             foreach ($data as $col => $val) {
-                $value[] = '`' . $col . '`= ?';
+                $value[] = "`{$col}` = ?";
                 $params[] = $val;
             }
 
@@ -348,9 +354,10 @@ class Database extends Source
 
             $data = \implode(', ', $value);
         }
+        //var_dump($this->clauses['table']);
 
         $this->sql = 'UPDATE ' . $this->clauses['table'] . ' SET ' . $data . $this->clauses['where'];
-
+        //var_dump($this->sql);
         $ret = $this->exec();
 
         if ($ret)
@@ -363,35 +370,14 @@ class Database extends Source
      * increase a field
      *
      * @param string $field
-     * @param int    $num
+     * @param int $num
      *
      * @return int
      */
     public function increment($field, $num)
     {
-        if ($num > 0)
-            return $this->update("`$field`=`$field`+$num");
-
-        return false;
+        return $this->update("`{$field}`=`{$field}`+{$num}");
     }
-
-
-    /**
-     * decrease a field
-     *
-     * @param string $field
-     * @param int    $num
-     *
-     * @return int
-     */
-    public function decrement($field, $num)
-    {
-        if ($num > 0)
-            return $this->update("`$field`=`$field`-$num");
-
-        return false;
-    }
-
 
     /**
      * @return int
@@ -400,19 +386,21 @@ class Database extends Source
     {
         $this->sql = 'DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';';
         $this->exec();
+
         return $this->rowCount();
     }
 
     /**
-     * @param int   $mode
+     * @param int $mode
      * @param mixed $mode_param
      *
      * @return mixed
      */
-    public function fetch($mode = 0, $mode_param = NULL)
+    public function fetch($mode = 0, $mode_param = null)
     {
         $this->sql = $this->getSelectClause();
         $this->exec();
+
         return $this->_setFetchMode($mode, $mode_param)->fetch();
     }
 
@@ -422,18 +410,19 @@ class Database extends Source
     }
 
     /**
-     * @param int   $mode
+     * @param int $mode
      * @param mixed $mode_param
-     * @param bool  $reset set as false，when need fetchAllCount()
+     * @param bool $reset set as false，when need fetchAllCount()
      *                     $data = $this->fetchAll(0, null, false)
      *                     $count = $this->fetchAllCount()
      *
      * @return array
      */
-    public function fetchAll($mode = 0, $mode_param = NULL, $reset = true)
+    public function fetchAll($mode = 0, $mode_param = null, $reset = true)
     {
         $this->sql = $this->getSelectClause();
         $this->exec($reset);
+
         return $this->_setFetchMode($mode, $mode_param)->fetchAll();
     }
 
@@ -444,7 +433,7 @@ class Database extends Source
 
     /**
      * @param string $query
-     * @param array  $params
+     * @param array $params
      *
      * @return bool
      */
@@ -458,18 +447,16 @@ class Database extends Source
 
     public function exec($reset = true)
     {
-        $this->sth = $this->link->prepare($this->sql);
+        $this->sth = $this->link->prepare($this->sql) or $this->_setLastInfo();
 
         if ($this->sth) {
-            $result = $this->sth->execute($this->params);
+            $result = $this->sth->execute($this->params) or $this->_setLastInfo();
 
             if ($reset)
                 $this->initial();
 
             return $result;
         }
-
-        //return false here, please use $this->getError() to show Error
 
         return false;
     }
@@ -506,16 +493,8 @@ class Database extends Source
     public function setParams($params)
     {
         $this->params += $params;
+
         return $this;
-    }
-
-
-    /**
-     * @return array
-     */
-    public function getParams()
-    {
-        return $this->params;
     }
 
     public function getWhere()
@@ -528,12 +507,13 @@ class Database extends Source
      */
     public function getSelectClause()
     {
-        $c = & $this->clauses;
+        $c = &$this->clauses;
+
         return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['having'] . $c['order'] . $c['limit'] . ';';
     }
 
     /**
-     * @param int   $mode
+     * @param int $mode
      * @param mixed $mode_param
      *
      * @return \PDOStatement
@@ -541,7 +521,7 @@ class Database extends Source
     private function _setFetchMode($mode, $mode_param)
     {
         if ($mode) {
-            if ($mode_param === NULL) {
+            if ($mode_param === null) {
                 $this->sth->setFetchMode($mode);
             } else {
                 $this->sth->setFetchMode($mode, $mode_param);
@@ -556,7 +536,7 @@ class Database extends Source
      */
     public function dumpParams()
     {
-        return $this->sth->debugDumpParams();
+        $this->sth->debugDumpParams();
     }
 
     /**
@@ -573,22 +553,32 @@ class Database extends Source
      *
      * @return int
      */
-    public function lastInsertId($name = NULL)
+    public function lastInsertId($name = null)
     {
         return $this->link->lastInsertId($name);
+    }
+
+    private function _setLastInfo()
+    {
+        $this->_info = array(
+            'error' => $this->link->errorInfo(),
+            'sql' => $this->sql,
+            'params' => $this->params,
+        );
     }
 
     /**
      * @return array
      */
-    public function getError()
+    public function getLastInfo()
     {
-        return array(
+        $ret = $this->_info or $ret = array(
             'error' => $this->link->errorInfo(),
-            'code' => $this->link->errorCode(),
-            'sql' => $this->getLastSql(),
-            'params' => $this->getParams(),
+            'sql' => $this->sql,
+            'params' => $this->params,
         );
+
+        return $ret;
     }
 
     /**
@@ -613,7 +603,7 @@ class Database extends Source
 
     public function close()
     {
-        $this->link = NULL;
+        $this->link = null;
 
         return $this;
     }
