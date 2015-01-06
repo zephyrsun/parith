@@ -24,7 +24,7 @@ class Grab
     public $options = array(
         CURLOPT_HEADER => false,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 2,
+        CURLOPT_TIMEOUT => 10,
         CURLOPT_CONNECTTIMEOUT => 30,
     );
 

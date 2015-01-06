@@ -45,13 +45,11 @@ class App
     public static function setOption(array $options)
     {
         self::$options = $options + self::$options;
-
-        self::$options;
     }
 
     public static function getOption($key)
     {
-        $option = & self::$options[$key] or $option = array();
+        $option = &self::$options[$key] or $option = array();
 
         return $option;
     }
@@ -73,14 +71,16 @@ class App
         $argv = \explode('?', $argv[1]);
 
         // treated as $_GET
-        if (isset($argv[1]))
+        if (isset($argv[1])) {
+            $_SERVER['QUERY_STRING'] = $argv[1];
             \parse_str($argv[1], $_GET);
+        }
 
         $this->run($argv[0]);
     }
 
     /**
-     * @param $uri
+     * @param string $uri Admin/index
      *
      * @return mixed
      * @throws \Exception
@@ -157,7 +157,7 @@ class App
     public static function getInstance($class, $args = array(), $key = '')
     {
         $key or $key = $class;
-        $obj = & self::$_instances[$key];
+        $obj = &self::$_instances[$key];
         if ($obj)
             return $obj;
 
@@ -204,7 +204,7 @@ class Router
 
     /**
      * @param string $uri
-     * @param array  $options
+     * @param array $options
      *
      * @return array
      */
@@ -216,8 +216,8 @@ class Router
             return self::$query = self::parseURI(trim($uri, '/'), $options) + $options['default'];
         }
 
-        $c = & $_GET[$options['index'][0]] or $c = $options['default'][0];
-        $a = & $_GET[$options['index'][1]] or $a = $options['default'][1];
+        $c = &$_GET[$options['index'][0]] or $c = $options['default'][0];
+        $a = &$_GET[$options['index'][1]] or $a = $options['default'][1];
 
         return array($c, $a);
     }

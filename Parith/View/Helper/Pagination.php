@@ -41,9 +41,9 @@ class Pagination extends Result
      * @param array|string $query
      *                  - array: array('controller' => 'search', 'action' => 'index', 'catalog' => 1)
      *                  - string: /search /index, 'catalog' passed by $options['query']
-     * @param array        $options
+     * @param array $options
      */
-    public function __construct($total, $query = '', array $options = array())
+    public function __construct($total, array $options = array(), $query = array())
     {
         $this->options = $options + App::getOption('pagination') + $this->options;
 
@@ -159,7 +159,7 @@ class Pagination extends Result
      *
      * @param              $total
      * @param array|string $query
-     * @param array        $options
+     * @param array $options
      *
      * @return mixed
      */
@@ -173,14 +173,15 @@ class Pagination extends Result
 
     /**
      * @param \Parith\Data\Model\Database $model
-     * @param string                      $query
-     * @param array                       $options
+     * @param string $query
+     * @param array $options
      *
      * @return Pagination
      */
     public static function withModel(\Parith\Data\Model\Database $model, $query = '', array $options = array())
     {
         $options = array('per_page' => $model->per_page) + $options;
+
         return new Pagination($model->fetchCount(), $query, $options);
     }
 
@@ -212,6 +213,6 @@ class Pagination extends Result
 
         $html .= $this->last() . $this->next();
 
-        return HTML::tag('div', '<ul>' . $html . '</ul>', $this->options['attributes']);
+        return HTML::tag('ul', $html, $this->options['attributes']);
     }
 }

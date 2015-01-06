@@ -54,6 +54,15 @@ class HTML extends Result
         return self::tag('select', self::option($options, $select), $attributes);
     }
 
+    public static function selectNum($min, $max, $select = null, array $attributes = array())
+    {
+        $options = array();
+        for (; $min <= $max; $min++)
+            $options[$min] = $min;
+
+        return self::tag('select', self::option($options, $select), $attributes);
+    }
+
     public static function option(array $options, $selected)
     {
         $s = '';
