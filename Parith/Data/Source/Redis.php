@@ -31,6 +31,12 @@ class Redis extends Source
 
     public $connected = false;
 
+    public function __construct(array $options = array())
+    {
+        parent::__construct($options);
+        $this->connect();
+    }
+
     /**
      * @return \Redis
      * @throws \Exception
@@ -39,12 +45,14 @@ class Redis extends Source
     {
         $this->link = new \Redis();
 
-        $options = $this->options;
+        $options = &$this->options;
 
         $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
 
         if (!$this->connected)
-            throw new \Exception('Fail to connect Redis server: ' . $this->instanceKey());
+            throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
+
+        //$this->link->setOption(\Redis::OPT_READ_TIMEOUT, -1);
 
         return $this->link;
     }

@@ -14,7 +14,6 @@ class Memcached extends \Parith\Data\Source
         'host' => '127.0.0.1',
         'port' => 11211,
         'weight' => 0,
-        'options' => array(),
     );
 
     public $server_options = array(
@@ -25,10 +24,23 @@ class Memcached extends \Parith\Data\Source
         \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
     );
 
+    public $servers = array(
+        array('host' => '127.0.0.1', 'port' => 11211),
+    );
+
     /**
      * @var \Memcached
      */
     public $link;
+
+    public function __construct(array $servers = array(), array $options = array())
+    {
+        $this->servers = $servers;
+
+        $this->server_options = $options + $this->server_options;
+
+        $this->connect();
+    }
 
     /**
      * @return \Memcached
@@ -37,20 +49,25 @@ class Memcached extends \Parith\Data\Source
     {
         $this->link = new \Memcached();
 
-        $this->link->addServer($this->options['host'], $this->options['port'], $this->options['weight']);
+        foreach ($this->servers as $options) {
+            $options += $this->options;
+
+            $ret = $this->link->addServer($options['host'], $options['port'], $options['weight']);
+
+            if (!$ret)
+                throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
+        }
 
         $this->link->setOptions($this->server_options);
 
         return $this->link;
     }
 
-    public function option(array $options)
+    public function instanceKey()
     {
-        $this->options = $options + $this->options;
+        $s = current($this->servers);
 
-        $this->server_options = $this->options['options'] + $this->server_options;
-
-        return $this;
+        return $s['host'] . ':' . $s['port'];
     }
 
     /**

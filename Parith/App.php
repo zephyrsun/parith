@@ -55,7 +55,7 @@ class App
     }
 
     /**
-     *  php cmd.php "?c=index&a=cli" "key1=value1&key2=value2"
+     * /path/to/php cmd.php "?c=index&a=cli" "key1=value1&key2=value2"
      */
     public function cmd()
     {
@@ -109,6 +109,7 @@ class App
 
         if (self::import($class)) {
             $object = new $class;
+
             return $object->{self::$query[1]}();
         }
 

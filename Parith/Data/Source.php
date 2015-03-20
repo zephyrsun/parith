@@ -29,10 +29,7 @@ abstract class Source
 
     public function __construct(array $options = array())
     {
-        if ($options) {
-            $this->option($options);
-            $this->connect();
-        }
+        $this->option($options);
     }
 
     public function connect()
@@ -65,19 +62,19 @@ abstract class Source
      *
      * @static
      *
-     * @param array $options
+     * @param array  $options
      * @param string $key
      *
      * @return \get_called_class
      */
-    public static function singleton(array $options = array(), $key = '')
+    public static function singleton(array $options = array())
     {
-        return App::getInstance(\get_called_class(), \func_get_args(), $key);
+        return App::getInstance(\get_called_class(), \func_get_args());
     }
 
     /**
      * @param string $method
-     * @param array $args
+     * @param array  $args
      *
      * @return mixed
      */

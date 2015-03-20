@@ -14,53 +14,8 @@
 
 namespace Parith\Lib;
 
-use \Parith\Result;
-
-use \Parith\Arr;
-
-class Request extends Result
+class Request extends \Parith\Result
 {
-    /**
-     * @param string $key
-     *
-     * @return mixed
-     */
-    public static function get($key = null)
-    {
-        if ($key === null)
-            return $_GET;
-
-        return Arr::get($_GET, $key);
-    }
-
-    /**
-     * @param string $key
-     *
-     * @return mixed
-     */
-    public static function post($key = null)
-    {
-        if ($key === null)
-            return $_POST;
-
-        return Arr::get($_POST, $key);
-    }
-
-    /**
-     * @param string $key
-     *
-     * @return mixed
-     */
-    public static function env($key = null)
-    {
-        $env = $_SERVER === array() ? $_ENV : $_SERVER;
-
-        if ($key === null)
-            return $env;
-
-        return Arr::get($env, $key);
-    }
-
     /**
      * @param string $method
      *
@@ -68,9 +23,6 @@ class Request extends Result
      */
     public static function method($method = null)
     {
-        if ($method === null)
-            return $_SERVER['REQUEST_METHOD'];
-
         return $_SERVER['REQUEST_METHOD'] === $method;
     }
 
@@ -104,6 +56,7 @@ class Request extends Result
     public static function isMobile()
     {
         static $ua = '(iPhone|iPod|MIDP|AvantGo|BlackBerry|J2ME|Opera Mini|DoCoMo|NetFront|Nokia|PalmOS|PalmSource|portalmmm|Plucker|ReqwirelessWeb|SonyEricsson|Symbian|UP\.Browser|Windows CE|Xiino)';
+
         return (bool)\preg_match('/' . $ua . '/i', $_SERVER['HTTP_USER_AGENT'], $match);
     }
 
@@ -112,7 +65,7 @@ class Request extends Result
      */
     public static function getClientIp()
     {
-        $env = self::env();
+        $env = $_SERVER or $env = $_ENV;
 
         if (isset($env['HTTP_X_FORWARDED_FOR'])) {
             $ips = \explode(',', $env['HTTP_X_FORWARDED_FOR'], 1);

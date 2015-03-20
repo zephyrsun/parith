@@ -82,7 +82,8 @@ class Database extends Source
                 $this->server_options
             );
         } catch (\PDOException $e) {
-            $this->link = null;
+            //$this->_setLastInfo($e->getMessage());
+            throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}:{$options['db_name']}");
         }
 
         return $this->link;
@@ -325,12 +326,8 @@ class Database extends Source
 
         $ret = $this->exec();
 
-        if ($ret) {
-            $id = $this->lastInsertId();
-            if ($id) {
-                return $id;
-            }
-        }
+        if ($ret && $id = $this->lastInsertId())
+            return $id;
 
         return $ret;
     }
@@ -447,10 +444,12 @@ class Database extends Source
 
     public function exec($reset = true)
     {
-        $this->sth = $this->link->prepare($this->sql) or $this->_setLastInfo();
+        $this->link or $this->connect();
+
+        $this->sth = $this->link->prepare($this->sql) or $this->_setLastInfo($this->link->errorInfo());
 
         if ($this->sth) {
-            $result = $this->sth->execute($this->params) or $this->_setLastInfo();
+            $result = $this->sth->execute($this->params) or $this->_setLastInfo($this->sth->errorInfo());
 
             if ($reset)
                 $this->initial();
@@ -466,6 +465,8 @@ class Database extends Source
      */
     public function beginTransaction()
     {
+        $this->link or $this->connect();
+
         return $this->link->beginTransaction();
     }
 
@@ -532,6 +533,38 @@ class Database extends Source
     }
 
     /**
+     * @param $name
+     *
+     * @return int
+     */
+    public function lastInsertId($name = null)
+    {
+        return $this->link->lastInsertId($name);
+    }
+
+    private function _setLastInfo($error)
+    {
+        $this->_info = array(
+            'error' => $error,
+            'sql' => $this->sql,
+            'params' => $this->params,
+        );
+
+        return $this->_info;
+    }
+
+    /**
+     * @return array
+     */
+    public function getLastInfo()
+    {
+        if ($this->_info)
+            return $this->_info;
+
+        return $this->_setLastInfo($this->link->errorInfo());
+    }
+
+    /**
      * @return mixed
      */
     public function dumpParams()
@@ -549,39 +582,6 @@ class Database extends Source
     }
 
     /**
-     * @param $name
-     *
-     * @return int
-     */
-    public function lastInsertId($name = null)
-    {
-        return $this->link->lastInsertId($name);
-    }
-
-    private function _setLastInfo()
-    {
-        $this->_info = array(
-            'error' => $this->link->errorInfo(),
-            'sql' => $this->sql,
-            'params' => $this->params,
-        );
-    }
-
-    /**
-     * @return array
-     */
-    public function getLastInfo()
-    {
-        $ret = $this->_info or $ret = array(
-            'error' => $this->link->errorInfo(),
-            'sql' => $this->sql,
-            'params' => $this->params,
-        );
-
-        return $ret;
-    }
-
-    /**
      * @return int
      */
     public function rowCount()
@@ -594,11 +594,6 @@ class Database extends Source
         $this->query('SET NAMES ' . $charset . ';');
 
         return $this;
-    }
-
-    public function setAttribute($attr, $val)
-    {
-        return $this->link->setAttribute($attr, $val);
     }
 
     public function close()

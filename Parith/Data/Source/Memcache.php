@@ -29,6 +29,10 @@ class Memcache extends Source
         'failure_callback' => null,
     );
 
+    public $servers = array(
+        array('host' => '127.0.0.1', 'port' => 11211),
+    );
+
     /**
      * @var \Memcache
      */
@@ -38,6 +42,13 @@ class Memcache extends Source
 
     public $compress = 0; //\MEMCACHE_COMPRESSED
 
+    public function __construct(array $servers = array())
+    {
+        $this->servers = $servers;
+
+        $this->connect();
+    }
+
     /**
      * @return \Memcache
      */
@@ -45,33 +56,10 @@ class Memcache extends Source
     {
         $this->link = new \Memcache();
 
-        $this->connected = $this->link->connect(
-            $this->options['host'],
-            $this->options['port'],
-            $this->options['timeout']
-        );
+        foreach ($this->servers as $options) {
+            $options += $this->options;//$this->option($options);
 
-        //if (!$this->connected)
-        //    throw new \Exception('Fail to connect Memcache server: ' . $this->instanceKey());
-
-        return $this->link;
-    }
-
-    /**
-     * addServer(array(1 => $options, 2 => $options))
-     *
-     * @param array $server_array
-     *
-     * @return bool|\Memcache
-     */
-    public function addServer(array $server_array)
-    {
-        $this->link = new \Memcache();
-
-        foreach ($server_array as $options) {
-            $options = $this->option($options);
-
-            $this->connected = $this->link->addServer(
+            $ret = $this->link->addServer(
                 $options['host'],
                 $options['port'],
                 $options['persistent'],
@@ -82,12 +70,22 @@ class Memcache extends Source
                 $options['failure_callback']
             );
 
-            //if (!$this->connected)
-            //    throw new \Exception('Fail to add Memcache server: ' . $this->instanceKey());
+            if (!$ret)
+                throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
+
+            $this->connected = true;
         }
 
         return $this->link;
     }
+
+    public function instanceKey()
+    {
+        $s = current($this->servers);
+
+        return $s['host'] . ':' . $s['port'];
+    }
+
 
     /**
      * @param $key
