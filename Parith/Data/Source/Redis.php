@@ -29,11 +29,11 @@ class Redis extends Source
      */
     public $link;
 
-    public $connected = false;
+    public static $_pool = array();
 
     public function __construct(array $options = array())
     {
-        parent::__construct($options);
+        $this->option($options);
         $this->connect();
     }
 
@@ -45,11 +45,10 @@ class Redis extends Source
     {
         $this->link = new \Redis();
 
-        $options = &$this->options;
+        $options = & $this->options;
 
-        $this->connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
-
-        if (!$this->connected)
+        $connected = $this->link->connect($options['host'], $options['port'], $options['timeout']);
+        if (!$connected)
             throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
 
         //$this->link->setOption(\Redis::OPT_READ_TIMEOUT, -1);
@@ -58,13 +57,46 @@ class Redis extends Source
     }
 
     /**
+     * @return $this
+     */
+    public function connect()
+    {
+        $k = $this->options['host'] . ':' . $this->options['port'];
+
+        if (isset(self::$_pool[$k])) {
+            $this->link = self::$_pool[$k];
+        } else {
+            $this->link = self::$_pool[$k] = $this->getLink();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $method
+     * @param array $args
+     *
+     * @return mixed
+     */
+    public function call($method, $args)
+    {
+        return \call_user_func_array(array($this->link, $method), $args);
+    }
+
+    /**
      * @return Redis
      */
     public function close()
     {
-        if ($this->connected)
-            $this->link->close();
+        $this->link->close();
 
         return $this;
+    }
+
+    public static function closeAll()
+    {
+        foreach (self::$_pool as $link) {
+            $link->close();
+        }
     }
 }

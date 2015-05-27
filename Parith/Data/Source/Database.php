@@ -33,9 +33,9 @@ class Database extends Source
     public $link;
 
     public $table_name = '';
-    public $clauses    = array();
-    public $sql        = '';
-    public $params     = array();
+    public $clauses = array();
+    public $sql = '';
+    public $params = array();
 
     public $options = array(
         'driver' => 'mysql',
@@ -59,16 +59,35 @@ class Database extends Source
         \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
     );
 
-    private $_info = null;
+    private $_info = array();
+
+    private static $_pool = array();
 
     public function __construct(array $options = array())
     {
         $this->initial();
-        parent::__construct($options);
+        $this->option($options);
+    }
+
+    /**
+     * @return $this
+     */
+    public function connect()
+    {
+        $k = $this->options['host'] . ':' . $this->options['port'] . ':' . $this->options['db_name'];
+
+        if (isset(self::$_pool[$k])) {
+            $this->link = self::$_pool[$k];
+        } else {
+            $this->link = self::$_pool[$k] = $this->getLink();
+        }
+
+        return $this;
     }
 
     /**
      * @return \PDO
+     * @throws \Exception
      */
     protected function getLink()
     {
@@ -99,14 +118,6 @@ class Database extends Source
             $this->server_options[\PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->options['charset'];
 
         return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function instanceKey()
-    {
-        return $this->options['host'] . ':' . $this->options['port'] . ':' . $this->options['db_name'];
     }
 
     /**
@@ -221,6 +232,8 @@ class Database extends Source
     {
         if ($group) {
             $this->clauses['group'] = ' GROUP BY ' . $group;
+        } else {
+            $this->clauses['group'] = '';
         }
 
         return $this;
@@ -339,15 +352,16 @@ class Database extends Source
      */
     public function update($data)
     {
+        $params = array();
         if (is_array($data)) {
-            $value = $params = array();
+            $value = array();
             foreach ($data as $col => $val) {
                 $value[] = "`{$col}` = ?";
                 $params[] = $val;
             }
 
             // adjust order
-            $this->params = array_merge($params, $this->params);
+            $this->params = $params = array_merge($params, $this->params);
 
             $data = \implode(', ', $value);
         }
@@ -357,8 +371,15 @@ class Database extends Source
         //var_dump($this->sql);
         $ret = $this->exec();
 
-        if ($ret)
-            return $this->rowCount();
+        if ($ret && $n = $this->rowCount())
+            return $n;
+
+        //overwrite params
+        $this->_info += array(
+            'error' => array(),
+            'sql' => $this->sql,
+            'params' => $params,
+        );
 
         return false;
     }
@@ -425,16 +446,16 @@ class Database extends Source
 
     public function fetchAllCount()
     {
-        return $this->field('count(*)')->limit(1)->fetchColumn(0);
+        return $this->field('count(*)')->groupBy('')->limit(1)->fetchColumn(0);
     }
 
     /**
      * @param string $query
-     * @param array $params
+     * @param $params
      *
      * @return bool
      */
-    public function query($query, array $params = array())
+    public function query($query, $params = array())
     {
         $this->sql = $query;
         $this->params = $params;
@@ -446,7 +467,7 @@ class Database extends Source
     {
         $this->link or $this->connect();
 
-        $this->sth = $this->link->prepare($this->sql) or $this->_setLastInfo($this->link->errorInfo());
+        $this->sth = $this->link->prepare($this->sql);
 
         if ($this->sth) {
             $result = $this->sth->execute($this->params) or $this->_setLastInfo($this->sth->errorInfo());
@@ -456,6 +477,8 @@ class Database extends Source
 
             return $result;
         }
+
+        $this->_setLastInfo($this->link->errorInfo());
 
         return false;
     }
@@ -508,7 +531,7 @@ class Database extends Source
      */
     public function getSelectClause()
     {
-        $c = &$this->clauses;
+        $c = & $this->clauses;
 
         return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['having'] . $c['order'] . $c['limit'] . ';';
     }
@@ -603,8 +626,10 @@ class Database extends Source
         return $this;
     }
 
-    public function __destruct()
+    public static function closeAll()
     {
-        $this->close();
+        foreach (self::$_pool as &$link)
+            $link = null;
+
     }
 }

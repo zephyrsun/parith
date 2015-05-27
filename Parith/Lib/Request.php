@@ -69,6 +69,7 @@ class Request extends \Parith\Result
 
         if (isset($env['HTTP_X_FORWARDED_FOR'])) {
             $ips = \explode(',', $env['HTTP_X_FORWARDED_FOR'], 1);
+
             return $ips[0];
         } elseif (isset($env['HTTP_CLIENT_IP'])) {
             return $env['HTTP_CLIENT_IP'];

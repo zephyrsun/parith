@@ -23,72 +23,13 @@ abstract class Source
         'port' => 0
     );
 
-    public $configs = array(), $link;
-
-    public static $pool = array();
-
-    public function __construct(array $options = array())
-    {
-        $this->option($options);
-    }
-
-    public function connect()
-    {
-        $k = $this->instanceKey();
-
-        if (isset(self::$pool[$k])) {
-            $this->link = self::$pool[$k];
-        } else {
-            $this->link = self::$pool[$k] = $this->getLink();
-        }
-
-        return $this;
-    }
-
     /**
-     * disconnect from server
-     * @abstract
-     */
-    abstract public function close();
-
-    /**
-     * @abstract
+     * @param array $options
      * @return mixed
      */
-    abstract protected function getLink();
-
-    /**
-     * singleton
-     *
-     * @static
-     *
-     * @param array  $options
-     * @param string $key
-     *
-     * @return \get_called_class
-     */
-    public static function singleton(array $options = array())
+    public static function singleton(array $options = array(), $key = '')
     {
-        return App::getInstance(\get_called_class(), \func_get_args());
-    }
-
-    /**
-     * @param string $method
-     * @param array  $args
-     *
-     * @return mixed
-     */
-    public function call($method, $args)
-    {
-        return \call_user_func_array(array($this->link, $method), $args);
-    }
-
-    /**
-     * @return string
-     */
-    public function instanceKey()
-    {
-        return $this->options['host'] . ':' . $this->options['port'];
+        return App::getInstance(\get_called_class(), array($options), $key);
     }
 
     /**

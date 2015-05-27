@@ -33,6 +33,8 @@ class Memcached extends \Parith\Data\Source
      */
     public $link;
 
+    public static $_pool = array();
+
     public function __construct(array $servers = array(), array $options = array())
     {
         $this->servers = $servers;
@@ -63,11 +65,22 @@ class Memcached extends \Parith\Data\Source
         return $this->link;
     }
 
-    public function instanceKey()
+    /**
+     * @return $this
+     */
+    public function connect()
     {
         $s = current($this->servers);
 
-        return $s['host'] . ':' . $s['port'];
+        $k = $s['host'] . ':' . $s['port'];
+
+        if (isset(self::$_pool[$k])) {
+            $this->link = self::$_pool[$k];
+        } else {
+            $this->link = self::$_pool[$k] = $this->getLink();
+        }
+
+        return $this;
     }
 
     /**
@@ -220,15 +233,15 @@ class Memcached extends \Parith\Data\Source
      */
     public function close()
     {
-        if ($this->link) {
-            $this->link->quit();
-        }
+        $this->link->quit();
 
         return $this;
     }
 
-    public function __destruct()
+    public static function closeAll()
     {
-        $this->close();
+        foreach (self::$_pool as $link)
+            $link->quit();
+
     }
 } 

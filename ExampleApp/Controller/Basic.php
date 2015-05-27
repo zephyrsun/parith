@@ -22,6 +22,9 @@ class Basic extends ParithController
     public function __destruct()
     {
         $this->{$this->format}();
+
+        //close links
+        \Parith\Data\Source\Database::closeAll();
     }
 
     protected function json()

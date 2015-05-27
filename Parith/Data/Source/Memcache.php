@@ -38,14 +38,13 @@ class Memcache extends Source
      */
     public $link;
 
-    public $connected = false;
+    public static $_pool = array();
 
     public $compress = 0; //\MEMCACHE_COMPRESSED
 
     public function __construct(array $servers = array())
     {
         $this->servers = $servers;
-
         $this->connect();
     }
 
@@ -57,7 +56,7 @@ class Memcache extends Source
         $this->link = new \Memcache();
 
         foreach ($this->servers as $options) {
-            $options += $this->options;//$this->option($options);
+            $options += $this->options; //$this->option($options);
 
             $ret = $this->link->addServer(
                 $options['host'],
@@ -72,20 +71,28 @@ class Memcache extends Source
 
             if (!$ret)
                 throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
-
-            $this->connected = true;
         }
 
         return $this->link;
     }
 
-    public function instanceKey()
+    /**
+     * @return $this
+     */
+    public function connect()
     {
         $s = current($this->servers);
 
-        return $s['host'] . ':' . $s['port'];
-    }
+        $k = $s['host'] . ':' . $s['port'];
 
+        if (isset(self::$_pool[$k])) {
+            $this->link = self::$_pool[$k];
+        } else {
+            $this->link = self::$_pool[$k] = $this->getLink();
+        }
+
+        return $this;
+    }
 
     /**
      * @param $key
@@ -183,15 +190,15 @@ class Memcache extends Source
      */
     public function close()
     {
-        if ($this->connected) {
-            $this->link->close();
-        }
+        $this->link->close();
 
         return $this;
     }
 
-    public function __destruct()
+    public static function closeAll()
     {
-        $this->close();
+        foreach (self::$_pool as $link)
+            $link->close();
+
     }
 }
