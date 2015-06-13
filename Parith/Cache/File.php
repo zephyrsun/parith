@@ -30,7 +30,7 @@ class File extends Cache
     {
         parent::__construct($options);
 
-        $this->options['dir'] or $this->options['dir'] = APP_DIR . 'tmp' . DIRECTORY_SEPARATOR . 'file';
+        $this->options['dir'] or $this->options['dir'] = \APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'file';
     }
 
     /**
@@ -84,7 +84,7 @@ class File extends Cache
      */
     public function filename($name)
     {
-        return $this->options['dir'] . DIRECTORY_SEPARATOR . $name . '.' . $this->options['file_ext'];
+        return $this->options['dir'] . \DIRECTORY_SEPARATOR . $name . '.' . $this->options['file_ext'];
     }
 
 }

@@ -9,7 +9,6 @@ namespace Parith\Data\Source;
 
 class Memcached extends \Parith\Data\Source
 {
-
     public $options = array(
         'host' => '127.0.0.1',
         'port' => 11211,
@@ -24,34 +23,32 @@ class Memcached extends \Parith\Data\Source
         \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
     );
 
-    public $servers = array(
-        array('host' => '127.0.0.1', 'port' => 11211),
-    );
-
     /**
      * @var \Memcached
      */
     public $link;
 
-    public static $_pool = array();
-
-    public function __construct(array $servers = array(), array $options = array())
+    /**
+     * @param array $servers = array(
+     * array('host' => '192.168.1.1', 'port' => 11211),
+     * array('host' => '192.168.1.2', 'port' => 11211),
+     * );
+     */
+    protected function __construct($servers)
     {
-        $this->servers = $servers;
-
-        $this->server_options = $options + $this->server_options;
-
-        $this->connect();
+        $this->connect($servers);
     }
 
     /**
-     * @return \Memcached
+     * @param $servers
+     * @return $this
+     * @throws \Exception
      */
-    public function getLink()
+    public function connect($servers)
     {
         $this->link = new \Memcached();
 
-        foreach ($this->servers as $options) {
+        foreach ($servers as $options) {
             $options += $this->options;
 
             $ret = $this->link->addServer($options['host'], $options['port'], $options['weight']);
@@ -61,24 +58,6 @@ class Memcached extends \Parith\Data\Source
         }
 
         $this->link->setOptions($this->server_options);
-
-        return $this->link;
-    }
-
-    /**
-     * @return $this
-     */
-    public function connect()
-    {
-        $s = current($this->servers);
-
-        $k = $s['host'] . ':' . $s['port'];
-
-        if (isset(self::$_pool[$k])) {
-            $this->link = self::$_pool[$k];
-        } else {
-            $this->link = self::$_pool[$k] = $this->getLink();
-        }
 
         return $this;
     }
@@ -171,7 +150,7 @@ class Memcached extends \Parith\Data\Source
      */
     public function replace($key, $value, $expiration = 0)
     {
-        return $this->replace($key, $value, $expiration);
+        return $this->link->replace($key, $value, $expiration);
     }
 
     /**
@@ -236,12 +215,5 @@ class Memcached extends \Parith\Data\Source
         $this->link->quit();
 
         return $this;
-    }
-
-    public static function closeAll()
-    {
-        foreach (self::$_pool as $link)
-            $link->quit();
-
     }
 } 

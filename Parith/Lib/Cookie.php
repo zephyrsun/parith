@@ -14,20 +14,21 @@
 
 namespace Parith\Lib;
 
-use \Parith\Result;
-use \Parith\App;
-use \Parith\String;
-
-class Cookie extends Result
+class Cookie
 {
     public $options = array(
         'expire' => 7200,
         'path' => '/',
         'domain' => '',
-        'crypt' => '\Parith\Lib\CookieHandler',
-        'crypt_key' => 'crypt.cookie.parith'
+        'secure' => false,
+        'httponly' => false,
+        'cipher' => \MCRYPT_RIJNDAEL_256,
+        'mode' => \MCRYPT_MODE_CBC,
+        'secret' => 'CHANGE_ME',
     )
-    , $crypt;
+    , $cipher
+    , $key_size = 32
+    , $iv_size = 32;
 
     /**
      * @param array $options
@@ -36,10 +37,13 @@ class Cookie extends Result
      */
     public function __construct(array $options = array())
     {
-        $this->options = $options + App::getOption('cookie') + $this->options;
+        $this->options = $options + \Parith\App::getOption('cookie') + $this->options;
 
-        if ($this->options['crypt'])
-            $this->crypt = new $this->options['crypt']($this->options['crypt_key']);
+        if ($this->options['cipher']) {
+            $this->cipher = \mcrypt_module_open($this->options['cipher'], '', $this->options['mode'], '');
+            $this->key_size = \mcrypt_enc_get_key_size($this->cipher);
+            $this->iv_size = \mcrypt_enc_get_iv_size($this->cipher);
+        }
     }
 
     /**
@@ -50,12 +54,14 @@ class Cookie extends Result
     public function get($key)
     {
         if (isset($_COOKIE[$key])) {
-            $ret = $_COOKIE[$key];
+            $data = $_COOKIE[$key];
 
-            if ($this->crypt)
-                return $this->crypt->decrypt($ret);
+            if ($this->cipher) {
+                $arr = explode('|', $data, 2);
+                return $this->decrypt(base64_decode($arr[1]), $arr[0]);
+            }
 
-            return $ret;
+            return $data;
         }
 
         return null;
@@ -63,28 +69,25 @@ class Cookie extends Result
 
     /**
      * @param string $key
-     * @param mixed  $val
-     * @param int    $expire could be negative number
+     * @param mixed $data
+     * @param int $expire could be negative number
      *
      * @return bool
      */
-    public function set($key, $val, $expire = 0)
+    public function set($key, $data, $expire = 0)
     {
-        if ($this->crypt)
-            $val = $this->crypt->encrypt($val);
+        $options = $this->options;
 
         if ($expire > 0)
-            $expire += APP_TS;
+            $expire += \APP_TS;
         elseif ($expire == 0)
-            $expire = $this->options['expire'] + APP_TS;
+            $expire = $options['expire'] + \APP_TS;
 
-        $ret = setcookie($key, $val, $expire, $this->options['path'], $this->options['domain']);
+        if ($this->cipher) {
+            $data = $expire . '|' . base64_encode($this->encrypt($data, $expire));
+        }
 
-        if ($ret === false)
-            return $ret;
-
-        //$_COOKIE[$key] = $val;
-        return true;
+        return setcookie($key, $data, $expire, $options['path'], $options['domain'], $options['secure'], $options['httponly']);
     }
 
     /**
@@ -94,7 +97,10 @@ class Cookie extends Result
      */
     public function delete($key)
     {
-        return $this->set($key, '', -1);
+        $options = $this->options;
+
+        return setcookie($key, '', -1, $options['path'], $options['domain'], $options['secure'], $options['httponly']);
+        //  return $this->set($key, '', -1);
     }
 
     /**
@@ -105,50 +111,57 @@ class Cookie extends Result
         foreach ($_COOKIE as $key => $val)
             $this->delete($key);
     }
-}
 
-class CookieHandler
-{
-    protected $key = 0, $key_length = 0;
-
-    public function __construct($key = '')
+    /**
+     * @param $data
+     * @param $key
+     * @return string
+     */
+    public function encrypt($data, $key)
     {
-        if ($key)
-            $this->setKey($key);
-    }
+        if (!$data) {
 
-    public function setKey($key)
-    {
-        $new_key = 0;
-        $length = strlen($key);
-        for ($i = 0; $i < $length; $i++) {
-            $new_key += \ord($key[$i]);
+            $key = $this->hashKey($key);
+
+            //$key is changed
+            mcrypt_generic_init($this->cipher, $key, $this->getIv($key));
+            $data = base64_encode(mcrypt_generic($this->cipher, $data));
+            mcrypt_generic_deinit($this->cipher);
         }
 
-        $this->key = $new_key;
-        $this->key_length = strlen(\ord('/') ^ $this->key);
+        return $data;
     }
 
-    public function encrypt($val)
+    /**
+     * @param $data
+     * @param $key
+     * @return string
+     */
+    public function decrypt($data, $key)
     {
-        $val = \json_encode($val);
+        if (!$data) {
 
-        $ret = '';
-        $length = strlen($val);
-        for ($i = 0; $i < $length; $i++) {
-            $ret .= sprintf('%0' . $this->key_length . 'd', \ord($val[$i]) ^ $this->key);
-        };
+            $key = $this->hashKey($key);
 
-        return $ret;
-    }
-
-    public function decrypt($val)
-    {
-        $ret = '';
-        foreach (\str_split($val, $this->key_length) as $v) {
-            $ret .= chr($v ^ $this->key);
+            //$key is changed
+            mcrypt_generic_init($this->cipher, $key, $this->getIv($key));
+            $data = mdecrypt_generic($this->cipher, $data);
+            $data = rtrim($data, "\0");
+            mcrypt_generic_deinit($this->cipher);
         }
 
-        return \json_decode($val, true);
+        return $data;
+    }
+
+    public function hashKey($key)
+    {
+        $key = hash_hmac('sha1', $key, $this->options['secret']);
+        return substr($key, 0, $this->key_size);
+    }
+
+    public function getIv($key)
+    {
+        $key2 = hash_hmac('sha1', $key, $this->options['secret']);
+        return substr(pack('h*', $key . $key2), 0, $this->iv_size);
     }
 }

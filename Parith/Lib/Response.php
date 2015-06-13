@@ -100,7 +100,7 @@ class Response extends Result
      */
     public static function expires($seconds = 1800)
     {
-        \header('Expires: ' . self::httpDate(APP_TS + $seconds));
+        \header('Expires: ' . self::httpDate(\APP_TS + $seconds));
     }
 
     /**
@@ -166,7 +166,7 @@ class Response extends Result
      */
     public static function httpDate($timestamp = null)
     {
-        $timestamp or $timestamp = APP_TS;
+        $timestamp or $timestamp = \APP_TS;
 
         return \gmdate('D, d M Y H:i:s', $timestamp) . ' GMT';
     }

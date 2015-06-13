@@ -31,7 +31,7 @@ class Basic extends Result
     {
         $this->options = $options + App::getOption('view') + $this->options;
 
-        $this->options['source_dir'] or $this->options['source_dir'] = APP_DIR . 'View';
+        $this->options['source_dir'] or $this->options['source_dir'] = \APP_DIR . 'View';
     }
 
     /**
@@ -88,7 +88,7 @@ class Basic extends Result
     {
         $ext or $ext = $this->options['source_ext'];
 
-        $name = $this->options['source_dir'] . DIRECTORY_SEPARATOR . $name . '.' . $ext;
+        $name = $this->options['source_dir'] . \DIRECTORY_SEPARATOR . $name . '.' . $ext;
 
         if (\is_file($name))
             return $name;

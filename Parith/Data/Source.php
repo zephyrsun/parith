@@ -14,47 +14,42 @@
 
 namespace Parith\Data;
 
-use \Parith\App;
-
 abstract class Source
 {
-    public $options = array(
-        'host' => '127.0.0.1',
-        'port' => 0
-    );
+    private static $_ins = array();
 
-    /**
-     * @param array $options
-     * @return mixed
-     */
-    public static function singleton(array $options = array(), $key = '')
+    public function __destruct()
     {
-        return App::getInstance(\get_called_class(), array($options), $key);
+        $this->close();
     }
 
     /**
-     * an Overwrite example:
-     *
-     * public static function option($cfg_id)
-     * {
-     *      $servers = array (
-     *          1 => array('host' => '127.0.0.1', 'port' => 11211),
-     *          2 => array('host' => '127.0.0.1', 'port' => 11212),
-     *      );
-     *
-     *      return parent::option($servers[$cfg_id]);
-     * }
-     *
-     * @static
-     *
+     * @param string $key key for different instance
      * @param array $options
-     *
-     * @return \Parith\Data\Source
+     * @return object
      */
-    public function option(array $options)
+    public static function getInstance($key, array $options = array())
     {
-        $this->options = $options + $this->options;
+        $class = \get_called_class();
 
-        return $this;
+        $obj = & self::$_ins[$class . $key];
+        if ($obj)
+            return $obj;
+
+        return $obj = new $class($options);
     }
+
+    /**
+     * @param $key
+     * @return array
+     */
+    public static function getOption($key)
+    {
+        return array();
+    }
+
+    /**
+     * @return null
+     */
+    abstract public function close();
 }

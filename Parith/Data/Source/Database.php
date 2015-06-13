@@ -33,8 +33,9 @@ class Database extends Source
     public $link;
 
     public $table_name = '';
-    public $clauses = array();
+
     public $sql = '';
+    public $clauses = array();
     public $params = array();
 
     public $options = array(
@@ -44,7 +45,6 @@ class Database extends Source
         'db_name' => '',
         'username' => 'root',
         'password' => '',
-        'charset' => 'utf8',
         'options' => array(),
     );
 
@@ -54,6 +54,8 @@ class Database extends Source
         \PDO::ATTR_EMULATE_PREPARES => false,
         //\PDO::ATTR_PERSISTENT => false,
 
+        \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+
         #overwrite 'options' if not using MySQL
         \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
         \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
@@ -61,35 +63,17 @@ class Database extends Source
 
     private $_info = array();
 
-    private static $_pool = array();
-
-    public function __construct(array $options = array())
+    protected function __construct($options)
     {
         $this->initial();
-        $this->option($options);
+        $this->options = $options + $this->options;
     }
 
     /**
      * @return $this
-     */
-    public function connect()
-    {
-        $k = $this->options['host'] . ':' . $this->options['port'] . ':' . $this->options['db_name'];
-
-        if (isset(self::$_pool[$k])) {
-            $this->link = self::$_pool[$k];
-        } else {
-            $this->link = self::$_pool[$k] = $this->getLink();
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return \PDO
      * @throws \Exception
      */
-    protected function getLink()
+    protected function connect()
     {
         $options = $this->options;
 
@@ -105,7 +89,7 @@ class Database extends Source
             throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}:{$options['db_name']}");
         }
 
-        return $this->link;
+        return $this;
     }
 
     public function option(array $options)
@@ -113,9 +97,6 @@ class Database extends Source
         $this->options = $options + $this->options;
 
         $this->server_options = $this->options['options'] + $this->server_options;
-
-        if ($this->options['charset'])
-            $this->server_options[\PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->options['charset'];
 
         return $this;
     }
@@ -612,24 +593,10 @@ class Database extends Source
         return $this->sth->rowCount();
     }
 
-    public function setCharset($charset)
-    {
-        $this->query('SET NAMES ' . $charset . ';');
-
-        return $this;
-    }
-
     public function close()
     {
         $this->link = null;
 
         return $this;
-    }
-
-    public static function closeAll()
-    {
-        foreach (self::$_pool as &$link)
-            $link = null;
-
     }
 }

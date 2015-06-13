@@ -29,33 +29,34 @@ class Memcache extends Source
         'failure_callback' => null,
     );
 
-    public $servers = array(
-        array('host' => '127.0.0.1', 'port' => 11211),
-    );
-
     /**
      * @var \Memcache
      */
     public $link;
 
-    public static $_pool = array();
-
     public $compress = 0; //\MEMCACHE_COMPRESSED
 
-    public function __construct(array $servers = array())
+    /**
+     * @param array $servers = array(
+     * array('host' => '192.168.1.1', 'port' => 11211),
+     * array('host' => '192.168.1.2', 'port' => 11211),
+     * );
+     */
+    protected function __construct($servers)
     {
-        $this->servers = $servers;
-        $this->connect();
+        $this->connect($servers);
     }
 
     /**
+     * @param $servers
      * @return \Memcache
+     * @throws \Exception
      */
-    protected function getLink()
+    protected function connect($servers)
     {
         $this->link = new \Memcache();
 
-        foreach ($this->servers as $options) {
+        foreach ($servers as $options) {
             $options += $this->options; //$this->option($options);
 
             $ret = $this->link->addServer(
@@ -71,24 +72,6 @@ class Memcache extends Source
 
             if (!$ret)
                 throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
-        }
-
-        return $this->link;
-    }
-
-    /**
-     * @return $this
-     */
-    public function connect()
-    {
-        $s = current($this->servers);
-
-        $k = $s['host'] . ':' . $s['port'];
-
-        if (isset(self::$_pool[$k])) {
-            $this->link = self::$_pool[$k];
-        } else {
-            $this->link = self::$_pool[$k] = $this->getLink();
         }
 
         return $this;
@@ -193,12 +176,5 @@ class Memcache extends Source
         $this->link->close();
 
         return $this;
-    }
-
-    public static function closeAll()
-    {
-        foreach (self::$_pool as $link)
-            $link->close();
-
     }
 }

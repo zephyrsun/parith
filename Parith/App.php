@@ -17,7 +17,7 @@
 
 namespace Parith;
 
-define('BASE_DIR', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+define('BASE_DIR', dirname(__DIR__) . \DIRECTORY_SEPARATOR);
 
 // load core class
 include __DIR__ . '/Common.php';
@@ -29,27 +29,20 @@ class App
 {
     public static $options = array(
         'namespace' => 'App',
-        'debug' => true,
-        'logger' => '\Parith\Log',
     );
 
     public static $query = array();
 
-    private static $_instances = array();
+    private static $_ins = array();
 
     public function __construct(array $options = array())
-    {
-        self::setOption($options);
-    }
-
-    public static function setOption(array $options)
     {
         self::$options = $options + self::$options;
     }
 
     public static function getOption($key)
     {
-        $option = &self::$options[$key] or $option = array();
+        $option = & self::$options[$key] or $option = array();
 
         return $option;
     }
@@ -95,7 +88,7 @@ class App
 
         //define APP_DIR
         $namespace = self::getOption('namespace');
-        define('APP_DIR', BASE_DIR . $namespace . DIRECTORY_SEPARATOR);
+        define('APP_DIR', BASE_DIR . $namespace . \DIRECTORY_SEPARATOR);
 
         // timezone setup
         //\date_default_timezone_set(self::getOption('timezone'));
@@ -116,6 +109,7 @@ class App
         throw new \Exception('Controller "' . $class . '" not found');
     }
 
+    /*
     public static function errorHandler($code, $message, $file, $line)
     {
         if (!($code & error_reporting()))
@@ -123,12 +117,7 @@ class App
 
         throw new \ErrorException($message, $code, 0, $file, $line);
     }
-
-    public static function exceptionHandler(\Exception $e)
-    {
-        $log = new self::$options['logger']();
-        $log->writeException($e);
-    }
+    */
 
     /**
      * @static
@@ -139,7 +128,7 @@ class App
      */
     public static function import($name)
     {
-        $name = BASE_DIR . \str_replace('\\', DIRECTORY_SEPARATOR, $name) . '.php';
+        $name = BASE_DIR . \str_replace('\\', \DIRECTORY_SEPARATOR, $name) . '.php';
         if (\is_file($name))
             return include $name;
 
@@ -158,7 +147,7 @@ class App
     public static function getInstance($class, $args = array(), $key = '')
     {
         $key or $key = $class;
-        $obj = &self::$_instances[$key];
+        $obj = & self::$_ins[$key];
         if ($obj)
             return $obj;
 
@@ -217,8 +206,8 @@ class Router
             return self::$query = self::parseURI(trim($uri, '/'), $options) + $options['default'];
         }
 
-        $c = &$_GET[$options['index'][0]] or $c = $options['default'][0];
-        $a = &$_GET[$options['index'][1]] or $a = $options['default'][1];
+        $c = & $_GET[$options['index'][0]] or $c = $options['default'][0];
+        $a = & $_GET[$options['index'][1]] or $a = $options['default'][1];
 
         return array($c, $a);
     }
@@ -240,34 +229,5 @@ class Router
         }
 
         return \explode($options['delimiter'], $uri);
-    }
-}
-
-
-class Log
-{
-    /**
-     * @param \Exception $e
-     */
-    public static function writeException(\Exception $e)
-    {
-        self::write(sprintf('%s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
-    }
-
-    /**
-     * @param string $message
-     * @param string $file
-     */
-    public static function write($message, $file = '')
-    {
-        if (App::getOption('debug')) {
-            echo $message;
-        } else {
-            $message = date(DATE_RFC3339, APP_TS) . ' ' . $message . PHP_EOL;
-
-            $file or $file = APP_DIR . 'log' . DIRECTORY_SEPARATOR . date('Y-m-d', APP_TS) . '.log';
-
-            \error_log($message, 3, $file);
-        }
     }
 }

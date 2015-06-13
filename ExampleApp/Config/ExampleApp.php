@@ -12,7 +12,9 @@ return array(
         'password' => '123456',
     ),
     'memcache' => array(
-        'host' => '127.0.0.1',
-        'port' => 11211,
+        array(
+            'host' => '127.0.0.1',
+            'port' => 11211,
+        )
     ),
 );

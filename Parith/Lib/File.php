@@ -47,7 +47,7 @@ class File extends Result
         if (\is_dir($filename) && $dh = \opendir($filename)) {
             while (false !== ($file = \readdir($dh)))
                 if ($file !== '.' && $file !== '..')
-                    self::rm($filename . DIRECTORY_SEPARATOR . $file);
+                    self::rm($filename . \DIRECTORY_SEPARATOR . $file);
 
             \closedir($dh);
 
@@ -71,7 +71,7 @@ class File extends Result
             $out = array();
             while (false !== ($file = \readdir($dh))) {
                 if ($file != '.' && $file != '..') {
-                    $file = $dir . DIRECTORY_SEPARATOR . $file;
+                    $file = $dir . \DIRECTORY_SEPARATOR . $file;
 
                     if (\is_file($file))
                         $out[] = $file;

@@ -61,6 +61,7 @@ class Grab
             CURLOPT_CUSTOMREQUEST => 'PUT',
             CURLOPT_POSTFIELDS => $args,
         );
+
         return $this->exec($url, $options);
     }
 
@@ -69,6 +70,7 @@ class Grab
         $options += array(
             CURLOPT_CUSTOMREQUEST => 'DELETE',
         );
+
         return $this->exec($url, $options);
     }
 

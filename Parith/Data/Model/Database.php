@@ -51,7 +51,7 @@ class Database extends Model
      */
     public function connection($query = array())
     {
-        return $this->link = DBSource::singleton(array(
+        return $this->link = DBSource::getInstance(array(
             'db_name' => $this->db_name
         ));
     }
@@ -80,8 +80,8 @@ class Database extends Model
      *  ':source',':conditions',':fields',':order',':limit',':page' was defined in $this->options
      *
      * @param array $params
-     * @param int   $mode
-     * @param null  $mode_param
+     * @param int $mode
+     * @param null $mode_param
      *
      * @return mixed
      */
@@ -102,8 +102,8 @@ class Database extends Model
      *
      * @param       $query
      * @param array $params
-     * @param int   $mode
-     * @param null  $mode_param
+     * @param int $mode
+     * @param null $mode_param
      *
      * @return array|false
      */
@@ -203,7 +203,7 @@ class Database extends Model
      * @param array $data
      * @param array $query
      *              - see fetch()
-     * @param null  $modifier
+     * @param null $modifier
      *
      * @return mixed
      */
@@ -216,7 +216,7 @@ class Database extends Model
      * @param       $data
      * @param array $query
      *              - see fetch()
-     * @param bool  $auto
+     * @param bool $auto
      *
      * @return mixed
      */
