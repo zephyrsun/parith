@@ -16,20 +16,20 @@ namespace Parith\Lib\Image;
 
 class Imagick extends Basic
 {
-    public $lib;
+    public $imagick;
 
     public function __construct($image = null)
     {
-        $this->lib = new \Imagick();
+        $this->imagick = new \Imagick();
 
         if ($image)
-            $this->loadImage($image);
+            $this->load($image);
     }
 
     public function __destruct()
     {
-        $this->lib->clear();
-        $this->lib->destroy();
+        $this->imagick->clear();
+        $this->imagick->destroy();
     }
 
     /**
@@ -37,29 +37,32 @@ class Imagick extends Basic
      *
      * @return Imagick
      */
-    public function loadImage($image)
+    public function load($image)
     {
-        return $this->_loadImage($image, $this->lib);
+        return $this->_load($image, $this->imagick);
     }
 
-    private function _loadImage($image, &$lib)
+    /**
+     * @param $image
+     * @param \Imagick $imagick
+     * @return mixed
+     */
+    private function _load($image, $imagick)
     {
-        $ext = $this->getExtension($image);
-        if (isset(static::$image_types[$ext])) {
-            return $lib->readImage($image);
-        } else {
-            return $lib->readImageBlob($image);
-        }
+        if ($ext = $this->getExtension($image))
+            return $imagick->readImage($image);
+
+        return $imagick->readImageBlob($image);
     }
 
     public function width()
     {
-        return $this->lib->getImageWidth();
+        return $this->imagick->getImageWidth();
     }
 
     public function height()
     {
-        return $this->lib->getImageHeight();
+        return $this->imagick->getImageHeight();
     }
 
     /**
@@ -89,7 +92,7 @@ class Imagick extends Basic
             $this->crop($src_w - $src_x, $src_h - $src_y, $src_x / 2, $src_y / 2);
         }
 
-        $this->lib->resizeimage($width, $height, \Imagick::FILTER_LANCZOS, 1, false);
+        $this->imagick->resizeimage($width, $height, \Imagick::FILTER_LANCZOS, 1, false);
 
         return $this;
     }
@@ -104,7 +107,7 @@ class Imagick extends Basic
      */
     public function crop($width, $height, $src_x, $src_y)
     {
-        $this->lib->cropImage($width, $height, $src_x, $src_y);
+        $this->imagick->cropImage($width, $height, $src_x, $src_y);
 
         return $this;
     }
@@ -119,7 +122,7 @@ class Imagick extends Basic
      */
     public function rotate($angle, $background = '#FFF')
     {
-        $this->lib->rotateImage($background, $angle);
+        $this->imagick->rotateImage($background, $angle);
 
         return $this;
     }
@@ -144,17 +147,9 @@ class Imagick extends Basic
         if ($y < 0)
             $y += $src_h;
 
-        if ($width > 0) {
-            $width = $x + $width;
-        } else {
-            $width = $src_w;
-        }
+        $width = $width > 0 ? $x + $width : $src_w;
 
-        if ($height > 0) {
-            $height = $y + $height;
-        } else {
-            $height = $src_h;
-        }
+        $height = $height > 0 ? $y + $height : $src_h;
 
         $image = $this->create($width, $height);
 
@@ -178,12 +173,12 @@ class Imagick extends Basic
     public function watermark($image, $x = 0, $y = 0)
     {
         $imagick = new \Imagick();
-        $this->_loadImage($image, $imagick);
+        $this->_load($image, $imagick);
 
         $imagick->setImageAlphaChannel(\Imagick::ALPHACHANNEL_OPAQUE);
 
         // Apply the watermark to the image
-        $this->lib->compositeImage($imagick, \Imagick::COMPOSITE_DISSOLVE, $x, $y);
+        $this->imagick->compositeImage($imagick, \Imagick::COMPOSITE_DISSOLVE, $x, $y);
 
         return $this;
     }
@@ -199,8 +194,8 @@ class Imagick extends Basic
      */
     public function save($filename, $quality = null)
     {
-        if ($this->doSave($filename, $quality))
-            return $this->lib->writeImage($filename);
+        if ($this->prepareSave($filename, $quality))
+            return $this->imagick->writeImage($filename);
 
         return false;
     }
@@ -214,11 +209,11 @@ class Imagick extends Basic
      */
     public function export($type, $quality = null, $render = true)
     {
-        $ext = $this->doSave($type, $quality);
+        $ext = $this->prepareSave($type, $quality);
         if (!$ext)
             return false;
 
-        $blob = $this->lib->getImageBlob();
+        $blob = $this->imagick->getImageBlob();
 
         if ($render) {
             \header('Content-Type: image/' . $ext);
@@ -229,19 +224,20 @@ class Imagick extends Basic
         return $blob;
     }
 
-    protected function doSave($filename, $quality)
+    protected function prepareSave($filename, $quality)
     {
-        $ext = $this->getExtension($filename) or $ext = $filename;
+        if (!$ext = $this->getExtension($filename))
+            $ext = $filename;
 
         $types = static::$image_types;
-        $ext = & $types[$ext];
 
-        if ($ext)
-            $this->lib->setFormat($ext);
+        if ($ext = &$types[$ext])
+            $this->imagick->setFormat($ext);
         else
             return false;
 
-        $quality === null or $this->lib->setImageCompressionQuality($quality);
+        if ($quality !== null)
+            $this->imagick->setImageCompressionQuality($quality);
 
         return $ext;
     }

@@ -108,7 +108,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function email($email)
+    static public function email($email)
     {
         return (bool)filter_var($email, FILTER_VALIDATE_EMAIL);
     }
@@ -122,7 +122,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function ip($ip)
+    static public function ip($ip)
     {
         return (bool)filter_var($ip, FILTER_VALIDATE_IP);
     }
@@ -134,7 +134,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function required($val)
+    static public function required($val)
     {
         return $val != null; //isset($val);
     }
@@ -148,7 +148,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function notEmpty($val)
+    static public function notEmpty($val)
     {
         return (bool)$val; //!empty($val);
     }
@@ -163,7 +163,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function equal($val, $ref)
+    static public function equal($val, $ref)
     {
         return $val === $ref;
     }
@@ -178,7 +178,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function unequal($val, $ref)
+    static public function unequal($val, $ref)
     {
         return $val !== $ref;
     }
@@ -192,7 +192,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function num($val)
+    static public function num($val)
     {
         return is_numeric($val);
     }
@@ -207,9 +207,9 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function le($val, $ref)
+    static public function le($val, $ref)
     {
-        return (int)$val <= (int)$ref;
+        return $val <= $ref;
     }
 
     /**
@@ -222,9 +222,9 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function ge($val, $ref)
+    static public function ge($val, $ref)
     {
-        return (int)$val >= (int)$ref;
+        return $val >= $ref;
     }
 
     /**
@@ -238,10 +238,9 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function between($val, $min, $max)
+    static public function between($val, $min, $max)
     {
-        $val = (int)$val;
-        return $val >= (int)$min && $val <= (int)$max;
+        return $val >= $min && $val <= $max;
     }
 
     /**
@@ -254,7 +253,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function lengthLE($str, $max)
+    static public function lengthLE($str, $max)
     {
         return static::le(mb_strlen($str), $max);
     }
@@ -269,7 +268,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function lengthGE($str, $min)
+    static public function lengthGE($str, $min)
     {
         return static::ge(mb_strlen($str), $min);
     }
@@ -285,7 +284,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function lengthBetween($str, $min, $max)
+    static public function lengthBetween($str, $min, $max)
     {
         return static::between(mb_strlen($str), $min, $max);
     }
@@ -300,7 +299,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function match($val, $regex)
+    static public function match($val, $regex)
     {
         return (bool)preg_match($regex, $val);
     }
@@ -314,7 +313,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    public static function url($url)
+    static public function url($url)
     {
         return (bool)filter_var($url, FILTER_VALIDATE_URL);
     }

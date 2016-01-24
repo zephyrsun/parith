@@ -14,11 +14,9 @@
 
 namespace Parith\Lib\Image;
 
-use \Parith\Result;
-
-abstract class Basic extends Result
+abstract class Basic extends \Parith\Result
 {
-    public static $image_types = array(
+    static public $image_types = array(
         'jpg' => 'jpeg',
         'jpeg' => 'jpeg',
         'png' => 'png',
@@ -27,10 +25,18 @@ abstract class Basic extends Result
 
     protected $image;
 
-    public function getExtension($filename)
+    static public function getExtension($filename)
     {
-        $ext = explode('?', pathinfo($filename, PATHINFO_EXTENSION), 2);
-        return $ext[0];
+        //$ext = explode('?', pathinfo($filename, PATHINFO_EXTENSION), 2);
+        //return $ext[0];
+        return preg_replace('/.+\.(\w+).*/', '$1', $filename);
+    }
+
+    static public function checkExtension($filename)
+    {
+        $ext = self::getExtension($filename);
+
+        return isset(static::$image_types[$ext]) ? $ext : '';
     }
 
     abstract public function width();

@@ -14,14 +14,14 @@
 
 namespace Parith\Lib;
 
-class Cookie
+class Cookie extends \Parith\Result
 {
     public $options = array(
         'expire' => 7200,
         'path' => '/',
         'domain' => '',
         'secure' => false,
-        'httponly' => false,
+        'httponly' => true,
         'cipher' => \MCRYPT_RIJNDAEL_256,
         'mode' => \MCRYPT_MODE_CBC,
         'secret' => 'CHANGE_ME',

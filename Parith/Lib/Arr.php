@@ -16,13 +16,13 @@ abstract class Arr
     /**
      * @static
      *
-     * @param array  $arr
+     * @param array $arr
      * @param string $key
-     * @param mixed  $default
+     * @param mixed $default
      *
      * @return mixed
      */
-    public static function get(array $arr, $key, $default = null)
+    static public function get(array $arr, $key, $default = null)
     {
         if (isset($arr[$key]))
             return $arr[$key];
@@ -33,17 +33,17 @@ abstract class Arr
     /**
      * @static
      *
-     * @param array  $arr
+     * @param array $arr
      * @param string $key
-     * @param mixed  $val
+     * @param mixed $val
      * @param string $delimiter
      *
      * @return array
      */
-    public static function pathSet(array &$arr, $key, $val, $delimiter = ',')
+    static public function pathSet(array &$arr, $key, $val, $delimiter = ',')
     {
         foreach (\explode($delimiter, $key) as $v)
-            $arr = & $arr[$v] or $arr = array();
+            $arr = $arr[$v] ?? array();
 
         return $arr = $val;
     }
@@ -51,13 +51,13 @@ abstract class Arr
     /**
      * @static
      *
-     * @param array  $arr
+     * @param array $arr
      * @param string $key
      * @param string $delimiter
      *
      * @return mixed
      */
-    public static function pathGet(array &$arr, $key, $delimiter = ',')
+    static public function pathGet(array &$arr, $key, $delimiter = ',')
     {
         foreach (\explode($delimiter, $key) as $val)
             if (!$arr = & $arr[$val])
@@ -69,12 +69,12 @@ abstract class Arr
     /**
      * @static
      *
-     * @param array  $arr
+     * @param array $arr
      * @param string $key
      *
      * @return void
      */
-    public static function pathDelete(array &$arr, $key)
+    static public function pathDelete(array &$arr, $key)
     {
         $val = \explode('.', $key);
         $last = \end($val);
@@ -92,13 +92,13 @@ abstract class Arr
      *
      * @static
      *
-     * @param array  $arr
+     * @param array $arr
      * @param string $key
-     * @param mixed  $val
+     * @param mixed $val
      *
      * @return array
      */
-    public static function unshift(array &$arr, $key, $val)
+    static public function unshift(array &$arr, $key, $val)
     {
         $arr = \array_reverse($arr, true);
         $arr[$key] = $val;
@@ -110,13 +110,13 @@ abstract class Arr
      *
      * @static
      *
-     * @param array  $arr
+     * @param array $arr
      * @param string $key
-     * @param mixed  $val
+     * @param mixed $val
      *
      * @return bool
      */
-    public static function find($arr, $key, $val)
+    static public function find($arr, $key, $val)
     {
         foreach ($arr as $val)
             if ($val == $val[$key])
@@ -136,11 +136,11 @@ abstract class Arr
      *
      * @return array
      */
-    public static function extract(array $arr, array $keys, $default = null)
+    static public function extract(array $arr, array $keys, $default = null)
     {
         $ret = array();
         foreach ($keys as $key)
-            $ret[$key] = isset($arr[$key]) ? $arr[$key] : $default;
+            $ret[$key] = isset($arr[$key]) ?$arr[$key]: $default;
 
         return $ret;
     }
@@ -155,7 +155,7 @@ abstract class Arr
      *
      * @return array
      */
-    public static function pluck(array $arr, $key)
+    static public function pluck(array $arr, $key)
     {
         $ret = array();
 

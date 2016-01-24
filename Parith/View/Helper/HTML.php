@@ -18,7 +18,7 @@ use \Parith\Result;
 
 class HTML extends Result
 {
-    public static function tag($tag, $text = '', array $attributes = array())
+    static public function tag($tag, $text = '', array $attributes = array())
     {
         if ($text === null)
             $text = ' />';
@@ -28,7 +28,7 @@ class HTML extends Result
         return '<' . $tag . self::attributes($attributes) . $text;
     }
 
-    public static function attributes(array $attributes)
+    static public function attributes(array $attributes)
     {
         $s = '';
         foreach ($attributes as $key => $str)
@@ -37,24 +37,25 @@ class HTML extends Result
         return $s;
     }
 
-    public static function entities($string)
+    static public function entities($string)
     {
         return htmlspecialchars($string, ENT_QUOTES, 'utf-8');
     }
 
-    public static function link($url, $text = '', array $attributes = array())
+    static public function link($url, $text = '', array $attributes = array())
     {
-        isset($attributes['href']) or $attributes['href'] = $url;
+        if (!isset($attributes['href']))
+            $attributes['href'] = $url;
 
         return self::tag('a', $text, $attributes);
     }
 
-    public static function select(array $options, $select = null, array $attributes = array())
+    static public function select(array $options, $select = null, array $attributes = array())
     {
         return self::tag('select', self::option($options, $select), $attributes);
     }
 
-    public static function selectNum($min, $max, $select = null, array $attributes = array())
+    static public function selectNum($min, $max, $select = null, array $attributes = array())
     {
         $options = array();
         for (; $min <= $max; $min++)
@@ -63,7 +64,7 @@ class HTML extends Result
         return self::tag('select', self::option($options, $select), $attributes);
     }
 
-    public static function option(array $options, $selected)
+    static public function option(array $options, $selected)
     {
         $s = '';
         foreach ($options as $val => $option) {

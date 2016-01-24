@@ -21,7 +21,7 @@ class Request extends \Parith\Result
      *
      * @return bool
      */
-    public static function method($method = null)
+    static public function method($method = null)
     {
         return $_SERVER['REQUEST_METHOD'] === $method;
     }
@@ -29,7 +29,7 @@ class Request extends \Parith\Result
     /**
      * @return bool
      */
-    public static function isAjax()
+    static public function isAjax()
     {
         return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
     }
@@ -37,7 +37,7 @@ class Request extends \Parith\Result
     /**
      * @return bool
      */
-    public static function isFlash()
+    static public function isFlash()
     {
         return (bool)\preg_match('/^(Shockwave|Adobe) Flash/', $_SERVER['HTTP_USER_AGENT']);
     }
@@ -45,7 +45,7 @@ class Request extends \Parith\Result
     /**
      * @return bool
      */
-    public static function isSSL()
+    static public function isSSL()
     {
         return isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
     }
@@ -53,9 +53,9 @@ class Request extends \Parith\Result
     /**
      * @return bool
      */
-    public static function isMobile()
+    static public function isMobile()
     {
-        static $ua = '(iPhone|iPod|MIDP|AvantGo|BlackBerry|J2ME|Opera Mini|DoCoMo|NetFront|Nokia|PalmOS|PalmSource|portalmmm|Plucker|ReqwirelessWeb|SonyEricsson|Symbian|UP\.Browser|Windows CE|Xiino)';
+        $ua = '(iPhone|iPod|MIDP|AvantGo|BlackBerry|J2ME|Opera Mini|DoCoMo|NetFront|Nokia|PalmOS|PalmSource|portalmmm|Plucker|ReqwirelessWeb|SonyEricsson|Symbian|UP\.Browser|Windows CE|Xiino)';
 
         return (bool)\preg_match('/' . $ua . '/i', $_SERVER['HTTP_USER_AGENT'], $match);
     }
@@ -63,9 +63,9 @@ class Request extends \Parith\Result
     /**
      * @return bool
      */
-    public static function getClientIp()
+    static public function getClientIp()
     {
-        $env = $_SERVER or $env = $_ENV;
+        $env = $_SERVER;// $env = $_ENV;
 
         if (isset($env['HTTP_X_FORWARDED_FOR'])) {
             $ips = \explode(',', $env['HTTP_X_FORWARDED_FOR'], 1);
@@ -77,6 +77,6 @@ class Request extends \Parith\Result
             return $env['REMOTE_ADDR'];
         }
 
-        return false;
+        return '';
     }
 }

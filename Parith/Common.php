@@ -216,7 +216,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     /**
      * @return object
      */
-    public static function singleton()
+    static public function getInstance()
     {
         return App::getInstance(\get_called_class(), \func_get_args());
     }

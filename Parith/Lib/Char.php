@@ -24,12 +24,12 @@ class Char
      * @static
      *
      * @param string $str
-     * @param int    $s In my test, number 5381 distributes better than number 131
-     * @param int    $hash
+     * @param int $s In my test, number 5381 distributes better than number 131
+     * @param int $hash
      *
      * @return int
      */
-    public static function hash($str, $s = 5381, $hash = 0)
+    static public function hash($str, $s = 5381, $hash = 0)
     {
         foreach (str_split($str) as $v)
             $hash = ($hash * $s + ord($v)) & 0x7FFFFFFF;
@@ -44,7 +44,7 @@ class Char
      *
      * @return string
      */
-    public static function sanitize($str)
+    static public function sanitize($str)
     {
         return \htmlspecialchars($str, ENT_QUOTES);
     }
@@ -56,7 +56,7 @@ class Char
      *
      * @return bool
      */
-    public static function isAscii($str)
+    static public function isAscii($str)
     {
         return !preg_match('/[^\x00-\x7F]/', $str);
     }
@@ -65,12 +65,12 @@ class Char
      * @static
      *
      * @param          $str
-     * @param string   $delimiter
+     * @param string $delimiter
      * @param function $filter
      *
      * @return array
      */
-    public static function toArray($str, $delimiter = ',', $filter = null)
+    static public function toArray($str, $delimiter = ',', $filter = null)
     {
         $arr = \explode($delimiter, $str);
 

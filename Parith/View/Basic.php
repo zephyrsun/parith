@@ -31,7 +31,8 @@ class Basic extends Result
     {
         $this->options = $options + App::getOption('view') + $this->options;
 
-        $this->options['source_dir'] or $this->options['source_dir'] = \APP_DIR . 'View';
+        if (!$this->options['source_dir'])
+            $this->options['source_dir'] = \APP_DIR . 'View';
     }
 
     /**
@@ -50,11 +51,8 @@ class Basic extends Result
     }
 
     /**
-     * 设置变量
-     *
-     * @param      $key
+     * @param $key
      * @param null $val
-     *
      * @return $this
      */
     public function assign($key, $val = null)
@@ -86,13 +84,14 @@ class Basic extends Result
      */
     public function getSourceFile($name, $ext)
     {
-        $ext or $ext = $this->options['source_ext'];
+        if (!$ext)
+            $ext = $this->options['source_ext'];
 
         $name = $this->options['source_dir'] . \DIRECTORY_SEPARATOR . $name . '.' . $ext;
 
         if (\is_file($name))
             return $name;
 
-        throw new \Exception('View file "' . $name . '" not found');
+        throw new \Exception("View file '$name' not found");
     }
 }

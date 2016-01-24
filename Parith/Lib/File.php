@@ -26,12 +26,12 @@ class File extends Result
      *
      * @return bool
      */
-    public static function mkdir($dir, $mode = '0777')
+    static public function mkdir($dir, $mode = '0644')
     {
         if (\is_dir($dir))
             return true;
 
-        if (self::mkdir(\dirname($dir), $mode))
+        if (static::mkdir(\dirname($dir), $mode))
             return \mkdir($dir, $mode);
     }
 
@@ -42,7 +42,7 @@ class File extends Result
      *
      * @return bool
      */
-    public static function rm($filename)
+    static public function rm($filename)
     {
         if (\is_dir($filename) && $dh = \opendir($filename)) {
             while (false !== ($file = \readdir($dh)))
@@ -61,26 +61,26 @@ class File extends Result
      * @static
      *
      * @param string $dir
-     * @param bool   $r
+     * @param bool $r recursion
      *
      * @return array|bool
      */
-    public static function ls($dir, $r = false)
+    static public function ls($dir, $r = false)
     {
         if (\is_dir($dir) && $dh = \opendir($dir)) {
-            $out = array();
-            while (false !== ($file = \readdir($dh))) {
+            $ret = array();
+            while (false != ($file = \readdir($dh))) {
                 if ($file != '.' && $file != '..') {
                     $file = $dir . \DIRECTORY_SEPARATOR . $file;
 
                     if (\is_file($file))
-                        $out[] = $file;
+                        $ret[] = $file;
                     elseif ($r && $sub = self::ls($file, $r))
-                        $out = $sub + $out;
+                        $ret = $sub + $ret;
                 }
             }
 
-            return $out;
+            return $ret;
         }
 
         return false;
@@ -90,17 +90,21 @@ class File extends Result
      * @static
      *
      * @param       $filename
-     * @param mixed $val
-     * @param bool  $php_code
+     * @param mixed $data
+     * @param bool $php_code
      *
      * @return int
      */
-    public static function touch($filename, $val, $php_code = true)
+    static public function touch($filename, $data, $php_code = false)
     {
-        if ($php_code)
-            $val = "<?php\n  return " . \var_export($val, true) . ";\n?>";
+        if ($php_code) {
+            $n = PHP_EOL;
+            $data = "<?php{$n}return " . var_export($data, true) . ";{$n}?>";
+        }
 
-        return \file_put_contents($filename, $val);
+        static::mkdir(dirname($filename));
+
+        return file_put_contents($filename, $data);
     }
 
     /**
@@ -110,7 +114,7 @@ class File extends Result
      *
      * @return bool|string
      */
-    public static function get($filename)
+    static public function get($filename)
     {
         if (\is_file($filename))
             return \file_get_contents($filename);
@@ -126,7 +130,7 @@ class File extends Result
      *
      * @return bool
      */
-    public static function isNewer($file1, $file2)
+    static public function isNewer($file1, $file2)
     {
         return !\is_file($file2) || \filemtime($file1) > \filemtime($file2);
     }

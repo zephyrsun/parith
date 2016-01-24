@@ -18,7 +18,7 @@ use \Parith\Result;
 
 class Response extends Result
 {
-    public static $protocol = 'HTTP/1.1'
+    static public $protocol = 'HTTP/1.1'
     , $status_code = array(
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -63,17 +63,18 @@ class Response extends Result
     );
 
     /**
-     * @param int    $code
+     * @param int $code
      * @param string $msg
      *
      * @return bool
      */
-    public static function httpStatus($code = 404, $msg = '')
+    static public function httpStatus($code = 404, $msg = '')
     {
         if (!isset(static::$status_code[$code]))
             return false;
 
-        $msg or $msg = static::$status_code[$code];
+        if (!$msg)
+            $msg = static::$status_code[$code];
 
         $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : static::$protocol;
         \header($protocol . ' ' . $code . ' ' . $msg);
@@ -85,12 +86,13 @@ class Response extends Result
      * @static
      *
      * @param string $url
-     * @param int    $status_code
+     * @param int $status_code
      */
-    public static function redirect($url = '', $status_code = 302)
+    static public function redirect($url = '', $status_code = 302)
     {
-        \headers_sent() or \header('Location: ' . $url, true, $status_code);
-        exit(1);
+        if (!\headers_sent())
+            \header('Location: ' . $url, true, $status_code);
+        exit(0);
     }
 
     /**
@@ -98,7 +100,7 @@ class Response extends Result
      *
      * @return void
      */
-    public static function expires($seconds = 1800)
+    static public function expires($seconds = 1800)
     {
         \header('Expires: ' . self::httpDate(\APP_TS + $seconds));
     }
@@ -108,7 +110,7 @@ class Response extends Result
      *
      * @return void
      */
-    public static function etag($etag)
+    static public function etag($etag)
     {
         \header('Etag: ' . $etag);
     }
@@ -118,7 +120,7 @@ class Response extends Result
      *
      * @return void
      */
-    public static function lastModified($timestamp = null)
+    static public function lastModified($timestamp = null)
     {
         \header('Last-Modified: ' . self::httpDate($timestamp));
     }
@@ -141,7 +143,7 @@ class Response extends Result
     /**
      * @return void
      */
-    public static function disableCache()
+    static public function disableCache()
     {
         \header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
         self::lastModified(null);
@@ -154,27 +156,28 @@ class Response extends Result
      *
      * @return void
      */
-    public static function download($filename)
+    static public function download($filename)
     {
         \header('Content-Disposition: attachment; filename="' . $filename . '"');
     }
 
     /**
-     * @param int $timestamp
+     * @param int $ts
      *
      * @return string
      */
-    public static function httpDate($timestamp = null)
+    static public function httpDate($ts = null)
     {
-        $timestamp or $timestamp = \APP_TS;
+        if (!$ts)
+            $ts = \APP_TS;
 
-        return \gmdate('D, d M Y H:i:s', $timestamp) . ' GMT';
+        return \gmdate('D, d M Y H:i:s', $ts) . ' GMT';
     }
 
     /**
      * @return mixed
      */
-    public static function getReferer()
+    static public function getReferer()
     {
         if (empty($_SERVER['HTTP_REFERER']))
             return false;

@@ -7,7 +7,7 @@ It is licenced under the MIT License so you can use it for any personal or corpo
 
 ##Requirements
 
-* PHP 5.3.3+
+* PHP 5.7+
 * PDO (if using the Database)
 
 ##Installation
@@ -61,5 +61,5 @@ Controller/Index.php:
 Nginx:
 
     location / {
-        try_files $uri $uri/ /?URI=$uri;
+        try_files $uri $uri/ /?URI=$uri&$args;
     }

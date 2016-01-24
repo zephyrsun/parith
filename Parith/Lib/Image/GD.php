@@ -19,7 +19,7 @@ class GD extends Basic
     public function __construct($image = null)
     {
         if ($image)
-            $this->loadImage($image);
+            $this->load($image);
     }
 
     public function __destruct()
@@ -65,9 +65,9 @@ class GD extends Basic
      *
      * @return bool
      */
-    public function loadImage($image)
+    public function load($image)
     {
-        $image = $this->_loadImage($image);
+        $image = $this->_load($image);
 
         if ($image) {
             $this->setImageData($image);
@@ -77,10 +77,9 @@ class GD extends Basic
         return false;
     }
 
-    private function _loadImage($image)
+    private function _load($image)
     {
-        $ext = $this->getExtension($image);
-        if (isset(static::$image_types[$ext])) {
+        if ($ext = $this->checkExtension($image)) {
             $call = 'imagecreatefrom' . static::$image_types[$ext];
             return @$call($image);
         }
@@ -193,7 +192,7 @@ class GD extends Basic
      */
     public function watermark($image, $x = 0, $y = 0)
     {
-        $image = $this->_loadImage($image);
+        $image = $this->_load($image);
 
         imagesavealpha($image, true);
 
@@ -220,7 +219,7 @@ class GD extends Basic
      */
     public function save($filename, $quality = null)
     {
-        return (bool)$this->doSave($filename, $quality);
+        return (bool)$this->prepareSave($filename, $quality);
     }
 
     /**
@@ -235,20 +234,20 @@ class GD extends Basic
         if ($render) {
             \header('Content-Type: image/' . $type);
 
-            $ext = $this->doSave($type, $quality);
+            $ext = $this->prepareSave($type, $quality);
             if ($ext)
                 return true;
 
         } else {
             ob_start();
-            if ($this->doSave($type, $quality))
+            if ($this->prepareSave($type, $quality))
                 return ob_get_clean();
         }
 
         return false;
     }
 
-    protected function doSave($filename, $quality)
+    protected function prepareSave($filename, $quality)
     {
         if (!$this->image)
             return false;
@@ -261,9 +260,8 @@ class GD extends Basic
         }
 
         $types = static::$image_types;
-        $ext = & $types[$ext];
 
-        if ($ext)
+        if ($ext = &$types[$ext])
             $call = 'image' . $ext;
         else
             return false;

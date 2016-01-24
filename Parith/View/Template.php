@@ -14,7 +14,7 @@
 
 namespace Parith\View;
 
-use \Parith\Lib\File as ParithFile;
+use \Parith\Lib\File as LibFile;
 use \Parith\Cache\File as CacheFile;
 
 class Template extends Basic
@@ -35,7 +35,8 @@ class Template extends Basic
     {
         parent::__construct($options);
 
-        $dir = $this->options['cache_dir'] or $dir = \APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'template';
+        if (!$dir = $this->options['cache_dir'])
+            $dir = \APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'template';
 
         $this->cache = new CacheFile(array('dir' => $dir));
     }
@@ -48,8 +49,8 @@ class Template extends Basic
     {
         $source = $this->getSourceFile($name, $ext);
         $target = $this->cache->filename(\rawurlencode($name));
-        if (ParithFile::isNewer($source, $target))
-            ParithFile::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
+        if (LibFile::isNewer($source, $target))
+            LibFile::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
 
         include $target;
     }
@@ -63,7 +64,7 @@ class Template extends Basic
      *
      * @return mixed
      */
-    public static function parse($tag, $ldelim, $rdelim)
+    static public function parse($tag, $ldelim, $rdelim)
     {
         return \preg_replace_callback(
             '/' . $ldelim . '([^' . $ldelim . $rdelim . ']+)' . $rdelim . '/', //  '/{([^{}]+)}/'
@@ -78,7 +79,7 @@ class Template extends Basic
      *
      * @return mixed|string
      */
-    public static function parseBrace($str)
+    static public function parseBrace($str)
     {
         $p = $r = array();
 
@@ -123,10 +124,10 @@ class Template extends Basic
         $s = \preg_replace($p, $r, $str[1]);
 
         // parse vars
-        $s = \preg_replace_callback('/(?<!::)\$[^_][^\d\s}\(\)]+/', '\Parith\View\Template::_parseVar', $s);
+        $s = \preg_replace_callback('/(?<!::)\$[^_][^\d\s}\(\)]+/', '\Parith\View\Template::parseVar', $s);
 
         // parse include
-        $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::_parseInclude', $s);
+        $s = \preg_replace_callback('/^include\s+([^}]+)$/', '\Parith\View\Template::parseInclude', $s);
 
         return $s;
     }
@@ -138,7 +139,7 @@ class Template extends Basic
      *
      * @return mixed
      */
-    private static function _parseVar($val)
+    static protected function parseVar($val)
     {
         return \preg_replace(
             array(
@@ -158,7 +159,7 @@ class Template extends Basic
      *
      * @return string
      */
-    private static function _parseInclude($val)
+    static protected function parseInclude($val)
     {
         return '<?php $this->load(' . self::propExport($val[1]) . '); ?>';
     }
@@ -170,7 +171,7 @@ class Template extends Basic
      *
      * @return string
      */
-    public static function propExport($str)
+    static public function propExport($str)
     {
         // \$[^=\s]+ : variables
         // \'[^\']*\' : single quoted string

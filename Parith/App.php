@@ -27,30 +27,24 @@ include __DIR__ . '/Controller/Basic.php';
 
 class App
 {
-    public static $options = array(
-        'namespace' => 'App',
-    );
-
-    public static $query = array();
-
-    private static $_ins = array();
+    static public $options = array('namespace' => 'App')
+    , $query = array()
+    , $_ins = array();
 
     public function __construct(array $options = array())
     {
         self::$options = $options + self::$options;
     }
 
-    public static function getOption($key)
+    static public function getOption($key)
     {
-        $option = & self::$options[$key] or $option = array();
-
-        return $option;
+        return self::$options[$key] ?? array();
     }
 
     /**
-     * /path/to/php cmd.php "?c=index&a=cli" "key1=value1&key2=value2"
+     * /path/to/php shell.php "/index/cli?get1=value1&get2=value2" "post1=value1&post2=value2"
      */
-    public function cmd()
+    public function shell()
     {
         $argv = $_SERVER['argv'];
 
@@ -69,7 +63,9 @@ class App
             \parse_str($argv[1], $_GET);
         }
 
-        $this->run($argv[0]);
+        $_GET['URI'] = $argv[0];
+
+        $this->run();
     }
 
     /**
@@ -78,17 +74,14 @@ class App
      * @return mixed
      * @throws \Exception
      */
-    public function run($uri = '')
+    public function run()
     {
-        if (!$uri && isset($_GET['URI']))
-            $uri = $_GET['URI'];
-
         // now time
         define('APP_TS', \time());
 
         //define APP_DIR
-        $namespace = self::getOption('namespace');
-        define('APP_DIR', BASE_DIR . $namespace . \DIRECTORY_SEPARATOR);
+        $ns = self::$options['namespace'];
+        define('APP_DIR', BASE_DIR . $ns . DIRECTORY_SEPARATOR);
 
         // timezone setup
         //\date_default_timezone_set(self::getOption('timezone'));
@@ -96,21 +89,28 @@ class App
         //\set_error_handler('\Parith\App::errorHandler');
         //\set_exception_handler('\Parith\App::exceptionHandler');
 
-        self::$query = Router::parse($uri);
+        self::$query = $query = Router::parse($_GET['URI'] ?? '');
 
-        $class = $namespace . '\\Controller\\' . \ucfirst(self::$query[0]);
+        $class = $ns . '\\Controller\\' . \ucfirst($query[0]);
 
         if (self::import($class)) {
             $object = new $class;
-
-            return $object->{self::$query[1]}();
+            return $object->{$query[1]}();
         }
 
         throw new \Exception('Controller "' . $class . '" not found');
     }
 
+    /**
+     * @return array
+     */
+    static public function getQuery()
+    {
+        return self::$query;
+    }
+
     /*
-    public static function errorHandler($code, $message, $file, $line)
+    static public function errorHandler($code, $message, $file, $line)
     {
         if (!($code & error_reporting()))
             return;
@@ -126,13 +126,13 @@ class App
      *
      * @return bool|mixed
      */
-    public static function import($name)
+    static public function import($name)
     {
         $name = BASE_DIR . \str_replace('\\', \DIRECTORY_SEPARATOR, $name) . '.php';
         if (\is_file($name))
             return include $name;
 
-        return false;
+        return null;
     }
 
     /**
@@ -144,10 +144,12 @@ class App
      *
      * @return mixed
      */
-    public static function getInstance($class, $args = array(), $key = '')
+    static public function getInstance($class, $args = array(), $key = '')
     {
-        $key or $key = $class;
-        $obj = & self::$_ins[$key];
+        if (!$key)
+            $key = $class;
+
+        $obj = &self::$_ins[$key];
         if ($obj)
             return $obj;
 
@@ -183,31 +185,27 @@ class App
  */
 class Router
 {
-    public static $options = array(
+    static public $options = array(
         'delimiter' => '/',
         'rules' => array(),
-        'index' => array('controller', 'action'),
+        'index' => array('c', 'a'), //array('controller', 'action'),
         'default' => array('Index', 'index'),
     );
 
-    private static $query = array();
-
     /**
      * @param string $uri
-     * @param array $options
      *
      * @return array
      */
-    public static function parse($uri = '', array $options = array())
+    static public function parse($uri = '')
     {
-        $options = $options + App::getOption('router') + self::$options;
+        $options = App::getOption('router') + self::$options;
 
-        if ($uri) {
-            return self::$query = self::parseURI(trim($uri, '/'), $options) + $options['default'];
-        }
+        if ($uri)
+            return self::parseURI(trim($uri, '/'), $options) + $options['default'];
 
-        $c = & $_GET[$options['index'][0]] or $c = $options['default'][0];
-        $a = & $_GET[$options['index'][1]] or $a = $options['default'][1];
+        $c = $_GET[$options['index'][0]] ?? $options['default'][0];
+        $a = $_GET[$options['index'][1]] ?? $options['default'][1];
 
         return array($c, $a);
     }
@@ -218,7 +216,7 @@ class Router
      *
      * @return array
      */
-    public static function parseURI($uri, $options)
+    static public function parseURI($uri, $options)
     {
         foreach ($options['rules'] as $key => $val) {
             $r = \preg_replace('/^' . $key . '$/i', $val, $uri, -1, $n);
