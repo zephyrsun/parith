@@ -38,6 +38,8 @@ class Database extends Basic
     public $params = array();
     public $last_params = array();
 
+    public $error = array();
+
     public $options = array(
         'driver' => 'mysql',
         'host' => '127.0.0.1',
@@ -103,6 +105,8 @@ class Database extends Basic
             'order' => '',
             'limit' => '',
         );
+
+        $this->last_params = $this->params;
 
         $this->params = array();
 
@@ -436,18 +440,34 @@ class Database extends Basic
         $this->sth = $this->link->prepare($this->sql);
         if ($this->sth) {
             if ($result = $this->sth->execute($this->params)) {
-
-                $this->last_params = $this->params;
-
                 $this->initial();
-
                 return $result;
             }
 
-            throw new \Exception('PDOStatement:' . $this->sql . PHP_EOL . 'PARAMS:' . implode(',', $this->params) . PHP_EOL . $this->sth->errorInfo()[2]);
+            $this->setError('PDOStatement:' . $this->sth->errorInfo()[2]);
+
+        } else {
+            $this->setError('PDO:' . $this->link->errorInfo()[2]);
         }
 
-        throw new \Exception('PDO:' . $this->sql . PHP_EOL . 'PARAMS:' . implode(',', $this->params) . PHP_EOL . $this->link->errorInfo()[2]);
+        return false;
+    }
+
+
+    public function setError($err)
+    {
+        $this->error = array(
+            'sql' => $this->sql,
+            'params' => $this->params,
+            'error' => $err,
+        );
+
+        $this->initial();
+    }
+
+    public function getError()
+    {
+        return $this->error;
     }
 
     /**
