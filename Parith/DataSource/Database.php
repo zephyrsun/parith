@@ -453,7 +453,6 @@ class Database extends Basic
         return false;
     }
 
-
     public function setError($err)
     {
         $this->error = array(

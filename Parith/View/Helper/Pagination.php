@@ -16,11 +16,11 @@ namespace Parith\View\Helper;
 
 use \Parith\Lib\URI;
 
-class Pagination extends \Parith\Result
+class Pagination
 {
     public $options = array(
-        'per_page' => 10,
-        'link_num' => 3,
+        'page_size' => 10,
+        'nav_num' => 5,
         'class' => 'pagination',
         'id' => 'pagination',
         'attributes' => array('class' => 'pagination'),
@@ -30,7 +30,6 @@ class Pagination extends \Parith\Result
     )
     , $total = 1
     , $current = 1
-    , $link_num = 2
     , $uri = '';
 
     /**
@@ -43,8 +42,9 @@ class Pagination extends \Parith\Result
 
         $this->current = $_GET['page'] ?? 1;
 
-        $this->total = ceil($total / $options['per_page']);
-        $this->link_num = $options['link_num'];
+        $this->total = ceil($total / $options['page_size']);
+
+        //$this->size = $options['size'];
 
         $uri = URI::link();
 
@@ -85,53 +85,53 @@ class Pagination extends \Parith\Result
         if ($this->current > 1)
             return static::tag($this->link($this->current - 1), $this->options['prev_text']);
 
-        return static::tag('javascript:;', $this->options['prev_text'], array('class' => 'disabled'));
+        return '';
+        //return static::tag('javascript:;', $this->options['prev_text'], array('class' => 'disabled'));
     }
 
     /**
+     * @param $start
      * @return string
      */
-    public function next()
+    public function first($start)
     {
-        if ($this->total > 1 && $this->current < $this->total)
-            return static::tag($this->link($this->current + 1), $this->options['next_text']);
-
-        return static::tag('javascript:;', $this->options['next_text'], array('class' => 'disabled'));
-    }
-
-    /**
-     * @return string
-     */
-    public function first()
-    {
-        if ($this->current > $this->link_num + 1) {
+        if ($start > 1)
             return static::tag($this->link(1), 1) . $this->dots();
-        }
+
+        return '';
+    }
+
+    /**
+     * @param $end
+     * @return string
+     */
+    public function last($end)
+    {
+        if ($this->total > $end)
+            return $this->dots();
+
+        return '';
+    }
+
+    /**
+     * @param $end
+     * @return string
+     */
+    public function next($end)
+    {
+        if ($end > $this->current)
+            return static::tag($this->link($this->current + 1), $this->options['next_text']);
 
         return '';
     }
 
     public function dots()
     {
-        return static::tag('javascript:;', '...', array('class' => 'disabled'));
+        return static::tag('javascript:;', '&hellip;', array('class' => 'disabled'));
     }
-
-    /**
-     * @return string
-     */
-    public function last()
-    {
-        if ($this->current + $this->link_num < $this->total)
-            //return $this->dots() . static::tag($this->link($this->total), $this->total);
-            return $this->dots();
-
-        return '';
-    }
-
 
     /**
      * @param $total
-     * @param array $query
      * @param array $options
      * @return string
      */
@@ -148,31 +148,36 @@ class Pagination extends \Parith\Result
      */
     public function __toString()
     {
-        $start = $this->current - $this->link_num;
+        $size = $this->options['nav_num'];
 
-        if ($start <= 0)
-            $start = 1;
+        $mid = floor($size / 2);
 
-        $end = $this->current + $this->link_num;
-        if ($end >= $this->total)
+        $end = $this->current + $mid;
+        if ($end > $this->total)
             $end = $this->total;
 
-        $html = $this->previous() . $this->first();
+        $start = $end - $size + 1;
+        if ($start < 1) {
+            $start = 1;
+            $end = min($size, $this->total);
+        }
+
+        $html = $this->previous() . $this->first($start);
 
         for ($i = $start; $i <= $end; ++$i) {
 
             if ($this->current == $i) {
-                $attributes = array('class' => 'active');
+                $attr = array('class' => 'active');
                 $page = 'javascript:;';
             } else {
-                $attributes = array();
+                $attr = array();
                 $page = $this->link($i);
             }
 
-            $html .= static::tag($page, $i, $attributes);
+            $html .= static::tag($page, $i, $attr);
         }
 
-        $html .= $this->last() . $this->next();
+        $html .= $this->last($end) . $this->next($end);
 
         return HTML::tag('ul', $html, $this->options['attributes']);
     }

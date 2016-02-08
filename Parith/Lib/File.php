@@ -108,16 +108,14 @@ class File extends Result
     }
 
     /**
-     * @static
-     *
-     * @param string $filename
-     *
-     * @return bool|string
+     * @param $filename
+     * @param bool $include
+     * @return mixed
      */
-    static public function get($filename)
+    static public function get($filename, $include = false)
     {
         if (\is_file($filename))
-            return \file_get_contents($filename);
+            return $include ? include $filename : \file_get_contents($filename);
 
         return false;
     }
