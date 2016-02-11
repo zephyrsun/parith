@@ -168,13 +168,11 @@ class Pagination
 
             if ($this->current == $i) {
                 $attr = array('class' => 'active');
-                $page = 'javascript:;';
             } else {
                 $attr = array();
-                $page = $this->link($i);
             }
 
-            $html .= static::tag($page, $i, $attr);
+            $html .= static::tag($this->link($i), $i, $attr);
         }
 
         $html .= $this->last($end) . $this->next($end);
