@@ -7,7 +7,7 @@
  *
  * @package   Parith
  * @author    Zephyr Sun
- * @copyright 2009-2013 Zephyr Sun
+ * @copyright 20092016 Zephyr Sun
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
@@ -42,7 +42,7 @@ class Template extends Basic
     }
 
     /**
-     * @param        $name
+     * @param string $name
      * @param string $ext
      */
     public function render($name, $ext = '')
@@ -56,12 +56,9 @@ class Template extends Basic
     }
 
     /**
-     * @static
-     *
      * @param $tag
      * @param $ldelim
      * @param $rdelim
-     *
      * @return mixed
      */
     static public function parse($tag, $ldelim, $rdelim)
@@ -73,11 +70,8 @@ class Template extends Basic
     }
 
     /**
-     * @static
-     *
      * @param $str
-     *
-     * @return mixed|string
+     * @return string
      */
     static public function parseBrace($str)
     {
@@ -133,11 +127,8 @@ class Template extends Basic
     }
 
     /**
-     * @static
-     *
      * @param $val
-     *
-     * @return mixed
+     * @return string
      */
     static protected function parseVar($val)
     {
@@ -153,10 +144,7 @@ class Template extends Basic
     }
 
     /**
-     * @static
-     *
      * @param $val
-     *
      * @return string
      */
     static protected function parseInclude($val)
@@ -165,10 +153,7 @@ class Template extends Basic
     }
 
     /**
-     * @static
-     *
      * @param $str
-     *
      * @return string
      */
     static public function propExport($str)
@@ -184,8 +169,7 @@ class Template extends Basic
 
     /**
      * @param $data
-     *
-     * @return Template
+     * @return $this
      */
     public function load($data)
     {

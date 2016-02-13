@@ -7,7 +7,7 @@
  *
  * @package   Parith
  * @author    Zephyr Sun
- * @copyright 2009-2013 Zephyr Sun
+ * @copyright 20092016 Zephyr Sun
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
@@ -36,10 +36,8 @@ class Basic extends Result
     }
 
     /**
-     * @param string $name
+     * @param $name
      * @param string $ext
-     *
-     * @return void
      */
     public function render($name, $ext = '')
     {
@@ -63,10 +61,9 @@ class Basic extends Result
     }
 
     /**
-     * @param string $name
-     * @param string $ext
-     *
-     * @return mixed
+     * @param $name
+     * @param null $ext
+     * @return string
      */
     public function fetch($name, $ext = null)
     {
@@ -78,7 +75,6 @@ class Basic extends Result
     /**
      * @param $name
      * @param $ext
-     *
      * @return string
      * @throws \Exception
      */

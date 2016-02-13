@@ -10,7 +10,7 @@
  *
  * @package   Parith
  * @author    Zephyr Sun
- * @copyright 2009-2013 Zephyr Sun
+ * @copyright 20092016 Zephyr Sun
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
@@ -179,7 +179,7 @@ class App
  *
  * @package   Parith
  * @author    Zephyr Sun
- * @copyright 2009-2013 Zephyr Sun
+ * @copyright 20092016 Zephyr Sun
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
@@ -187,7 +187,6 @@ class Router
 {
     static public $options = array(
         'delimiter' => '/',
-        'rules' => array(),
         'index' => array('c', 'a'), //array('controller', 'action'),
         'default' => array('Index', 'index'),
     );
@@ -201,31 +200,17 @@ class Router
     {
         $options = App::getOption('router') + self::$options;
 
-        if ($uri)
-            return self::parseURI(trim($uri, '/'), $options) + $options['default'];
+        if ($uri) {
+            $arr = \explode($options['delimiter'], \trim($uri, '/'));
+            if (count($arr) == 1)
+                $arr = array($options['default'][0], $arr[0]);
+
+            return $arr;
+        }
 
         $c = $_GET[$options['index'][0]] ?? $options['default'][0];
         $a = $_GET[$options['index'][1]] ?? $options['default'][1];
 
         return array($c, $a);
-    }
-
-    /**
-     * @param $uri
-     * @param $options
-     *
-     * @return array
-     */
-    static public function parseURI($uri, $options)
-    {
-        foreach ($options['rules'] as $key => $val) {
-            $r = \preg_replace('/^' . $key . '$/i', $val, $uri, -1, $n);
-            if ($n) {
-                $uri = $r;
-                break;
-            }
-        }
-
-        return \explode($options['delimiter'], $uri);
     }
 }
