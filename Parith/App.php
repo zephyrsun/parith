@@ -10,7 +10,7 @@
  *
  * @package   Parith
  * @author    Zephyr Sun
- * @copyright 20092016 Zephyr Sun
+ * @copyright 2009-2016 Zephyr Sun
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
@@ -179,7 +179,7 @@ class App
  *
  * @package   Parith
  * @author    Zephyr Sun
- * @copyright 20092016 Zephyr Sun
+ * @copyright 2009-2016 Zephyr Sun
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
