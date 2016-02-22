@@ -21,13 +21,12 @@ define('BASE_DIR', dirname(__DIR__) . \DIRECTORY_SEPARATOR);
 
 // load core class
 include __DIR__ . '/Common.php';
-include __DIR__ . '/Controller/Basic.php';
 
 \spl_autoload_register('\Parith\App::import');
 
 class App
 {
-    static public $options = array('namespace' => 'App')
+    static public $options = array('namespace' => 'App', 'error_class' => '\\Parith\\Controller\\Error')
     , $query = array()
     , $_ins = array();
 
@@ -69,10 +68,7 @@ class App
     }
 
     /**
-     * @param string $uri Admin/index
-     *
      * @return mixed
-     * @throws \Exception
      */
     public function run()
     {
@@ -86,9 +82,6 @@ class App
         // timezone setup
         //\date_default_timezone_set(self::getOption('timezone'));
 
-        //\set_error_handler('\Parith\App::errorHandler');
-        //\set_exception_handler('\Parith\App::exceptionHandler');
-
         self::$query = $query = Router::parse($_GET['URI'] ?? '');
 
         $class = $ns . '\\Controller\\' . \ucfirst($query[0]);
@@ -98,7 +91,8 @@ class App
             return $object->{$query[1]}();
         }
 
-        throw new \Exception('Controller "' . $class . '" not found');
+        $object = new self::$options['error_class'];
+        return $object->{$query[0]}();
     }
 
     /**
@@ -108,16 +102,6 @@ class App
     {
         return self::$query;
     }
-
-    /*
-    static public function errorHandler($code, $message, $file, $line)
-    {
-        if (!($code & error_reporting()))
-            return;
-
-        throw new \ErrorException($message, $code, 0, $file, $line);
-    }
-    */
 
     /**
      * @static
@@ -202,8 +186,8 @@ class Router
 
         if ($uri) {
             $arr = \explode($options['delimiter'], \trim($uri, '/'));
-            if (count($arr) == 1)
-                $arr = array($options['default'][0], $arr[0]);
+            //if (count($arr) == 1)
+            //    $arr = array($options['default'][0], $arr[0]);
 
             return $arr;
         }
