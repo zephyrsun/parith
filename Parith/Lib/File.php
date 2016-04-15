@@ -26,7 +26,7 @@ class File extends Result
      *
      * @return bool
      */
-    static public function mkdir($dir, $mode = '0644')
+    static public function mkdir($dir, $mode = '0755')
     {
         if (\is_dir($dir))
             return true;

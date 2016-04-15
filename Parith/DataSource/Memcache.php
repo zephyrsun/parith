@@ -48,6 +48,8 @@ class Memcache extends Basic
         else
             $servers = App::getOption($key = $servers);
 
+        self::$ins_n++;
+
         if ($link = &self::$ins_link[$key])
             return $link;
 
@@ -70,8 +72,6 @@ class Memcache extends Basic
             if (!$r)
                 throw new \Exception("Fail to connect: {$o['host']}:{$o['port']}");
         }
-
-        static::$ins_n++;
 
         return $link;
     }

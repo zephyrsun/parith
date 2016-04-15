@@ -43,8 +43,11 @@ class App
     /**
      * /path/to/php shell.php "/index/cli?get1=value1&get2=value2" "post1=value1&post2=value2"
      */
-    public function shell()
+    public function run()
     {
+        if (isset($_SERVER['SERVER_PORT']))
+            return $this->web();
+
         $argv = $_SERVER['argv'];
 
         if (!isset($argv[1]))
@@ -64,13 +67,13 @@ class App
 
         $_GET['URI'] = $argv[0];
 
-        $this->run();
+        return $this->web();
     }
 
     /**
      * @return mixed
      */
-    public function run()
+    public function web()
     {
         // now time
         define('APP_TS', \time());
@@ -185,7 +188,7 @@ class Router
         $options = App::getOption('router') + self::$options;
 
         if ($uri) {
-            $arr = \explode($options['delimiter'], \trim($uri, '/'));
+            $arr = \explode($options['delimiter'], \trim($uri, '/')) + $options['default'];
             //if (count($arr) == 1)
             //    $arr = array($options['default'][0], $arr[0]);
 

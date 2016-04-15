@@ -79,6 +79,8 @@ class Database extends Basic
 
         $dsn = "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['dbname']}";
 
+        self::$ins_n++;
+
         if ($link = &self::$ins_link[$dsn])
             return $this->link = $link;
 
@@ -91,7 +93,7 @@ class Database extends Basic
     }
 
     /**
-     * @return Database
+     * @return $this
      */
     public function initial()
     {
@@ -104,6 +106,7 @@ class Database extends Basic
             'having' => '',
             'order' => '',
             'limit' => '',
+            'for_update' => '',
         );
 
         $this->last_params = $this->params;
@@ -114,9 +117,13 @@ class Database extends Basic
     }
 
     /**
-     * @param $fields
+     * fields for select
      *
-     * @return Database
+     * @param $fields
+     *        - *
+     *        - id,uid,ts
+     *        - count(*)
+     * @return $this
      */
     public function field($fields)
     {
@@ -127,8 +134,7 @@ class Database extends Basic
 
     /**
      * @param $table
-     *
-     * @return Database
+     * @return $this
      */
     public function table($table)
     {
@@ -139,6 +145,7 @@ class Database extends Basic
 
     /**
      * where('gender', 'male')
+     * where('user_id', 'IN', array(1, 2, 3))
      * where('email', 'LIKE', '%@abc.com', 'OR')
      * where('(age >= ? OR age <= ?)', array(18, 30))
      *
@@ -147,16 +154,17 @@ class Database extends Basic
      * @param $value
      * @param $glue
      *
-     * @return Database
+     * @return $this
      */
     public function where($clause, $condition, $value = null, $glue = 'AND')
     {
         if ($value === null) {
             $value = $condition;
 
-            if (strpos($clause, '?') === false)
+            if (strpos($clause, '?') === false) {
+                $clause = "`$clause`";
                 $condition = '= ?';
-            else
+            } else
                 $condition = '';
 
         } elseif ($condition == 'IN') {
@@ -178,10 +186,9 @@ class Database extends Basic
     }
 
     /**
-     * @param     $limit
+     * @param $limit
      * @param int $offset
-     *
-     * @return Database
+     * @return $this
      */
     public function limit($limit, $offset = 0)
     {
@@ -193,8 +200,7 @@ class Database extends Basic
 
     /**
      * @param $group
-     *
-     * @return Database
+     * @return $this
      */
     public function groupBy($group)
     {
@@ -211,7 +217,7 @@ class Database extends Basic
      *          - 'id'
      *          - array('id', 'ts' => -1)
      *
-     * @return Database
+     * @return $this
      */
     public function orderBy($order)
     {
@@ -241,7 +247,6 @@ class Database extends Basic
 
     /**
      * @param $where
-     *
      * @return $this
      */
     public function having($where)
@@ -278,7 +283,7 @@ class Database extends Basic
     }
 
     /**
-     * @param        $data
+     * @param array $data
      * @param string $modifier
      *                 - INSERT INTO
      *                 - INSERT IGNORE INTO
@@ -299,12 +304,19 @@ class Database extends Basic
 
         $this->sql = $modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');';
 
-        $ret = $this->exec();
-
-        if ($ret && $id = $this->getInsertId())
+        if ($this->exec() && $id = $this->getInsertId())
             return $id;
 
         return 0;
+    }
+
+    /**
+     * @param array $data
+     * @return int
+     */
+    public function replace(array $data)
+    {
+        return $this->insert($data, 'REPLACE INTO');
     }
 
     /**
@@ -329,12 +341,9 @@ class Database extends Basic
         }
 
         $this->sql = 'UPDATE ' . $this->clauses['table'] . ' SET ' . $data . $this->clauses['where'];
-        $ret = $this->exec();
 
-        if ($ret && $n = $this->rowCount())
+        if ($this->exec() && $n = $this->rowCount())
             return $n;
-
-        //$this->params = $params;
 
         return false;
     }
@@ -358,9 +367,11 @@ class Database extends Basic
     public function delete()
     {
         $this->sql = 'DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';';
-        $this->exec();
 
-        return $this->rowCount();
+        if ($this->exec() && $n = $this->rowCount())
+            return $n;
+
+        return false;
     }
 
     /**
@@ -372,9 +383,11 @@ class Database extends Basic
     public function fetch($mode = 0, $mode_param = null)
     {
         $this->sql = $this->getSelectClause();
-        $this->exec();
 
-        return $this->_setFetchMode($mode, $mode_param)->fetch();
+        if ($this->exec())
+            return $this->_setFetchMode($mode, $mode_param)->fetch();
+
+        return false;
     }
 
     public function fetchColumn($col = 0)
@@ -391,9 +404,11 @@ class Database extends Basic
     public function fetchAll($mode = 0, $mode_param = null)
     {
         $this->sql = $this->getSelectClause();
-        $this->exec();
 
-        return $this->_setFetchMode($mode, $mode_param)->fetchAll();
+        if ($this->exec())
+            return $this->_setFetchMode($mode, $mode_param)->fetchAll();
+
+        return false;
     }
 
     /**
@@ -418,14 +433,25 @@ class Database extends Basic
     }
 
     /**
-     * @param string $query
+     * execute multi sql
+     * @param $sql
+     * @return \PDOStatement
+     */
+    public function multiQuery($sql)
+    {
+        $this->link->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
+        return $this->link->query($sql);
+    }
+
+    /**
+     * @param string $sql
      * @param $params
      *
      * @return bool
      */
-    public function query($query, $params = array())
+    public function query($sql, $params = array())
     {
-        $this->sql = $query;
+        $this->sql = $sql;
         $this->params = $params;
 
         return $this->exec();
@@ -456,9 +482,9 @@ class Database extends Basic
     public function setError($err)
     {
         $this->error = array(
+            'error' => $err,
             'sql' => $this->sql,
             'params' => $this->params,
-            'error' => $err,
         );
 
         $this->initial();
@@ -517,7 +543,20 @@ class Database extends Basic
     {
         $c = $this->clauses;
 
-        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] . $c['group'] . $c['having'] . $c['order'] . $c['limit'] . ';';
+        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] .
+        $c['group'] . $c['having'] . $c['order'] .
+        $c['limit'] . $c['for_update'] . ';';
+    }
+
+    public function selectForUpdate($nowait = false)
+    {
+        $for_update = ' FOR UPDATE';
+        if ($nowait)
+            $for_update .= ' NOWAIT';
+
+        $this->clauses['for_update'] = $for_update;
+
+        return $this;
     }
 
     /**

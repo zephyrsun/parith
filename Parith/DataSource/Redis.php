@@ -25,6 +25,7 @@ class Redis extends Basic
         'host' => '127.0.0.1',
         'port' => 6379,
         'timeout' => 0.0,
+        'password' => '',
     );
 
     /**
@@ -39,6 +40,8 @@ class Redis extends Basic
 
         $options += $this->options;
 
+        self::$ins_n++;
+
         if ($link = &self::$ins_link["{$options['host']}:{$options['port']}"])
             return $link;
 
@@ -47,6 +50,9 @@ class Redis extends Basic
         $connected = $link->connect($options['host'], $options['port'], $options['timeout']);
         if (!$connected)
             throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
+
+        if ($options['password'])
+            $link->auth($options['password']);
 
         //$link->setOption(\Redis::OPT_READ_TIMEOUT, -1);
 

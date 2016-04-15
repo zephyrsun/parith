@@ -50,6 +50,8 @@ class Memcached extends Basic
         else
             $servers = App::getOption($key = $servers);
 
+        self::$ins_n++;
+
         if ($link = &self::$ins_link[$key])
             return $link;
 

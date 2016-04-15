@@ -53,18 +53,15 @@ class Cookie extends \Parith\Result
      */
     public function get($key)
     {
-        if (isset($_COOKIE[$key])) {
-            $data = $_COOKIE[$key];
-
+        $data = $_COOKIE[$key] ?? '';
+        if ($data) {
             if ($this->cipher) {
                 $arr = explode('|', $data, 2);
                 return $this->decrypt(base64_decode($arr[1]), $arr[0]);
             }
-
-            return $data;
         }
 
-        return null;
+        return $data;
     }
 
     /**
@@ -119,11 +116,9 @@ class Cookie extends \Parith\Result
      */
     public function encrypt($data, $key)
     {
-        if (!$data) {
+        if ($data) {
+            $key = $this->hashKey($key);//$key is changed
 
-            $key = $this->hashKey($key);
-
-            //$key is changed
             mcrypt_generic_init($this->cipher, $key, $this->getIv($key));
             $data = base64_encode(mcrypt_generic($this->cipher, $data));
             mcrypt_generic_deinit($this->cipher);
@@ -139,11 +134,9 @@ class Cookie extends \Parith\Result
      */
     public function decrypt($data, $key)
     {
-        if (!$data) {
+        if ($data) {
+            $key = $this->hashKey($key);//$key is changed
 
-            $key = $this->hashKey($key);
-
-            //$key is changed
             mcrypt_generic_init($this->cipher, $key, $this->getIv($key));
             $data = mdecrypt_generic($this->cipher, $data);
             $data = rtrim($data, "\0");

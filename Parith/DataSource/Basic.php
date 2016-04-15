@@ -23,6 +23,8 @@ abstract class Basic
     {
         if (--static::$ins_n == 0)
             $this->closeAll();
+            static::$ins_link = array();
+        }
     }
 
     abstract public function closeAll();
