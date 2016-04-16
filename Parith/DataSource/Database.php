@@ -32,10 +32,10 @@ class Database extends Basic
 
     public $table_name = '';
 
-    public $clauses = array();
-
     public $sql = '';
+    public $clauses = array();
     public $params = array();
+    public $last_clauses = array();
     public $last_params = array();
 
     public $error = array();
@@ -97,6 +97,9 @@ class Database extends Basic
      */
     public function initial()
     {
+        $this->last_params = $this->params;
+        $this->last_clauses = $this->clauses;
+
         $this->clauses = array(
             'fields' => '*',
             'table' => $this->table_name,
@@ -108,8 +111,6 @@ class Database extends Basic
             'limit' => '',
             'for_update' => '',
         );
-
-        $this->last_params = $this->params;
 
         $this->params = array();
 
@@ -199,7 +200,7 @@ class Database extends Basic
     }
 
     /**
-     * @param $group
+     * @param string $group
      * @return $this
      */
     public function groupBy($group)
@@ -412,24 +413,18 @@ class Database extends Basic
     }
 
     /**
-     * $data = $db->fetchListWithCount();
-     * $pagination = \Parith\View\Helper\Pagination::generate($data['count']);
-     *
-     * @return array
+     * @param bool $clear_group_by
+     * @return mixed
      */
-    public function fetchAllWithCount()
+    public function fetchCount($clear_group_by = true)
     {
-        $clauses = $this->clauses;
-
-        $data = $this->fetchAll();
-
-        $this->clauses = $clauses;
+        $this->clauses = $this->last_clauses;
         $this->params = $this->last_params;
 
-        return array(
-            'data' => $data,
-            'count' => $this->field('count(*)')->groupBy('')->limit(1)->fetchColumn(0),
-        );
+        if ($clear_group_by)
+            $this->groupBy('');
+
+        return $this->field('count(*)')->limit(1)->fetchColumn(0);
     }
 
     /**

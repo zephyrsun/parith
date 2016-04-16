@@ -21,7 +21,7 @@ abstract class Basic
 
     public function __destruct()
     {
-        if (--static::$ins_n == 0)
+        if (--static::$ins_n == 0) {
             $this->closeAll();
             static::$ins_link = array();
         }
