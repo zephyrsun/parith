@@ -43,7 +43,7 @@ abstract class Arr
     static public function pathSet(array &$arr, $key, $val, $delimiter = ',')
     {
         foreach (\explode($delimiter, $key) as $v)
-            $arr = $arr[$v] ?? array();
+            $arr = &$arr[$v] or $arr = array();
 
         return $arr = $val;
     }
@@ -60,7 +60,7 @@ abstract class Arr
     static public function pathGet(array &$arr, $key, $delimiter = ',')
     {
         foreach (\explode($delimiter, $key) as $val)
-            if (!$arr = & $arr[$val])
+            if (!$arr = &$arr[$val])
                 return false;
 
         return $arr;
@@ -83,7 +83,7 @@ abstract class Arr
             if ($v === $last)
                 unset($arr[$v]);
             else
-                $arr = & $arr[$v];
+                $arr = &$arr[$v];
         }
     }
 
@@ -140,7 +140,7 @@ abstract class Arr
     {
         $ret = array();
         foreach ($keys as $key)
-            $ret[$key] = isset($arr[$key]) ?$arr[$key]: $default;
+            $ret[$key] = isset($arr[$key]) ? $arr[$key] : $default;
 
         return $ret;
     }

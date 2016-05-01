@@ -40,7 +40,7 @@ class Pagination
     {
         $this->options = $options += \Parith\App::getOption('pagination') + $this->options;
 
-        $this->current = $_GET['page'] ?? 1;
+        $this->current = &$_GET['page'] or $this->current = 1;
 
         $this->total = ceil($total / $options['page_size']);
 

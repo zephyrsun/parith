@@ -13,7 +13,7 @@
 
 namespace Parith\DataSource;
 
-class MemcachedDB extends Database
+class MemcachedDB extends PDO
 {
     public $mc_option = '';
 

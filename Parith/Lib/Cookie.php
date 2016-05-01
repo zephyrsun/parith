@@ -53,7 +53,7 @@ class Cookie extends \Parith\Result
      */
     public function get($key)
     {
-        $data = $_COOKIE[$key] ?? '';
+        $data = &$_COOKIE[$key];
         if ($data) {
             if ($this->cipher) {
                 $arr = explode('|', $data, 2);

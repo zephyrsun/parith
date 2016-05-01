@@ -35,17 +35,19 @@ class Redis extends Basic
      */
     public function dial($options)
     {
-        if (!is_array($options))
-            $options = App::getOption($options);
-
-        $options += $this->options;
+        if (is_array($options))
+            $key = implode(':', $options);
+        else
+            $options = App::getOption($key = $options);
 
         self::$ins_n++;
 
-        if ($link = &self::$ins_link["{$options['host']}:{$options['port']}"])
+        if ($link = &self::$ins_link[$key])
             return $link;
 
         $link = new \Redis();
+
+        $options += $this->options;
 
         $connected = $link->connect($options['host'], $options['port'], $options['timeout']);
         if (!$connected)

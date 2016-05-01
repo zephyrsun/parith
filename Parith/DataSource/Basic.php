@@ -27,8 +27,6 @@ abstract class Basic
         }
     }
 
-    abstract public function closeAll();
-
     /**
      * @return mixed
      */
@@ -38,7 +36,7 @@ abstract class Basic
 
         $class = \get_called_class();
 
-        $obj = $ins[$class] ?? new $class();
+        $obj = &$ins[$class] or $obj = new $class();
 
         return $obj;
     }
@@ -48,4 +46,6 @@ abstract class Basic
      * @return $this
      */
     abstract public function dial($options);
+
+    abstract public function closeAll();
 }

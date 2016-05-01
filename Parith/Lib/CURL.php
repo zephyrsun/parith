@@ -33,33 +33,33 @@ class CURL
         $this->options = $options + App::getOption('curl') + $this->options;
     }
 
-    public function post($url, $args = array(), array $options = array())
+    public function post($url, $data = array(), array $options = array())
     {
         $options += array(
             CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $args,
+            CURLOPT_POSTFIELDS => $data,
         );
 
         return $this->exec($url, $options);
     }
 
-    public function get($url, $args = array(), array $options = array())
+    public function get($url, $data = array(), array $options = array())
     {
-        if ($args) {
-            if (is_array($args))
-                $args = http_build_query($args);
+        if ($data) {
+            if (is_array($data))
+                $data = http_build_query($data);
 
-            $url .= '?' . $args;
+            $url .= '?' . $data;
         }
 
         return $this->exec($url, $options);
     }
 
-    public function put($url, $args = array(), array $options = array())
+    public function put($url, $data = array(), array $options = array())
     {
         $options += array(
             CURLOPT_CUSTOMREQUEST => 'PUT',
-            CURLOPT_POSTFIELDS => $args,
+            CURLOPT_POSTFIELDS => $data,
         );
 
         return $this->exec($url, $options);

@@ -16,7 +16,7 @@ namespace Parith\Controller;
 
 class Error
 {
-    public function registerHandler()
+    static public function registerHandler()
     {
         $class = get_called_class();
         set_error_handler($class . '::errorHandler');

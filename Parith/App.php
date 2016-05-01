@@ -37,7 +37,7 @@ class App
 
     static public function getOption($key)
     {
-        return self::$options[$key] ?? array();
+        return isset(self::$options[$key]) ? self::$options[$key] : array();
     }
 
     /**
@@ -85,7 +85,7 @@ class App
         // timezone setup
         //\date_default_timezone_set(self::getOption('timezone'));
 
-        self::$query = $query = Router::parse($_GET['URI'] ?? '');
+        self::$query = $query = Router::parse(isset($_GET['URI']) ? $_GET['URI'] : '');
 
         $class = $ns . '\\Controller\\' . \ucfirst($query[0]);
 
@@ -195,8 +195,8 @@ class Router
             return $arr;
         }
 
-        $c = $_GET[$options['index'][0]] ?? $options['default'][0];
-        $a = $_GET[$options['index'][1]] ?? $options['default'][1];
+        $c = &$_GET[$options['index'][0]] or $c = $options['default'][0];
+        $a = &$_GET[$options['index'][1]] or $a = $options['default'][1];
 
         return array($c, $a);
     }
