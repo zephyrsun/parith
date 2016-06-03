@@ -84,6 +84,8 @@ class Cookie extends \Parith\Result
             $data = $expire . '|' . base64_encode($this->encrypt($data, $expire));
         }
 
+        $_COOKIE[$key] = $data;
+
         return setcookie($key, $data, $expire, $options['path'], $options['domain'], $options['secure'], $options['httponly']);
     }
 
@@ -138,7 +140,7 @@ class Cookie extends \Parith\Result
             $key = $this->hashKey($key);//$key is changed
 
             mcrypt_generic_init($this->cipher, $key, $this->getIv($key));
-            $data = mdecrypt_generic($this->cipher, $data);
+            $data = mdecrypt_generic($this->cipher, base64_decode($data));
             $data = rtrim($data, "\0");
             mcrypt_generic_deinit($this->cipher);
         }

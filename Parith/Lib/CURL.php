@@ -19,7 +19,7 @@ use \Parith\App;
 
 class CURL
 {
-    public $url, $error, $params;
+    public $error = '', $params = array();
 
     public $options = array(
         CURLOPT_HEADER => false,
@@ -43,14 +43,30 @@ class CURL
         return $this->exec($url, $options);
     }
 
+    /**
+     * get data like curl -d:
+     * get('http://example.com', array(), array(\CURLOPT_POSTFIELDS => $string_data))
+     *
+     * @param $url
+     * @param array $data
+     * @param array $options
+     * @return mixed
+     */
     public function get($url, $data = array(), array $options = array())
     {
+
         if ($data) {
             if (is_array($data))
                 $data = http_build_query($data);
 
             $url .= '?' . $data;
         }
+        /*
+        $options += array(
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_POSTFIELDS => $data,
+        );
+        */
 
         return $this->exec($url, $options);
     }
