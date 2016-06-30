@@ -2,8 +2,8 @@
 
 include \dirname(__DIR__) . '/Parith/App.php';
 
-$config = include __DIR__ . '/Config/ExampleApp.php';
+$config = include __DIR__ . '/Config/dev.php';
 
 $app = new \Parith\App($config);
 
-$app->shell();
+$app->run();
