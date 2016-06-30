@@ -21,27 +21,33 @@ Your directory structure could be:
     │  ├─View
     │  ...
     └─App
-        ├─Config
-        │      Router.php
-        │
-        ├─Controller
-        │      Index.php
-        │
-        ...
+       ├─Config
+       │      Router.php
+       │
+       ├─Controller
+       │      Index.php
+       │
+       ...
 
 ###Code
-
+'namespace' => 'Example',
+'error_class' => '\Example\Controller\Error',
+'router' => array(
+    'index' => array('c', 'a'),
+    'default' => array('Index', 'index'),
+),
 index.php:
 
 	$config = array(
-        'namespace' => 'App',
+        'namespace' => 'Example',
+        'error_class' => '\Example\Controller\Error',
         'router' => array(
             'index' => array('c', 'a'),
             'default' => array('Index', 'index'),
         ),
     );
     $app = new \Parith\App($config);
-	$app->run();
+    $app->run();
 
 Controller/Index.php:
 
