@@ -35,13 +35,14 @@ class Validator extends Result
      * $validator = new \Parith\Lib\Validator($_POST);
      * $error = $validator->checkRules(array(
      *      'email' => 'email',
-     *      'username' => array('lengthBetween', 3, 8),
+     *      'username' => array('length', 3, 8),
+     *      'city' => array('length', 1, 50, false),
      *
      * ));
      *
      * @param array $rules
      *
-     * @return array|bool
+     * @return array
      */
     public function checkRules(array $rules)
     {
@@ -50,7 +51,7 @@ class Validator extends Result
         $ret = array();
         foreach ($rules as $field => $args) {
 
-            $v = & $this->data[$field];
+            $v = &$this->data[$field];
 
             $args = (array)$args;
 
@@ -58,17 +59,16 @@ class Validator extends Result
 
             $args[0] = $v;
 
-            $ret = \call_user_func_array(array($this, $method), $args);
+            $result = \call_user_func_array(array($this, $method), $args);
 
-            if ($ret) {
+            if ($result || \end($args) === false) {
                 $ret[$field] = $v;
-            } else {
+            } else
                 $this->_err[] = $field;
-            }
         }
 
         if ($this->_err)
-            return false;
+            return array();
 
         return $ret;
     }
@@ -150,7 +150,7 @@ class Validator extends Result
      */
     static public function notEmpty($val)
     {
-        return (bool)$val; //!empty($val);
+        return !empty($val);
     }
 
     /**
@@ -284,7 +284,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    static public function lengthBetween($str, $min, $max)
+    static public function length($str, $min, $max)
     {
         return static::between(mb_strlen($str), $min, $max);
     }

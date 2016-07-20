@@ -85,18 +85,12 @@ class PDO extends Basic
         if ($link = &self::$ins_link[$dsn])
             return $this->link = $link;
 
-        try {
-            return $this->link = $link = new \PDO(
-                $dsn,
-                $options['username'],
-                $options['password'],
-                $options['options'] + $this->server_options
-            );
-        } catch (\PDOException $e) {
-            $this->setError($e->getMessage());
-
-            return false;
-        }
+        return $this->link = $link = new \PDO(
+            $dsn,
+            $options['username'],
+            $options['password'],
+            $options['options'] + $this->server_options
+        );
     }
 
     /**
@@ -178,9 +172,8 @@ class PDO extends Basic
         } elseif ($condition == 'IN' || $condition == 'NOT IN') {
             $in = '?' . str_repeat(',?', count($value) - 1);
             $condition = "$condition ($in)";
-        } else
+        } elseif ($condition)
             $condition .= ' ?';
-
 
         $this->clauses['where'] .= " $glue $clause $condition";
 
@@ -434,16 +427,9 @@ class PDO extends Basic
      */
     public function multiQuery($sql)
     {
-        try {
-            $this->link->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
+        $this->link->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
 
-            return $this->link->query($sql);
-
-        } catch (\PDOException $e) {
-            $this->setError($e->getMessage());
-
-            return false;
-        }
+        return $this->link->query($sql);
     }
 
     /**
@@ -469,21 +455,14 @@ class PDO extends Basic
      */
     public function exec()
     {
-        try {
-            //prevent Segmentation fault in some PHP version
-            //if ($this->sth)
-            //    $this->sth->closeCursor();
-            $this->sth = $this->link->prepare($this->sql);
+        //prevent Segmentation fault in some PHP version
+        //if ($this->sth)
+        //    $this->sth->closeCursor();
+        $this->sth = $this->link->prepare($this->sql);
 
-            $this->initial();
+        $this->initial();
 
-            return $this->sth->execute($this->last_params);
-
-        } catch (\PDOException $e) {
-            $this->setError($e->getMessage());
-
-            return false;
-        }
+        return $this->sth->execute($this->last_params);
     }
 
     public function setError($err)

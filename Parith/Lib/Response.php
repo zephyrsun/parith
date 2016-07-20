@@ -161,6 +161,32 @@ class Response extends Result
         \header('Content-Disposition: attachment; filename="' . $filename . '"');
     }
 
+    static public function viewFile($filename)
+    {
+        $ext = \Parith\Lib\Image\Basic::getExtension($filename);
+        switch (strtolower($ext)) {
+            case 'jpg':
+            case 'jpeg':
+                header("Content-type: image/jpeg");
+                break;
+            case 'png':
+                header("Content-type: image/png");
+                break;
+            case 'gif':
+                header("Content-type: image/gif");
+                break;
+            case 'pdf':
+                header("Content-type: application/pdf");
+                break;
+
+            default:
+                header("Content-type: application/octet-stream");
+        }
+
+        \header('Content-Disposition: inline; filename="' . $filename . '"');
+    }
+
+
     /**
      * @param int $ts
      *

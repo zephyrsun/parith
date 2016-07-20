@@ -36,10 +36,10 @@ class Error
      */
     static public function exceptionHandler($e)
     {
-        $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine();
+        $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
+        $error .= $e->getTraceAsString();
 
         echo $error;
-        echo PHP_EOL;
     }
 
     /**

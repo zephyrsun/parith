@@ -53,25 +53,25 @@ class Cookie extends \Parith\Result
      */
     public function get($key)
     {
-        $data = &$_COOKIE[$key];
-        if ($data) {
+        $str = &$_COOKIE[$key];
+        if ($str) {
             if ($this->cipher) {
-                $arr = explode('|', $data, 2);
+                $arr = explode('|', $str, 2);
                 return $this->decrypt(base64_decode($arr[1]), $arr[0]);
             }
         }
 
-        return $data;
+        return $str;
     }
 
     /**
      * @param string $key
-     * @param mixed $data
+     * @param mixed $str
      * @param int $expire could be negative number
      *
      * @return bool
      */
-    public function set($key, $data, $expire = 0)
+    public function set($key, $str, $expire = 0)
     {
         $options = $this->options;
 
@@ -81,12 +81,12 @@ class Cookie extends \Parith\Result
             $expire = $options['expire'] + \APP_TS;
 
         if ($this->cipher) {
-            $data = $expire . '|' . base64_encode($this->encrypt($data, $expire));
+            $str = \APP_TS . '|' . base64_encode($this->encrypt($str, \APP_TS));
         }
 
-        $_COOKIE[$key] = $data;
+        $_COOKIE[$key] = $str;
 
-        return setcookie($key, $data, $expire, $options['path'], $options['domain'], $options['secure'], $options['httponly']);
+        return setcookie($key, $str, $expire, $options['path'], $options['domain'], $options['secure'], $options['httponly']);
     }
 
     /**
@@ -112,40 +112,40 @@ class Cookie extends \Parith\Result
     }
 
     /**
-     * @param $data
+     * @param $str
      * @param $key
      * @return string
      */
-    public function encrypt($data, $key)
+    public function encrypt($str, $key)
     {
-        if ($data) {
+        if ($str) {
             $key = $this->hashKey($key);//$key is changed
 
             mcrypt_generic_init($this->cipher, $key, $this->getIv($key));
-            $data = base64_encode(mcrypt_generic($this->cipher, $data));
+            $str = base64_encode(mcrypt_generic($this->cipher, $str));
             mcrypt_generic_deinit($this->cipher);
         }
 
-        return $data;
+        return $str;
     }
 
     /**
-     * @param $data
+     * @param $str
      * @param $key
      * @return string
      */
-    public function decrypt($data, $key)
+    public function decrypt($str, $key)
     {
-        if ($data) {
+        if ($str) {
             $key = $this->hashKey($key);//$key is changed
 
             mcrypt_generic_init($this->cipher, $key, $this->getIv($key));
-            $data = mdecrypt_generic($this->cipher, base64_decode($data));
-            $data = rtrim($data, "\0");
+            $str = mdecrypt_generic($this->cipher, base64_decode($str));
+            $str = rtrim($str, "\0");
             mcrypt_generic_deinit($this->cipher);
         }
 
-        return $data;
+        return $str;
     }
 
     public function hashKey($key)

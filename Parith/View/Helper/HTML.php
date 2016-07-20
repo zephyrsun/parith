@@ -50,9 +50,19 @@ class HTML extends Result
         return self::tag('a', $text, $attributes);
     }
 
-    static public function select(array $options, $select = null, array $attributes = array())
+    static public function radio(array $options, $checked = null, array $label_attr = array(), array $input_attr = array())
     {
-        return self::tag('select', self::option($options, $select), $attributes);
+        return self::radioOption('radio', $options, $checked, $label_attr, $input_attr);
+    }
+
+    static public function checkbox(array $options, $checked = null, array $label_attr = array(), array $input_attr = array())
+    {
+        return self::radioOption('checkbox', $options, $checked, $label_attr, $input_attr);
+    }
+
+    static public function select(array $options, $selected = null, array $attributes = array())
+    {
+        return self::tag('select', self::selectOption($options, $selected), $attributes);
     }
 
     static public function selectNum($min, $max, $select = null, array $attributes = array())
@@ -61,15 +71,15 @@ class HTML extends Result
         for (; $min <= $max; $min++)
             $options[$min] = $min;
 
-        return self::tag('select', self::option($options, $select), $attributes);
+        return self::tag('select', self::selectOption($options, $select), $attributes);
     }
 
-    static public function option(array $options, $selected)
+    static public function selectOption(array $options, $selected)
     {
         $s = '';
         foreach ($options as $val => $option) {
             if (\is_array($option)) {
-                $s .= self::tag('optgroup', self::option($option, $selected), array('label' => $val));
+                $s .= self::tag('optgroup', self::selectOption($option, $selected), array('label' => $val));
             } else {
                 $attributes = array('value' => $val);
 
@@ -82,4 +92,26 @@ class HTML extends Result
 
         return $s;
     }
+
+    static public function radioOption($type, $options, $checked, $label_attr, $input_attr)
+    {
+        $s = '';
+        $input_attr['type'] = $type;
+        foreach ($options as $val => $text) {
+            if ($val == $checked) {
+                $class = &$label_attr['class'];
+                $class = $class ? $class . ' active' : 'active';
+
+                $input_attr['checked'] = 'checked';
+            }
+
+            $input_attr['value'] = $val;
+            $input = self::tag('input', null, $input_attr) . $text;
+
+            $s .= self::tag('label', $input, $label_attr);
+        }
+
+        return $s;
+    }
+
 }
