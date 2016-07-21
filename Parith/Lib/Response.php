@@ -60,6 +60,25 @@ class Response extends Result
         503 => 'Service Unavailable',
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported',
+    ), $mimes = array(
+        'jpg' => 'image/jpeg',
+        'bmp' => 'image/bmp',
+        'ico' => 'image/x-icon',
+        'gif' => 'image/gif',
+        'png' => 'image/png',
+        'bin' => 'application/octet-stream',
+        'js' => 'application/javascript',
+        'css' => 'text/css',
+        'html' => 'text/html',
+        'xml' => 'text/xml',
+        'tar' => 'application/x-tar',
+        'ppt' => 'application/vnd.ms-powerpoint',
+        'pdf' => 'application/pdf',
+        'swf' => 'application/x-shockwave-flash',
+        'zip' => 'application/x-zip-compressed',
+        'gzip' => 'application/gzip',
+        'woff' => 'application/x-woff',
+        'svg' => 'image/svg+xml',
     );
 
     /**
@@ -164,24 +183,10 @@ class Response extends Result
     static public function viewFile($filename)
     {
         $ext = \Parith\Lib\Image\Basic::getExtension($filename);
-        switch (strtolower($ext)) {
-            case 'jpg':
-            case 'jpeg':
-                header("Content-type: image/jpeg");
-                break;
-            case 'png':
-                header("Content-type: image/png");
-                break;
-            case 'gif':
-                header("Content-type: image/gif");
-                break;
-            case 'pdf':
-                header("Content-type: application/pdf");
-                break;
+        $ext = strtolower($ext);
 
-            default:
-                header("Content-type: application/octet-stream");
-        }
+        $ct = &self::$mimes[$ext] or $ct = 'application/octet-stream';
+        header("Content-type: $ct");
 
         \header('Content-Disposition: inline; filename="' . $filename . '"');
     }
