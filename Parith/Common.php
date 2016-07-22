@@ -221,3 +221,66 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
         return App::getInstance(\get_called_class(), \func_get_args());
     }
 }
+
+
+/**
+ * Router
+ *
+ * Parith :: a compact PHP framework
+ *
+ * $options e.g.:
+ *  array(
+ *      'delimiter' => '/',
+ *      'rules' => array('\d+' => 'Article/view/${0}'),
+ *  );
+ *
+ * @package   Parith
+ * @author    Zephyr Sun
+ * @copyright 2009-2016 Zephyr Sun
+ * @license   http://www.parith.net/license
+ * @link      http://www.parith.net/
+ */
+class Router
+{
+    static public $options = array(
+        'delimiter' => '/',
+        'index' => array('c', 'a'), //array('controller', 'action'),
+        'default' => array('Index', 'index'),
+    );
+
+    /**
+     * @param string $uri
+     *
+     * @return array
+     */
+    static public function parse($uri = '')
+    {
+        $options = App::getOption('router') + self::$options;
+
+        if ($uri) {
+            $arr = \explode($options['delimiter'], \trim($uri, '/')) + $options['default'];
+            //if (count($arr) == 1)
+            //    $arr = array($options['default'][0], $arr[0]);
+
+            return $arr;
+        }
+
+        $c = &$_GET[$options['index'][0]] or $c = $options['default'][0];
+        $a = &$_GET[$options['index'][1]] or $a = $options['default'][1];
+
+        return array($c, $a);
+    }
+}
+
+/**
+ * @param $name
+ * @return mixed
+ */
+function import($name)
+{
+    $name = BASE_DIR . \str_replace('\\', \DIRECTORY_SEPARATOR, $name) . '.php';
+    if (\is_file($name))
+        return include $name;
+
+    return null;
+}

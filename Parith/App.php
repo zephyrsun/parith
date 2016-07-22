@@ -22,7 +22,7 @@ define('BASE_DIR', dirname(__DIR__) . \DIRECTORY_SEPARATOR);
 // load core class
 include __DIR__ . '/Common.php';
 
-\spl_autoload_register('\Parith\App::import');
+\spl_autoload_register('\Parith\import');
 
 class App
 {
@@ -33,6 +33,15 @@ class App
     public function __construct(array $options = array())
     {
         self::$options = $options + self::$options;
+
+        //recommend set in php.ini
+        //\date_default_timezone_set(self::getOption('timezone'));
+
+        // now time
+        define('APP_TS', \time());
+
+        //define APP_DIR
+        define('APP_DIR', BASE_DIR . self::$options['namespace'] . DIRECTORY_SEPARATOR);
     }
 
     static public function getOption($key)
@@ -75,21 +84,11 @@ class App
      */
     public function web()
     {
-        // now time
-        define('APP_TS', \time());
-
-        //define APP_DIR
-        $ns = self::$options['namespace'];
-        define('APP_DIR', BASE_DIR . $ns . DIRECTORY_SEPARATOR);
-
-        // timezone setup
-        //\date_default_timezone_set(self::getOption('timezone'));
-
         self::$query = $query = Router::parse(isset($_GET['URI']) ? $_GET['URI'] : '');
 
-        $class = $ns . '\\Controller\\' . \ucfirst($query[0]);
+        $class = self::$options['namespace'] . '\\Controller\\' . \ucfirst($query[0]);
 
-        if (self::import($class)) {
+        if (import($class)) {
             $object = new $class;
             return $object->{$query[1]}();
         }
@@ -104,22 +103,6 @@ class App
     static public function getQuery()
     {
         return self::$query;
-    }
-
-    /**
-     * @static
-     *
-     * @param $name
-     *
-     * @return bool|mixed
-     */
-    static public function import($name)
-    {
-        $name = BASE_DIR . \str_replace('\\', \DIRECTORY_SEPARATOR, $name) . '.php';
-        if (\is_file($name))
-            return include $name;
-
-        return null;
     }
 
     /**
@@ -150,54 +133,5 @@ class App
             default:
                 return $obj = new $class();
         }
-    }
-}
-
-/**
- * Router
- *
- * Parith :: a compact PHP framework
- *
- * $options e.g.:
- *  array(
- *      'delimiter' => '/',
- *      'rules' => array('\d+' => 'Article/view/${0}'),
- *  );
- *
- * @package   Parith
- * @author    Zephyr Sun
- * @copyright 2009-2016 Zephyr Sun
- * @license   http://www.parith.net/license
- * @link      http://www.parith.net/
- */
-class Router
-{
-    static public $options = array(
-        'delimiter' => '/',
-        'index' => array('c', 'a'), //array('controller', 'action'),
-        'default' => array('Index', 'index'),
-    );
-
-    /**
-     * @param string $uri
-     *
-     * @return array
-     */
-    static public function parse($uri = '')
-    {
-        $options = App::getOption('router') + self::$options;
-
-        if ($uri) {
-            $arr = \explode($options['delimiter'], \trim($uri, '/')) + $options['default'];
-            //if (count($arr) == 1)
-            //    $arr = array($options['default'][0], $arr[0]);
-
-            return $arr;
-        }
-
-        $c = &$_GET[$options['index'][0]] or $c = $options['default'][0];
-        $a = &$_GET[$options['index'][1]] or $a = $options['default'][1];
-
-        return array($c, $a);
     }
 }
