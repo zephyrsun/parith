@@ -43,7 +43,7 @@ abstract class Arr
     static public function pathSet(array &$arr, $key, $val, $delimiter = ',')
     {
         foreach (\explode($delimiter, $key) as $v)
-            $arr = &$arr[$v] or $arr = array();
+            $arr = &$arr[$v] or $arr = [];
 
         return $arr = $val;
     }
@@ -126,7 +126,7 @@ abstract class Arr
     }
 
     /**
-     * Arr::extract($_POST, array('username', 'password'))
+     * Arr::extract($_POST, ['username', 'password'])
      *
      * @static
      *
@@ -138,7 +138,7 @@ abstract class Arr
      */
     static public function extract(array $arr, array $keys, $default = null)
     {
-        $ret = array();
+        $ret = [];
         foreach ($keys as $key)
             $ret[$key] = isset($arr[$key]) ? $arr[$key] : $default;
 
@@ -157,8 +157,7 @@ abstract class Arr
      */
     static public function pluck(array $arr, $key)
     {
-        $ret = array();
-
+        $ret = [];
         foreach ($arr as $row)
             if (isset($row[$key]))
                 $ret[] = $row[$key];

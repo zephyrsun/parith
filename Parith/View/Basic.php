@@ -19,17 +19,17 @@ use \Parith\Result;
 
 class Basic extends Result
 {
-    public $options = array(
+    public $options = [
         'source_dir' => '',
         'source_ext' => 'php',
-    );
+    ];
 
     /**
-     * @param array $options
+     * Basic constructor.
      */
-    public function __construct(array $options = array())
+    public function __construct()
     {
-        $this->options = $options + App::getOption('view') + $this->options;
+        $this->options = App::getOption('view') + $this->options;
 
         if (!$this->options['source_dir'])
             $this->options['source_dir'] = \APP_DIR . 'View';
@@ -55,7 +55,7 @@ class Basic extends Result
      */
     public function assign($key, $val = null)
     {
-        parent::resultSet($key, $val);
+        $this->resultSet($key, $val);
 
         return $this;
     }

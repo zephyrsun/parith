@@ -19,26 +19,26 @@ use \Parith\Cache\File as CacheFile;
 
 class Template extends Basic
 {
-    public $cache, $options = array(
+    public $cache, $options = [
         'source_dir' => null,
         'source_ext' => 'html',
         'cache_dir' => null,
         'ldelim' => '{{',
         'rdelim' => '}}',
-    );
+    ];
 
 
     /**
-     * @param array $options
+     * Template constructor.
      */
-    public function __construct(array $options = array())
+    public function __construct()
     {
-        parent::__construct($options);
+        parent::__construct();
 
         if (!$dir = $this->options['cache_dir'])
             $dir = \APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'template';
 
-        $this->cache = new CacheFile(array('dir' => $dir));
+        $this->cache = new CacheFile(['dir' => $dir]);
     }
 
     /**
@@ -75,7 +75,7 @@ class Template extends Basic
      */
     static public function parseBrace($str)
     {
-        $p = $r = array();
+        $p = $r = [];
 
         // {if $foo}
         $p[] = '/^if\s+(.+)$/';
@@ -133,13 +133,14 @@ class Template extends Basic
     static protected function parseVar($val)
     {
         return \preg_replace(
-            array(
+            [
                 '/\.(\w+)/', // replace $foo.bar.str to $foo['bar']['str']
-                '/\$(?!this->)(\w+)/'),
-            array(
+                '/\$(?!this->)(\w+)/'
+            ],
+            [
                 "['\\1']",
                 '$this->\\1'
-            ),
+            ],
             $val[0]);
     }
 
@@ -179,7 +180,7 @@ class Template extends Basic
         $this->render($this->file, $this->ext);
 
         // avoid collision
-        parent::resultDelete($data);
+        $this->resultDelete($data);
 
         return $this;
     }

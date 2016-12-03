@@ -12,8 +12,11 @@ use \Example\Response;
 
 class Error extends Basic
 {
-    public function __call($val, $args)
+    public function renderError(\ErrorException $e)
     {
-        Response::error('Query error', 402);
+        $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
+        $error .= $e->getTraceAsString();
+
+        Response::error("<pre>$error</pre>", 0);
     }
 } 

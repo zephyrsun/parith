@@ -19,49 +19,46 @@ use \Parith\Result;
 
 class Cache extends Result
 {
-    public $options = array();
+    public $options = [];
 
-    public function __construct(array $options = array())
+    public function __construct()
     {
-        $this->options = $options + App::getOption('cache') + $this->options;
+        $this->options = App::getOption('cache') + $this->options;
     }
 
     /**
      * @param $key
-     *
      * @return mixed
      */
     public function get($key)
     {
-        return parent::resultGet($key);
+        return $this->resultGet($key);
     }
 
     /**
      * @param $key
      * @param $val
-     *
-     * @return bool
+     * @return $this
      */
     public function set($key, $val)
     {
-        return parent::resultSet($key, $val);
+        return $this->resultSet($key, $val);
     }
 
     /**
      * @param $key
-     *
-     * @return bool
+     * @return $this
      */
     public function delete($key)
     {
-        return parent::resultDelete($key);
+        return $this->resultDelete($key);
     }
 
     /**
-     * @return bool
+     * @return Result
      */
     public function flush()
     {
-        return parent::resultFlush();
+        return $this->resultFlush();
     }
 }

@@ -19,7 +19,7 @@ use \Parith\Result;
 class Response extends Result
 {
     static public $protocol = 'HTTP/1.1'
-    , $status_code = array(
+    , $status_code = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         200 => 'OK',
@@ -60,7 +60,8 @@ class Response extends Result
         503 => 'Service Unavailable',
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported',
-    ), $mimes = array(
+    ],
+        $mimes = [
         'jpg' => 'image/jpeg',
         'bmp' => 'image/bmp',
         'ico' => 'image/x-icon',
@@ -79,7 +80,7 @@ class Response extends Result
         'gzip' => 'application/gzip',
         'woff' => 'application/x-woff',
         'svg' => 'image/svg+xml',
-    );
+    ];
 
     /**
      * @param int $code

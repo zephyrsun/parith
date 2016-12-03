@@ -19,9 +19,9 @@ use \Parith\App;
 class Memcache extends Basic
 {
     static protected $ins_n = 0;
-    static protected $ins_link = array();
+    static protected $ins_link = [];
 
-    public $options = array(
+    public $options = [
         'host' => '127.0.0.1',
         'port' => 11211,
         'timeout' => 1,
@@ -30,14 +30,14 @@ class Memcache extends Basic
         'retry_interval' => 15,
         'status' => true,
         'failure_callback' => null,
-    );
+    ];
 
     /**
      * @param $servers
-     *          array(
-     *              array('host' => '192.168.1.1', 'port' => 11211),
-     *              array('host' => '192.168.1.2', 'port' => 11211),
-     *          );
+     *          [
+     *              ['host' => '192.168.1.1', 'port' => 11211],
+     *              ['host' => '192.168.1.2', 'port' => 11211],
+     *          ];
      * @return \Memcache
      * @throws \Exception
      */

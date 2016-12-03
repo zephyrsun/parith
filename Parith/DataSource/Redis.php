@@ -19,14 +19,14 @@ use \Parith\App;
 class Redis extends Basic
 {
     static protected $ins_n = 0;
-    static protected $ins_link = array();
+    static protected $ins_link = [];
 
-    public $options = array(
+    public $options = [
         'host' => '127.0.0.1',
         'port' => 6379,
         'timeout' => 0.0,
         'password' => '',
-    );
+    ];
 
     /**
      * @param $options

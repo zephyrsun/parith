@@ -18,28 +18,28 @@ use \Parith\App;
 class Memcached extends Basic
 {
     static protected $ins_n = 0;
-    static protected $ins_link = array();
+    static protected $ins_link = [];
 
-    public $options = array(
+    public $options = [
         'host' => '127.0.0.1',
         'port' => 11211,
         'weight' => 0,
-    );
+    ];
 
-    public $server_options = array(
+    public $server_options = [
         \Memcached::OPT_COMPRESSION => true,
         \Memcached::OPT_SERIALIZER => \Memcached::SERIALIZER_IGBINARY, //\Memcached::SERIALIZER_PHP,
         \Memcached::OPT_HASH => \Memcached::HASH_DEFAULT,
         \Memcached::OPT_DISTRIBUTION => \Memcached::DISTRIBUTION_CONSISTENT,
         \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
-    );
+    ];
 
     /**
      * @param $servers
-     *          array(
-     *              array('host' => '192.168.1.1', 'port' => 11211),
-     *              array('host' => '192.168.1.2', 'port' => 11211),
-     *          );
+     *          [
+     *              ['host' => '192.168.1.1', 'port' => 11211],
+     *              ['host' => '192.168.1.2', 'port' => 11211],
+     *          ];
      * @return \Memcached
      * @throws \Exception
      */

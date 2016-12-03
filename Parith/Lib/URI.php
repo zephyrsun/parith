@@ -27,12 +27,12 @@ class URI
      */
     static public function base($uri = null)
     {
-        $options = array(
+        $options = [
             'scheme' => 'http',
             'host' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'],
             'port' => '',
             'path' => '/'
-        );
+        ];
 
         if ($uri) {
             $uri = parse_url($uri) + $options;
@@ -53,16 +53,16 @@ class URI
      *
      * @return string
      */
-    static public function link($uri = '')
+    static public function uri($uri = '')
     {
-        if ($uri) {
-            if (!Char::isAscii($uri))
-                $uri = rawurlencode($uri);
-        } else {
-            $uri = $_SERVER['REQUEST_URI']; //implode('/', \Parith\App::$query);
-        }
+        $uri or $uri = $_SERVER['REQUEST_URI']; //implode('/', \Parith\App::$query);
 
         return static::base() . trim($uri, '/');
+    }
+
+    static public function url()
+    {
+        return preg_replace('/\?.*/', '', self::uri());
     }
 
     /**

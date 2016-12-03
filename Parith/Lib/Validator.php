@@ -18,11 +18,11 @@ use \Parith\Result;
 
 class Validator extends Result
 {
-    public $data = array();
+    public $data = [];
 
-    private $_err = array();
+    private $errors = [];
 
-    public function __construct(array $data = array())
+    public function __construct(array $data = [])
     {
         if ($data)
             $this->data = $data;
@@ -33,12 +33,12 @@ class Validator extends Result
     /**
      *
      * $validator = new \Parith\Lib\Validator($_POST);
-     * $error = $validator->checkRules(array(
+     * $error = $validator->checkRules([
      *      'email' => 'email',
-     *      'username' => array('length', 3, 8),
-     *      'city' => array('length', 1, 50, false),
+     *      'username' => ['length', 3, 8],
+     *      'city' => ['length', 1, 50, false],
      *
-     * ));
+     * ]);
      *
      * @param array $rules
      *
@@ -46,9 +46,9 @@ class Validator extends Result
      */
     public function checkRules(array $rules)
     {
-        $this->_err = array();
+        $this->errors = [];
 
-        $ret = array();
+        $ret = [];
         foreach ($rules as $field => $args) {
 
             $v = &$this->data[$field];
@@ -59,33 +59,33 @@ class Validator extends Result
 
             $args[0] = $v;
 
-            $result = \call_user_func_array(array($this, $method), $args);
+            $result = \call_user_func_array([$this, $method], $args);
 
             if ($result || \end($args) === false) {
                 $ret[$field] = $v;
             } else
-                $this->_err[] = $field;
+                $this->errors[] = $field;
         }
 
-        if ($this->_err)
-            return array();
+        if ($this->errors)
+            return [];
 
         return $ret;
     }
 
     public function getError()
     {
-        return $this->_err;
+        return $this->errors;
     }
 
     public function getFirstError()
     {
-        return \current($this->_err);
+        return \current($this->errors);
     }
 
     public function getLastError()
     {
-        return \end($this->_err);
+        return \end($this->errors);
     }
 
     /**

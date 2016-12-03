@@ -3,12 +3,14 @@
 namespace Example\Controller;
 
 use Example\Response;
+use Parith\Lib\Cookie;
+use Parith\Lib\URI;
 
 class Index extends Basic
 {
     public function index()
     {
-        Response::ok('Hello world!', 'index');
+        Response::ok("<pre>Parith Framework is working on page: " . URI::url() . '</pre>', 'index');
     }
 
     /**

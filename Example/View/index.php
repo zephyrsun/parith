@@ -1,5 +1,5 @@
 <?php include '_header.php' ?>
     <div>
-        <h4><?php echo $d; ?></h4>
+        <?php echo $d; ?>
     </div>
 <?php include '_footer.php' ?>

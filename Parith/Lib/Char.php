@@ -62,15 +62,12 @@ class Char
     }
 
     /**
-     * @static
-     *
-     * @param          $str
+     * @param $str
      * @param string $delimiter
-     * @param function $filter
-     *
+     * @param callable $filter
      * @return array
      */
-    static public function toArray($str, $delimiter = ',', $filter = null)
+    static public function toArray($str, $delimiter = ',', callable $filter = '')
     {
         $arr = \explode($delimiter, $str);
 

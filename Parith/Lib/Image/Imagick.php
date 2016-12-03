@@ -136,7 +136,7 @@ class Imagick extends Basic
      *
      * @return Imagick
      */
-    public function overlay($x, $y, $width, $height, array $color = array())
+    public function overlay($x, $y, $width, $height, array $color = [])
     {
         $src_w = $this->width();
         $src_h = $this->height();
@@ -153,7 +153,7 @@ class Imagick extends Basic
 
         $image = $this->create($width, $height);
 
-        $color += array(255, 255, 255);
+        $color += [255, 255, 255];
         $color = imagecolorallocate($image, $color[0], $color[1], $color[2]);
 
         imagefilledrectangle($this->image, $x, $y, $width, $height, $color);

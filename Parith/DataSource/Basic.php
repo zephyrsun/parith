@@ -17,13 +17,13 @@ namespace Parith\DataSource;
 abstract class Basic
 {
     static protected $ins_n = 0;
-    static protected $ins_link = array();
+    static protected $ins_link = [];
 
     public function __destruct()
     {
         if (--static::$ins_n == 0) {
             $this->closeAll();
-            static::$ins_link = array();
+            static::$ins_link = [];
         }
     }
 
@@ -32,11 +32,9 @@ abstract class Basic
      */
     static public function getInstance()
     {
-        static $ins = array();
+        static $ins = [];
 
-        $class = \get_called_class();
-
-        $obj = &$ins[$class] or $obj = new $class();
+        $obj = &$ins[static::class] or $obj = new static();
 
         return $obj;
     }

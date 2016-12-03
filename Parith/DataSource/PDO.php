@@ -14,11 +14,12 @@
 namespace Parith\DataSource;
 
 use \Parith\App;
+use Parith\View\Helper\Paginator;
 
 class PDO extends Basic
 {
     static protected $ins_n = 0;
-    static protected $ins_link = array();
+    static protected $ins_link = [];
 
     /**
      * @var \PDOStatement
@@ -33,24 +34,24 @@ class PDO extends Basic
     public $table_name = '';
 
     public $sql = '';
-    public $clauses = array();
-    public $params = array();
-    public $last_clauses = array();
-    public $last_params = array();
+    public $clauses = [];
+    public $params = [];
+    public $last_clauses = [];
+    public $last_params = [];
 
-    public $error = array();
+    public $error = [];
 
-    public $options = array(
+    public $options = [
         'driver' => 'mysql',
         'host' => '127.0.0.1',
         'port' => 3306,
         'dbname' => '',
         'username' => 'root',
         'password' => '',
-        'options' => array(),
-    );
+        'options' => [],
+    ];
 
-    public $server_options = array(
+    public $server_options = [
         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
         \PDO::ATTR_EMULATE_PREPARES => false,
@@ -62,7 +63,7 @@ class PDO extends Basic
         #overwrite 'options' if not using MySQL
         \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
         \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
-    );
+    ];
 
     /**
      * @param $options
@@ -101,7 +102,7 @@ class PDO extends Basic
         $this->last_params = $this->params;
         $this->last_clauses = $this->clauses;
 
-        $this->clauses = array(
+        $this->clauses =[
             'fields' => '*',
             'table' => $this->table_name,
             'join' => '',
@@ -111,9 +112,9 @@ class PDO extends Basic
             'order' => '',
             'limit' => '',
             'for_update' => '',
-        );
+        ];
 
-        $this->params = array();
+        $this->params = [];
 
         return $this;
     }
@@ -147,9 +148,9 @@ class PDO extends Basic
 
     /**
      * where('gender', 'male')
-     * where('user_id', 'IN', array(1, 2, 3))
+     * where('user_id', 'IN', [1, 2, 3])
      * where('email', 'LIKE', '%@abc.com', 'OR')
-     * where('(age >= ? OR age <= ?)', array(18, 30))
+     * where('(age >= ? OR age <= ?)', [18, 30])
      *
      * @param $clause
      * @param $condition
@@ -216,7 +217,7 @@ class PDO extends Basic
     /**
      * @param string|array $order
      *          - 'id'
-     *          - array('id', 'ts' => -1)
+     *          - ['id', 'ts' => -1]
      *
      * @return $this
      */
@@ -284,7 +285,7 @@ class PDO extends Basic
      */
     public function insert(array $data, $modifier = 'INSERT INTO')
     {
-        $col = $value = array();
+        $col = $value = [];
         foreach ($data as $k => $v) {
             $col[] = '`' . $k . '`';
 
@@ -320,9 +321,9 @@ class PDO extends Basic
      */
     public function update($data)
     {
-        $params = array();
+        $params = [];
         if (is_array($data)) {
-            $value = array();
+            $value = [];
             foreach ($data as $col => $val) {
                 $value[] = "`{$col}` = ?";
                 $params[] = $val;
@@ -406,18 +407,30 @@ class PDO extends Basic
     }
 
     /**
-     * @param bool $clear_group_by
-     * @return mixed
+     * @param $size
+     * @param string $col
+     * @return Paginator
      */
-    public function fetchCount($clear_group_by = true)
+    public function paginate($size, $col = '')
     {
+        if ($col) {
+            //use start id
+            $id = &$_GET[$col];
+            $this->where('col > ?', $id);
+            $this->limit($size);
+        } else {
+            $page = &$_GET['page'];
+            $this->limit($size, $page > 0 ? $size * ($page - 1) : 0);
+        }
+
+        $list = $this->fetchAll();
+
         $this->clauses = $this->last_clauses;
         $this->params = $this->last_params;
 
-        if ($clear_group_by)
-            $this->groupBy('');
+        $count = $this->field('count(*)')->limit(1)->fetchColumn(0);
 
-        return $this->field('count(*)')->limit(1)->fetchColumn(0);
+        return (new Paginator($count))->resultSet($list);
     }
 
     /**
@@ -438,7 +451,7 @@ class PDO extends Basic
      *
      * @return bool
      */
-    public function query($sql, $params = array())
+    public function query($sql, $params = [])
     {
         $this->sql = $sql;
         $this->params = $params;
@@ -467,11 +480,11 @@ class PDO extends Basic
 
     public function setError($err)
     {
-        $this->error = array(
+        $this->error = [
             'error' => $err,
             'sql' => $this->sql,
             'params' => $this->params,
-        );
+        ];
 
         $this->initial();
     }
@@ -577,7 +590,7 @@ class PDO extends Basic
      */
     public function getQuery()
     {
-        return array($this->sql, $this->last_params);
+        return [$this->sql, $this->last_params];
         //return $this->sth->queryString;
     }
 

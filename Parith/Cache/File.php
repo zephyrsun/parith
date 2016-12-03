@@ -18,17 +18,14 @@ use \Parith\Lib\File as LibFile;
 
 class File extends Cache
 {
-    public $options = array(
+    public $options = [
         'dir' => '',
         'file_ext' => 'php',
-    );
+    ];
 
-    /**
-     * @param array $options
-     */
-    public function __construct(array $options = array())
+    public function __construct()
     {
-        parent::__construct($options);
+        parent::__construct();
 
         if (!$this->options['dir'])
             $this->options['dir'] = \APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'file';

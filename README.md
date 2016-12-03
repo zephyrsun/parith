@@ -7,7 +7,7 @@ It is licenced under the MIT License so you can use it for any personal or corpo
 
 ##Requirements
 
-* PHP 5.7+
+* PHP 7+
 * PDO (if using the Database)
 
 ##Installation

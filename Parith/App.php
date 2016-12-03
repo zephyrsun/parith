@@ -36,11 +36,12 @@ function import($name)
 
 class App
 {
-    static public $options = array('namespace' => 'App', 'error_class' => '\\Parith\\Controller\\Error')
-    , $query = array()
-    , $_ins = array();
+    static public $options = [
+        'namespace' => 'App',
+        'error_class' => Error::class
+    ], $_ins = [];
 
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         self::$options = $options + self::$options;
 
@@ -56,7 +57,7 @@ class App
 
     static public function getOption($key)
     {
-        return isset(self::$options[$key]) ? self::$options[$key] : array();
+        return isset(self::$options[$key]) ? self::$options[$key] : [];
     }
 
     /**
@@ -94,25 +95,17 @@ class App
      */
     public function web()
     {
-        self::$query = $query = Router::parse(isset($_GET['URI']) ? $_GET['URI'] : '');
+        set_error_handler('\Parith\Error::errorHandler');
+        set_exception_handler('\Parith\Error::exceptionHandler');
 
-        $class = self::$options['namespace'] . '\\Controller\\' . \ucfirst($query[0]);
+        Router::parse(isset($_GET['URI']) ? $_GET['URI'] : '', $class, $action);
 
-        if (import($class)) {
-            $object = new $class;
-            return $object->{$query[1]}();
+        if (import($class = self::$options['namespace'] . '\\Controller\\' . \ucfirst($class))) {
+            $object = new $class();
+            return $object->{$action}();
         }
 
-        $object = new self::$options['error_class'];
-        return $object->{$query[0]}();
-    }
-
-    /**
-     * @return array
-     */
-    static public function getQuery()
-    {
-        return self::$query;
+        //return (new self::$options['error_class'])->__call($class, $action);
     }
 
     /**
@@ -124,7 +117,7 @@ class App
      *
      * @return mixed
      */
-    static public function getInstance($class, $args = array(), $key = '')
+    static public function getInstance($class, $args = [], $key = '')
     {
         if (!$key)
             $key = $class;
@@ -152,12 +145,6 @@ class App
  *
  * Parith :: a compact PHP framework
  *
- * $options e.g.:
- *  array(
- *      'delimiter' => '/',
- *      'rules' => array('\d+' => 'Article/view/${0}'),
- *  );
- *
  * @package   Parith
  * @author    Zephyr Sun
  * @copyright 2009-2016 Zephyr Sun
@@ -166,119 +153,144 @@ class App
  */
 class Router
 {
-    static public $options = array(
+    static public $options = [
         'delimiter' => '/',
-        'index' => array('c', 'a'), //array('controller', 'action'),
-        'default' => array('Index', 'index'),
-    );
+        'index' => ['c', 'a'], //['controller', 'action'],
+        'default' => ['Index', 'index'],
+    ];
 
     /**
      * @param string $uri
-     *
+     * @param $class
+     * @param $action
      * @return array
      */
-    static public function parse($uri = '')
+    static public function parse($uri = '', &$class, &$action)
     {
         $options = App::getOption('router') + self::$options;
 
         if ($uri) {
-            $arr = \explode($options['delimiter'], \trim($uri, '/')) + $options['default'];
-            //if (count($arr) == 1)
-            //    $arr = array($options['default'][0], $arr[0]);
-
-            return $arr;
+            list($class, $action) = \explode($options['delimiter'], \trim($uri, '/')) + $options['default'];
+            return;
         }
 
-        $c = &$_GET[$options['index'][0]] or $c = $options['default'][0];
-        $a = &$_GET[$options['index'][1]] or $a = $options['default'][1];
+        $c = &$_GET[$options['index'][0]];
+        $a = &$_GET[$options['index'][1]];
 
-        return array($c, $a);
+        $class = $c or $class = $options['default'][0];
+        $action = $a or $action = $options['default'][1];
     }
 }
 
+class Error
+{
+    static public function errorHandler($code, $msg, $file, $line)
+    {
+        if ($code & error_reporting() == 0)
+            return;
+
+        throw new \ErrorException($msg, $code, 0, $file, $line);
+    }
+
+    static public function exceptionHandler(\ErrorException $e)
+    {
+        $class = App::getOption('error_class');
+
+        (new $class())->renderError($e);
+    }
+
+    static public function render(\ErrorException $e)
+    {
+        $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
+        $error .= $e->getTraceAsString();
+
+        echo "<pre>$error</pre>";
+
+    }
+}
 
 abstract class Result implements \Iterator, \ArrayAccess, \Countable
 {
-    protected $_rs = array();
+    public $__ = [];
+
+    public $options = [];
+
+    public function setOptions($options)
+    {
+        $this->options = $options;
+    }
 
     /**
      * @param $key
-     * @param $val
-     *
-     * @return Result
+     * @param null $val
+     * @return $this
      */
-    public function __set($key, $val)
+    public function __set($key, $val = null)
     {
-        $this->_rs[$key] = $val;
+        $this->__[$key] = $val;
 
         return $this;
     }
 
     /**
      * @param $key
-     *
      * @return mixed
      */
     public function &__get($key)
     {
-        return $this->_rs[$key];
+        return $this->__[$key];
     }
 
     /**
      * @param $key
-     *
      * @return bool
      */
     public function __isset($key)
     {
-        return isset($this->_rs[$key]);
+        return isset($this->__[$key]);
     }
 
     /**
      * @param $key
-     *
-     * @return Result
+     * @return $this
      */
     public function __unset($key)
     {
-        unset($this->_rs[$key]);
+        unset($this->__[$key]);
 
         return $this;
     }
 
     /**
-     * @param       $key
+     * @param $key
      * @param mixed $val
-     *
-     * @return Array
+     * @return $this
      */
     public function resultSet($key, $val = null)
     {
         if (\is_array($key))
-            $this->_rs = $key + $this->_rs;
+            $this->__ = $key + $this->__;
         elseif ($key)
             $this->__set($key, $val);
 
-        return $this->_rs;
+        return $this;
     }
 
     /**
      * @param mixed $key
-     *
      * @return mixed
      */
     public function resultGet($key = null)
     {
         if ($key === null)
-            return $this->_rs;
+            return $this->__;
 
         return $this->__get($key);
     }
 
     /**
-     * @param $key
-     *
-     * @return Result
+     * @param mixed $key
+     * @return $this
      */
     public function resultDelete($key)
     {
@@ -296,7 +308,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      */
     public function resultFlush()
     {
-        $this->_rs = array();
+        $this->__ = [];
 
         return $this;
     }
@@ -308,7 +320,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      */
     public function rewind()
     {
-        return \reset($this->_rs);
+        return \reset($this->__);
     }
 
     /**
@@ -316,7 +328,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      */
     public function current()
     {
-        return \current($this->_rs);
+        return \current($this->__);
     }
 
     /**
@@ -324,7 +336,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      */
     public function key()
     {
-        return \key($this->_rs);
+        return \key($this->__);
     }
 
     /**
@@ -332,7 +344,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      */
     public function next()
     {
-        return \next($this->_rs);
+        return \next($this->__);
     }
 
     /**
@@ -350,7 +362,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      */
     public function count()
     {
-        return \count($this->_rs);
+        return \count($this->__);
     }
 
     // ArrayAccess Methods
@@ -367,8 +379,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     }
 
     /**
-     * @param $key
-     *
+     * @param mixed $key
      * @return mixed
      */
     public function offsetGet($key)
@@ -377,8 +388,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     }
 
     /**
-     * @param $key
-     *
+     * @param mixed $key
      * @return bool
      */
     public function offsetExists($key)
@@ -387,8 +397,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     }
 
     /**
-     * @param $key
-     *
+     * @param mixed $key
      * @return Result
      */
     public function offsetUnset($key)
@@ -401,6 +410,6 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      */
     static public function getInstance()
     {
-        return App::getInstance(\get_called_class(), \func_get_args());
+        return App::getInstance(static::class, \func_get_args());
     }
 }

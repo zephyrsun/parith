@@ -16,12 +16,12 @@ namespace Parith\Lib\Image;
 
 abstract class Basic extends \Parith\Result
 {
-    static public $image_types = array(
+    static public $image_types = [
         'jpg' => 'jpeg',
         'jpeg' => 'jpeg',
         'png' => 'png',
         'gif' => 'gif',
-    );
+    ];
 
     protected $image;
 

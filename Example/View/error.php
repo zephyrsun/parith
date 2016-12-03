@@ -1,5 +1,6 @@
 <?php include '_header.php' ?>
     <div>
-        <h4>WARNING：<?php echo $d; ?></h4>
+        WARNING：
+        <?php echo $d; ?>
     </div>
 <?php include '_footer.php' ?>
