@@ -3,7 +3,6 @@
 namespace Example\Controller;
 
 use Example\Response;
-use Parith\Lib\Cookie;
 use Parith\Lib\URI;
 
 class Index extends Basic

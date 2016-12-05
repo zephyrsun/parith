@@ -83,21 +83,30 @@ class Cookie extends Result
             $this->delete($key);
     }
 
-    public function setJWT($id, array $data)
+    public function jwtSet($id, array $data)
     {
         return $this->set('__token__', (new JWTAuth())->sign($data, $id));
     }
 
-    public function getJWT()
+    public function jwtGet($refresh = true)
     {
         $jwt = new JWTAuth();
-        $data = $jwt->authenticate($this->get('__token__'));
-        if ($data && $data['exp'] < \APP_TS) {
-            //refresh
-            $data = $jwt->makePayload($data['sub'], $data);
-            $jwt->sign($data, 0);
+        $token = $jwt->authenticate($this->get('__token__'));
+        if ($refresh && $token && $token['exp'] < \APP_TS) {
+            $token = $this->jwtRefresh($token);
+            $this->set('__token__', $token);
         }
 
-        return $data;
+        return $token;
+    }
+
+    public function jwtRefresh($token)
+    {
+        $jwt = new JWTAuth();
+
+        $token = $jwt->makePayload($token['sub'], $token);
+        $jwt->sign($token, 0);
+
+        return $token;
     }
 }
