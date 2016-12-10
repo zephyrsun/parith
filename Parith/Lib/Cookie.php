@@ -24,6 +24,8 @@ class Cookie extends Result
         'domain' => '',
         'secure' => false,
         'httponly' => true,
+        'signer' => JWTAuth::class,
+        'token_key' => 'token',
     ];
 
     /**
@@ -31,27 +33,18 @@ class Cookie extends Result
      */
     public function __construct()
     {
-        $this->options = \Parith\App::getOption('cookie') + $this->options;
-    }
+        $this->setOptions(\Parith\App::getOption('cookie'));
 
-    /**
-     * @param $key
-     * @return mixed
-     */
-    public function get($key)
-    {
-        $str = &$_COOKIE[$key];
-
-        return $str;
+        $this->__ = &$_COOKIE;
     }
 
     /**
      * @param string $key
-     * @param mixed $str
+     * @param mixed $value
      * @param int $expire could be negative
      * @return bool
      */
-    public function set($key, $str, $expire = 0)
+    public function set($key, $value, $expire = 0)
     {
         $o = $this->options;
 
@@ -60,9 +53,9 @@ class Cookie extends Result
         elseif ($expire == 0)
             $expire = $o['expire'] + \APP_TS;
 
-        $_COOKIE[$key] = $str;
+        parent::set($key, $value);
 
-        return setcookie($key, $str, $expire, $o['path'], $o['domain'], $o['secure'], $o['httponly']);
+        return setcookie($key, $value, $expire, $o['path'], $o['domain'], $o['secure'], $o['httponly']);
     }
 
     /**
@@ -71,7 +64,11 @@ class Cookie extends Result
      */
     public function delete($key)
     {
-        return $this->set($key, '', -1);
+        $ret = $this->set($key, '', -1);
+
+        parent::delete($key);
+
+        return $ret;
     }
 
     /**
@@ -79,34 +76,9 @@ class Cookie extends Result
      */
     public function flush()
     {
-        foreach ($_COOKIE as $key => $val)
+        foreach ($this->__ as $key => $val)
             $this->delete($key);
-    }
 
-    public function jwtSet($id, array $data)
-    {
-        return $this->set('__token__', (new JWTAuth())->sign($data, $id));
-    }
-
-    public function jwtGet($refresh = true)
-    {
-        $jwt = new JWTAuth();
-        $token = $jwt->authenticate($this->get('__token__'));
-        if ($refresh && $token && $token['exp'] < \APP_TS) {
-            $token = $this->jwtRefresh($token);
-            $this->set('__token__', $token);
-        }
-
-        return $token;
-    }
-
-    public function jwtRefresh($token)
-    {
-        $jwt = new JWTAuth();
-
-        $token = $jwt->makePayload($token['sub'], $token);
-        $jwt->sign($token, 0);
-
-        return $token;
+        parent::flush();
     }
 }

@@ -12,7 +12,7 @@ use \Example\Response;
 
 class Error extends Basic
 {
-    public function renderError(\ErrorException $e)
+    public function renderError(\Throwable $e)
     {
         $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
         $error .= $e->getTraceAsString();

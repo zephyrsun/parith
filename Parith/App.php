@@ -109,13 +109,10 @@ class App
     }
 
     /**
-     * @static
-     *
-     * @param        $class
-     * @param        $args
+     * @param $class
+     * @param array $args
      * @param string $key
-     *
-     * @return mixed
+     * @return object
      */
     static public function getInstance($class, $args = [], $key = '')
     {
@@ -192,14 +189,14 @@ class Error
         throw new \ErrorException($msg, $code, 0, $file, $line);
     }
 
-    static public function exceptionHandler(\ErrorException $e)
+    static public function exceptionHandler(\Throwable $e)
     {
         $class = App::getOption('error_class');
 
         (new $class())->renderError($e);
     }
 
-    static public function render(\ErrorException $e)
+    static public function render(\Throwable $e)
     {
         $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
         $error .= $e->getTraceAsString();
@@ -211,23 +208,31 @@ class Error
 
 abstract class Result implements \Iterator, \ArrayAccess, \Countable
 {
-    public $__ = [];
+    protected $__ = [];
 
     public $options = [];
 
     public function setOptions($options)
     {
-        $this->options = $options;
+        $this->options = $options + $this->options;
+    }
+
+    /**
+     * @return object
+     */
+    static public function getInstance()
+    {
+        return App::getInstance(static::class, \func_get_args());
     }
 
     /**
      * @param $key
-     * @param null $val
+     * @param $value
      * @return $this
      */
-    public function __set($key, $val = null)
+    public function __set($key, $value = null)
     {
-        $this->__[$key] = $val;
+        $this->__[$key] = $value;
 
         return $this;
     }
@@ -263,15 +268,15 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
-     * @param mixed $val
+     * @param $value
      * @return $this
      */
-    public function resultSet($key, $val = null)
+    public function set($key, $value)
     {
         if (\is_array($key))
             $this->__ = $key + $this->__;
         elseif ($key)
-            $this->__set($key, $val);
+            $this->__set($key, $value);
 
         return $this;
     }
@@ -280,7 +285,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      * @param mixed $key
      * @return mixed
      */
-    public function resultGet($key = null)
+    public function get($key = null)
     {
         if ($key === null)
             return $this->__;
@@ -292,7 +297,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
      * @param mixed $key
      * @return $this
      */
-    public function resultDelete($key)
+    public function delete($key)
     {
         if (\is_array($key)) {
             foreach ($key as $k => $v)
@@ -306,7 +311,7 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     /**
      * @return Result
      */
-    public function resultFlush()
+    public function flush()
     {
         $this->__ = [];
 
@@ -369,13 +374,12 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
 
     /**
      * @param $key
-     * @param $val
-     *
+     * @param $value
      * @return Result
      */
-    public function offsetSet($key, $val)
+    public function offsetSet($key, $value)
     {
-        return $this->__set($key, $val);
+        return $this->__set($key, $value);
     }
 
     /**
@@ -403,13 +407,5 @@ abstract class Result implements \Iterator, \ArrayAccess, \Countable
     public function offsetUnset($key)
     {
         return $this->__unset($key);
-    }
-
-    /**
-     * @return object
-     */
-    static public function getInstance()
-    {
-        return App::getInstance(static::class, \func_get_args());
     }
 }

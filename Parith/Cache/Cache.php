@@ -23,42 +23,6 @@ class Cache extends Result
 
     public function __construct()
     {
-        $this->options = App::getOption('cache') + $this->options;
-    }
-
-    /**
-     * @param $key
-     * @return mixed
-     */
-    public function get($key)
-    {
-        return $this->resultGet($key);
-    }
-
-    /**
-     * @param $key
-     * @param $val
-     * @return $this
-     */
-    public function set($key, $val)
-    {
-        return $this->resultSet($key, $val);
-    }
-
-    /**
-     * @param $key
-     * @return $this
-     */
-    public function delete($key)
-    {
-        return $this->resultDelete($key);
-    }
-
-    /**
-     * @return Result
-     */
-    public function flush()
-    {
-        return $this->resultFlush();
+        $this->setOptions(App::getOption('cache'));
     }
 }

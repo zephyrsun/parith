@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Auth
+ * JWTAuth
  *
  * Parith :: a compact PHP framework
  *
@@ -14,21 +15,66 @@ namespace Parith\Lib;
 
 use Parith\Result;
 
-class JWTAuth
+class JWTAuth extends Result
 {
     public $options = [
-        'secret' => 'fFbGiq0acW9mJea7ZZuPwNQOP5u5TS2f',
-        'ttl' => 86400,
-        'refresh_ttl' => 41760,
+        'secret' => 'PLEASE_CHANGE_ME',
+        'ttl' => 43200,
         'algo' => 'sha256',
-        'encoder' => Base64Encoder::class,
     ];
+
+    public $cookie, $token_key;
 
     public function __construct()
     {
-        $this->options = \Parith\App::getOption('jwtauth') + $this->options;
+        $this->setOptions(\Parith\App::getOption('jwtauth'));
+
+        $this->cookie = new Cookie();
+        $this->token_key = $this->cookie->options['token_key'];
     }
 
+    /**
+     * @param $id
+     * @param array $payload
+     * @return bool
+     */
+    public function setToken($id, array $payload)
+    {
+        return $this->cookie->set($this->token_key, $this->sign($id, $payload));
+    }
+
+    /**
+     * @param bool $refresh
+     * @return array
+     */
+    public function getToken($refresh = false)
+    {
+        $payload = $this->verify($this->cookie->get($this->token_key));
+        if ($payload && $payload['exp'] < \APP_TS) {
+            $payload = $refresh ? $this->refreshToken($payload) : [];
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param $payload
+     * @return array
+     */
+    public function refreshToken($payload)
+    {
+        $payload = $this->makePayload($payload['sub'], $payload);
+
+        $this->setToken(0, $payload);
+
+        return $payload;
+    }
+
+    /**
+     * @param $id
+     * @param array $payload
+     * @return array
+     */
     public function makePayload($id, array $payload)
     {
         return [
@@ -41,13 +87,19 @@ class JWTAuth
         ] + $payload;
     }
 
-    public function sign(array $payload, $id = 0)
+    /**
+     * @param $id
+     * @param array $payload
+     * @return string
+     */
+    public function sign($id, array $payload)
     {
+        $alg = $this->options['algo'];
+
         if ($id)
             $payload = $this->makePayload($id, $payload);
 
-        $encoder = new $this->options['encoder'];
-        $alg = $this->options['algo'];
+        $encoder = new Base64Encoder();
 
         $payload = $encoder->encode(json_encode($payload, \JSON_UNESCAPED_UNICODE));
         $header = $encoder->encode(json_encode(['typ' => 'JWT', 'alg' => $alg]));
@@ -59,13 +111,17 @@ class JWTAuth
         return $data . '.' . $encoder->encode($sign);
     }
 
-    public function authenticate($token)
+    /**
+     * @param $data
+     * @return array
+     */
+    public function verify($data)
     {
-        $parts = explode('.', $token, 3);
+        $parts = explode('.', $data, 3);
         if (count($parts) != 3)
-            return false;
+            return [];
 
-        $encoder = new $this->options['encoder'];
+        $encoder = new Base64Encoder();
 
         //$header = json_decode($encoder->decode($parts[0]), true);
         $sign = $encoder->decode($parts[2]);
@@ -79,9 +135,14 @@ class JWTAuth
                 return $payload;
         }
 
-        return false;
+        return [];
     }
 
+    /**
+     * @param $signature
+     * @param $signedInput
+     * @return bool
+     */
     public function timingSafeEquals($signature, $signedInput)
     {
         $signatureLength = strlen($signature);
@@ -97,19 +158,5 @@ class JWTAuth
         }
 
         return $result === 0;
-    }
-}
-
-class Base64Encoder
-{
-    public function encode($data)
-    {
-        //return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
-        return strtr(base64_encode($data), '+/', '-_');
-    }
-
-    public function decode($data)
-    {
-        return base64_decode(strtr($data, '-_', '+/'));
     }
 }

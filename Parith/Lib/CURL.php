@@ -31,7 +31,7 @@ class CURL extends Result
 
     public function __construct()
     {
-        $this->options = App::getOption('curl') + $this->options;
+        $this->setOptions(App::getOption('curl'));
     }
 
     public function post($url, $data = [], array $options = [])

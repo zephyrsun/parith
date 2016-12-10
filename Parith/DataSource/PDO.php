@@ -430,7 +430,7 @@ class PDO extends Basic
 
         $count = $this->field('count(*)')->limit(1)->fetchColumn(0);
 
-        return (new Paginator($count))->resultSet($list);
+        return (new Paginator($count))->set($list);
     }
 
     /**
