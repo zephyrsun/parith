@@ -14,9 +14,8 @@
 
 namespace Parith\DataSource;
 
-use \Parith\App;
 
-class Redis extends Basic
+class Redis extends DataSource
 {
     static protected $ins_n = 0;
     static protected $ins_link = [];
@@ -38,7 +37,7 @@ class Redis extends Basic
         if (is_array($options))
             $key = implode(':', $options);
         else
-            $options = App::getOption($key = $options);
+            $options = \Parith::getOption($key = $options);
 
         self::$ins_n++;
 

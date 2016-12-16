@@ -112,7 +112,8 @@ class Response extends Result
     {
         if (!\headers_sent())
             \header('Location: ' . $url, true, $status_code);
-        exit(0);
+
+        exit;
     }
 
     /**
@@ -183,7 +184,7 @@ class Response extends Result
 
     static public function viewFile($filename)
     {
-        $ext = \Parith\Lib\Image\Basic::getExtension($filename);
+        $ext = \Parith\Lib\Image\Image::getExtension($filename);
         $ext = strtolower($ext);
 
         $ct = &self::$mimes[$ext] or $ct = 'application/octet-stream';

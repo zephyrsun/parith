@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Cookie
+ * Crypt
  *
  * Parith :: a compact PHP framework
  *
@@ -14,7 +14,6 @@
 
 namespace Parith\Lib;
 
-use Parith\App;
 use Parith\Result;
 
 class Crypt extends Result
@@ -28,17 +27,19 @@ class Crypt extends Result
 
     public $res, $key_size = 0, $iv_size = 0;
 
-    public $cookie, $token_key;
+    public $cookie, $token_key, $encoder;
 
     /**
      * Crypt constructor.
      */
     public function __construct()
     {
-        $this->setOptions(App::getOption('crypt'));
+        $this->setOptions(\Parith::getOption('crypt'));
 
         $this->cookie = new Cookie();
         $this->token_key = $this->cookie->options['token_key'];
+
+        $this->encoder = new Base64Encoder();
     }
 
     public function setOptions($options)
@@ -56,11 +57,14 @@ class Crypt extends Result
         return $this->cookie->set($this->token_key, $key . '.' . $this->encrypt($key, $data));
     }
 
-    public function getToken($refresh = false)
+    /**
+     * @return array|mixed
+     */
+    public function getToken()
     {
         $token = $this->cookie->get($this->token_key);
 
-        $parts = explode('.', $token);
+        $parts = explode('.', $token, 2);
         if (count($parts) != 2)
             return false;
 
@@ -68,16 +72,11 @@ class Crypt extends Result
 
         $data = $this->decrypt($key, $parts[1]);
         //$expire = substr($parts[0], -10);
-        if ($refresh && substr($key, -10) < \APP_TS) {
-            $this->setToken(substr($key, 0, -10), $data);
+        if (substr($key, -10) < \APP_TS) {
+            return false;
         }
 
         return $data;
-    }
-
-    public function refreshToken($key, $data)
-    {
-        return $this->setToken($key, $data);
     }
 
     public function encrypt($key, $data)
@@ -87,7 +86,7 @@ class Crypt extends Result
         $key = $this->hashKey($key);//$key is changed
 
         mcrypt_generic_init($this->res, $key, $this->getIv($key));
-        $data = (new Base64Encoder())->encode(mcrypt_generic($this->res, $data));
+        $data = $this->encoder->encode(mcrypt_generic($this->res, $data));
         mcrypt_generic_deinit($this->res);
 
         return $data;
@@ -98,7 +97,7 @@ class Crypt extends Result
         $key = $this->hashKey($key);
 
         mcrypt_generic_init($this->res, $key, $this->getIv($key));
-        $data = mdecrypt_generic($this->res, (new Base64Encoder())->decode($data));
+        $data = mdecrypt_generic($this->res, $this->encoder->decode($data));
         mcrypt_generic_deinit($this->res);
 
         return json_decode(rtrim($data, "\0"), true);

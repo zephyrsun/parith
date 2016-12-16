@@ -1,32 +1,30 @@
 <?php
 
-namespace Example\Controller;
+namespace Example\Controller {
 
-use Example\Response;
-
-class Basic
-{
-    public function __construct()
+    class Basic
     {
-        $this->auth();
-    }
+        public function __construct()
+        {
+            $this->auth();
+        }
 
-    protected function auth()
-    {
-    }
+        protected function auth()
+        {
+        }
 
-    public function __call($val, $args)
-    {
-        Response::error('Query error', 402);
+        public function __call($val, $args)
+        {
+            \respError('Query error', 402);
+        }
     }
 }
 
-namespace Example;
+namespace {
 
+    use Parith\View\View;
 
-class Response
-{
-    static function ok($data = [], $tpl = '', $code = 0)
+    function respOk($data = [], $tpl = '', $code = 0)
     {
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
             echo json_encode(['c' => $code, 'd' => $data], \JSON_UNESCAPED_UNICODE);
@@ -34,14 +32,15 @@ class Response
             if (!is_array($data))
                 $data = ['c' => $code, 'd' => $data];
 
-            (new \Parith\View\Basic())->assign($data)->render($tpl);
+            (new View())->assign($data)->render($tpl);
         }
 
-        exit(0);
+        exit;
     }
 
-    static function error($msg, $code)
+    function respError($msg, $code)
     {
-        self::ok($msg, 'error', $code);
+        respOk($msg, 'error', $code);
     }
 }
+

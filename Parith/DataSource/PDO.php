@@ -13,10 +13,9 @@
 
 namespace Parith\DataSource;
 
-use \Parith\App;
 use Parith\View\Helper\Paginator;
 
-class PDO extends Basic
+class PDO extends DataSource
 {
     static protected $ins_n = 0;
     static protected $ins_link = [];
@@ -74,8 +73,7 @@ class PDO extends Basic
     {
         $this->initial();
 
-        if (!is_array($options))
-            $options = App::getOption($options);
+        is_array($options) or $options = \Parith::getOption($options);
 
         $options += $this->options;
 
@@ -102,7 +100,7 @@ class PDO extends Basic
         $this->last_params = $this->params;
         $this->last_clauses = $this->clauses;
 
-        $this->clauses =[
+        $this->clauses = [
             'fields' => '*',
             'table' => $this->table_name,
             'join' => '',
@@ -430,7 +428,7 @@ class PDO extends Basic
 
         $count = $this->field('count(*)')->limit(1)->fetchColumn(0);
 
-        return (new Paginator($count))->set($list);
+        return (new Paginator($count))->set($list, null);
     }
 
     /**

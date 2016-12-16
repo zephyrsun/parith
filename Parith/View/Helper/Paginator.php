@@ -40,7 +40,7 @@ class Paginator extends Result
      */
     public function __construct($total)
     {
-        $this->setOptions(\Parith\App::getOption('paginator'));
+        $this->setOptions(\Parith::getOption('paginator'));
 
         $this->_current = &$_GET['page'] or $this->_current = 1;
 

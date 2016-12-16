@@ -15,7 +15,6 @@
 
 namespace Parith\Lib;
 
-use \Parith\App;
 use Parith\Result;
 
 class CURL extends Result
@@ -31,7 +30,7 @@ class CURL extends Result
 
     public function __construct()
     {
-        $this->setOptions(App::getOption('curl'));
+        $this->setOptions(\Parith::getOption('curl'));
     }
 
     public function post($url, $data = [], array $options = [])

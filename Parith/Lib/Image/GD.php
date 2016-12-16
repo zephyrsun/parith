@@ -14,7 +14,7 @@
 
 namespace Parith\Lib\Image;
 
-class GD extends Basic
+class GD extends Image
 {
     public function __construct($image = null)
     {

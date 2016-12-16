@@ -55,7 +55,7 @@ class URI
      */
     static public function uri($uri = '')
     {
-        $uri or $uri = $_SERVER['REQUEST_URI']; //implode('/', \Parith\App::$query);
+        $uri or $uri = $_SERVER['REQUEST_URI'];
 
         return static::base() . trim($uri, '/');
     }

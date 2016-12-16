@@ -14,18 +14,22 @@
 
 namespace Parith\View;
 
-use \Parith\Lib\File as LibFile;
-use \Parith\Cache\File as CacheFile;
+use Parith\Lib\File;
 
-class Template extends Basic
+class Template extends View
 {
-    public $cache, $options = [
+    public $options = [
         'source_dir' => null,
         'source_ext' => 'html',
         'cache_dir' => null,
         'ldelim' => '{{',
         'rdelim' => '}}',
     ];
+
+    /**
+     * @var \Parith\Cache\File
+     */
+    public $cache;
 
     public function setOptions($options)
     {
@@ -34,19 +38,18 @@ class Template extends Basic
         if (!$dir = $this->options['cache_dir'])
             $dir = \APP_DIR . 'tmp' . \DIRECTORY_SEPARATOR . 'template';
 
-        $this->cache = new CacheFile(['dir' => $dir]);
+        $this->cache = new \Parith\Cache\File(['dir' => $dir]);
     }
 
     /**
      * @param string $name
-     * @param string $ext
      */
-    public function render($name, $ext = '')
+    public function render($name)
     {
-        $source = $this->getSourceFile($name, $ext);
+        $source = $this->getSourceFile($name);
         $target = $this->cache->filename(\rawurlencode($name));
-        if (LibFile::isNewer($source, $target))
-            LibFile::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
+        if (File::isNewer($source, $target))
+            File::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
 
         include $target;
     }
@@ -106,7 +109,7 @@ class Template extends Basic
         $r[] = '<?php } ?>';
 
         //variable {$foo}, {\App::$foo}
-        //const {PARITH_DIR}, {\App::PARITH_DIR}
+        //const {BASE_DIR}, {\App::BASE_DIR}
         //method {date('Y-m-d', \APP_TS)}, {\Router::path()}
         $p[] = '/^(.+::)?(\$\w+[^\s}]*|[A-Z_]*|[^\(\s]+\(.*\))$/';
         $r[] = '<?php echo \\0; ?>';
@@ -170,7 +173,7 @@ class Template extends Basic
      */
     public function load($data)
     {
-        $this->set($data);
+        $this->assign($data);
 
         //$this->render($this->_data['file']);
         $this->render($this->file, $this->ext);

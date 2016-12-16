@@ -14,7 +14,7 @@
 
 namespace Parith\Lib\Image;
 
-class Imagick extends Basic
+class Imagick extends Image
 {
     public $imagick;
 

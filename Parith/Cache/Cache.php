@@ -14,7 +14,6 @@
 
 namespace Parith\Cache;
 
-use \Parith\App;
 use \Parith\Result;
 
 class Cache extends Result
@@ -23,6 +22,6 @@ class Cache extends Result
 
     public function __construct()
     {
-        $this->setOptions(App::getOption('cache'));
+        $this->setOptions(\Parith::getOption('cache'));
     }
 }

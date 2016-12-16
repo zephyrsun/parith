@@ -14,9 +14,8 @@
 
 namespace Parith\DataSource;
 
-use \Parith\App;
 
-class Memcache extends Basic
+class Memcache extends DataSource
 {
     static protected $ins_n = 0;
     static protected $ins_link = [];
@@ -46,7 +45,7 @@ class Memcache extends Basic
         if (is_array($servers))
             $key = implode(':', current($servers));
         else
-            $servers = App::getOption($key = $servers);
+            $servers = \Parith::getOption($key = $servers);
 
         self::$ins_n++;
 

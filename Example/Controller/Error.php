@@ -8,8 +8,6 @@
 
 namespace Example\Controller;
 
-use \Example\Response;
-
 class Error extends Basic
 {
     public function renderError(\Throwable $e)
@@ -17,6 +15,6 @@ class Error extends Basic
         $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
         $error .= $e->getTraceAsString();
 
-        Response::error("<pre>$error</pre>", 0);
+        respError("<pre>$error</pre>", 0);
     }
 } 

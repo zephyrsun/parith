@@ -23,14 +23,16 @@ class JWTAuth extends Result
         'algo' => 'sha256',
     ];
 
-    public $cookie, $token_key;
+    public $cookie, $token_key, $encoder;
 
     public function __construct()
     {
-        $this->setOptions(\Parith\App::getOption('jwtauth'));
+        $this->setOptions(\Parith::getOption('jwtauth'));
 
         $this->cookie = new Cookie();
         $this->token_key = $this->cookie->options['token_key'];
+
+        $this->encoder = new Base64Encoder();
     }
 
     /**
@@ -44,14 +46,13 @@ class JWTAuth extends Result
     }
 
     /**
-     * @param bool $refresh
-     * @return array
+     * @return array|bool
      */
-    public function getToken($refresh = false)
+    public function getToken()
     {
         $payload = $this->verify($this->cookie->get($this->token_key));
         if ($payload && $payload['exp'] < \APP_TS) {
-            $payload = $refresh ? $this->refreshToken($payload) : [];
+            return false;
         }
 
         return $payload;
@@ -99,43 +100,39 @@ class JWTAuth extends Result
         if ($id)
             $payload = $this->makePayload($id, $payload);
 
-        $encoder = new Base64Encoder();
-
-        $payload = $encoder->encode(json_encode($payload, \JSON_UNESCAPED_UNICODE));
-        $header = $encoder->encode(json_encode(['typ' => 'JWT', 'alg' => $alg]));
+        $payload = $this->encoder->encode(json_encode($payload, \JSON_UNESCAPED_UNICODE));
+        $header = $this->encoder->encode(json_encode(['typ' => 'JWT', 'alg' => $alg]));
 
         $data = "$header.$payload";
 
         $sign = hash_hmac($alg, $data, $this->options['secret'], true);
 
-        return $data . '.' . $encoder->encode($sign);
+        return $data . '.' . $this->encoder->encode($sign);
     }
 
     /**
      * @param $data
-     * @return array
+     * @return bool|mixed
      */
     public function verify($data)
     {
         $parts = explode('.', $data, 3);
         if (count($parts) != 3)
-            return [];
+            return false;
 
-        $encoder = new Base64Encoder();
-
-        //$header = json_decode($encoder->decode($parts[0]), true);
-        $sign = $encoder->decode($parts[2]);
+        //$header = json_decode($this->encoder->decode($parts[0]), true);
+        $sign = $this->encoder->decode($parts[2]);
 
         $sign_input = hash_hmac($this->options['algo'], "{$parts[0]}.{$parts[1]}", $this->options['secret'], true);
 
         if (hash_equals($sign, $sign_input)) {
             //return payload
-            $payload = json_decode($encoder->decode($parts[1]), true);
+            $payload = json_decode($this->encoder->decode($parts[1]), true);
             if ($payload['exp'] >= \APP_TS)
                 return $payload;
         }
 
-        return [];
+        return false;
     }
 
     /**
