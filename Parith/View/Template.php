@@ -42,12 +42,12 @@ class Template extends View
     }
 
     /**
-     * @param string $f_n
+     * @param string $__
      */
-    public function render($f_n)
+    public function render($__)
     {
-        $source = $this->getSourceFile($f_n);
-        $target = $this->cache->filename(\rawurlencode($f_n));
+        $source = $this->getSourceFile($__);
+        $target = $this->cache->filename(\rawurlencode($__));
         if (File::isNewer($source, $target))
             File::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
 

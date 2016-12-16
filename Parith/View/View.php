@@ -40,15 +40,15 @@ class View extends Result
     }
 
     /**
-     * @param $f_n
+     * @param $__
      */
-    public function render($f_n)
+    public function render($__)
     {
-        $f_n = $this->getSourceFile($f_n);
+        $__ = $this->getSourceFile($__);
 
         \extract($this->get(), EXTR_SKIP);
 
-        include $f_n;
+        include $__;
     }
 
     /**

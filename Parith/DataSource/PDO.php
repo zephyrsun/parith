@@ -126,7 +126,7 @@ class PDO extends DataSource
      *        - count(*)
      * @return $this
      */
-    public function field($fields)
+    public function select($fields)
     {
         $this->clauses['fields'] = $fields;
 
@@ -426,7 +426,7 @@ class PDO extends DataSource
         $this->clauses = $this->last_clauses;
         $this->params = $this->last_params;
 
-        $count = $this->field('count(*)')->limit(1)->fetchColumn(0);
+        $count = $this->select('count(*)')->limit(1)->fetchColumn(0);
 
         return (new Paginator($count))->set($list, null);
     }

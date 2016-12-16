@@ -9,10 +9,7 @@ $db_name = 'example';
 return array(
     'namespace' => 'Example',
     'error_class' => '\Example\Controller\Error',
-    'router' => [
-        'index' => ['c', 'a'],
-        'default' => ['Index', 'index'],
-    ],
+    'route' => ['Controller', 'Index', 'index'],
 
     'database_1' => ['host' => $db_ip, 'port' => $db_port, 'username' => $db_username, 'password' => $db_password, 'dbname' => $db_name],
     'database_2' => ['host' => $db_ip, 'port' => $db_port, 'username' => $db_username, 'password' => $db_password, 'dbname' => $db_name],
