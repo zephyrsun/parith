@@ -2,7 +2,7 @@
 
 ##Introduction
 
-Parith is a lightweight PHP framework. It aims to help you build efficient web applications.
+Parith is a compact PHP framework. It aims to help you build efficient web applications.
 It is licenced under the MIT License so you can use it for any personal or corporate projects free of charge.
 
 ##Requirements
