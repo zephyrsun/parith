@@ -7,20 +7,38 @@ use Parith\Lib\URI;
 
 class Index extends Basic
 {
+    /**
+     * http://domain/
+     */
     public function index()
     {
         respOk("<pre>Parith Framework is working on page: " . URI::url() . '</pre>', 'index');
     }
 
+    /**
+     * http://domain/Index/log
+     */
     public function log()
     {
-        $result = (new Log())->add('test from Controller');
+        echo '<pre>';
 
-        respOk($result);
+        $log = new Log();
+        $result = $log->add('test from Controller');
+        echo 'add result:' . $result . PHP_EOL;
+
+        $list = $log->select('id,time')->paginate(30);
+
+        echo 'list:' . PHP_EOL;
+        foreach ($list as $row) {
+            echo $row['time'] . PHP_EOL;
+        }
+
+        echo $list->render() . PHP_EOL;
+        echo '</pre>';
     }
 
     /**
-     * http://example.com/index/simError
+     * http://domain/index/simError
      */
     public function simError()
     {
@@ -28,7 +46,7 @@ class Index extends Basic
     }
 
     /**
-     * http://example.com/index/simException
+     * http://domain/index/simException
      */
     public function simException()
     {

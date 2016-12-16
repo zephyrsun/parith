@@ -3,7 +3,7 @@
 $db_ip = '127.0.0.1';
 $db_port = 3366;
 $db_username = 'root';
-$db_password = '123456';
+$db_password = '';
 $db_name = 'example';
 
 return array(

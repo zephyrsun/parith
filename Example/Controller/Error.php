@@ -8,9 +8,9 @@
 
 namespace Example\Controller;
 
-class Error extends Basic
+class Error
 {
-    public function renderError(\Throwable $e)
+    public function render(\Throwable $e)
     {
         $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
         $error .= $e->getTraceAsString();

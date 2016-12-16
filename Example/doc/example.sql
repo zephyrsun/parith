@@ -5,7 +5,7 @@ CREATE TABLE `logs` (
   `get` text NOT NULL,
   `post` text NOT NULL,
   `data` text NOT NULL,
-  `code` int(6) NOT NULL,
+  `code` int(10) NOT NULL,
   `srv_ip` varchar(50) NOT NULL DEFAULT '',
   `client_ip` varchar(50) NOT NULL DEFAULT '',
   `time` varchar(30) NOT NULL DEFAULT '',
