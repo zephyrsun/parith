@@ -24,7 +24,7 @@ class Cookie extends Result
         'domain' => '',
         'secure' => false,
         'httponly' => true,
-        'signer' => JWTAuth::class,
+        'signer' => '\Parith\Lib\JWTAuth',
         'token_key' => 'token',
     ];
 

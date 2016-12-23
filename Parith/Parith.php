@@ -23,7 +23,7 @@ namespace {
     {
         static public $options = [
             'namespace' => 'App',
-            'error_class' => \Parith\Error::class,
+            'error_class' => '\Parith\Error',
             'route' => ['Controller', 'Index', 'index'],
         ], $_ins = [];
 
@@ -104,8 +104,10 @@ namespace {
                         break;
 
                     default:
-                        $r += $u;
+                        $r = $u + $r;
                 }
+
+                $_ENV['URI'] = $r;
             }
 
             if (\import($class = self::$options['namespace'] . '\\' . $r[0] . '\\' . \ucfirst($r[1]))) {
@@ -179,14 +181,14 @@ namespace Parith {
 
         static public function render(\Throwable $e)
         {
-            $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
-            $error .= $e->getTraceAsString();
+            $str = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
+            $str .= 'Trace: ' . PHP_EOL . $e->getTraceAsString();
 
-            echo "<pre>$error</pre>";
+            echo "<pre>$str</pre>";
         }
     }
 
-    abstract class Result implements \Iterator, \ArrayAccess, \Countable
+    class Result implements \Iterator, \ArrayAccess, \Countable
     {
         protected $__ = [];
 
@@ -262,15 +264,20 @@ namespace Parith {
         }
 
         /**
-         * @param mixed $key
+         * @param $key
          * @return mixed
          */
-        public function get($key = null)
+        public function get($key)
         {
-            if ($key === null)
-                return $this->__;
-
             return $this->__get($key);
+        }
+
+        /**
+         * @return array
+         */
+        public function toArray()
+        {
+            return $this->__;
         }
 
         /**

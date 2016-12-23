@@ -20,72 +20,73 @@ class Validator extends Result
 {
     public $data = [];
 
-    private $errors = [];
+    public $hints = [
+        'email' => 'Please enter a valid email address.',
+        'ip' => 'Please enter a valid IP address.',
+        'required' => 'This field is required.',
+        'notEmpty' => 'This field cannot be empty.',
+        'equal' => 'Please enter the same value again.',
+        'unequal' => 'Please enter a different value.',
+        'num' => 'Please enter a valid number.',
+        'max' => 'Please enter a value less than or equal to %s.',
+        'min' => 'Please enter a value greater than or equal to %s.',
+        'range' => 'Please enter a value between %s and %s.',
+        'length' => 'Please enter a value between %s and %s characters long',
+        'lengthEqual' => 'Please enter a value length equal to %s.',
+        'match' => 'Please enter a valid value.',
+        'url' => 'Please enter a valid URL.',
+    ];
 
-    public function __construct(array $data = [])
+    public function __construct()
     {
-        if ($data)
-            $this->data = $data;
-        else
-            $this->data = $_POST;
+        $this->hints = \Parith::getOption('validator') + $this->hints;
     }
 
     /**
      *
-     * $validator = new \Parith\Lib\Validator($_POST);
-     * $error = $validator->checkRules([
+     * $validator = new \Parith\Lib\Validator();
+     * $error = $validator->check($_POST, [
      *      'email' => 'email',
      *      'username' => ['length', 3, 8],
-     *      'city' => ['length', 1, 50, false],
+     *      'city' => ['length', 1, 50, false], // false when not required
      *
      * ]);
      *
+     * @param array $data
      * @param array $rules
      *
      * @return array
      */
-    public function checkRules(array $rules)
+    public function check($data, array $rules)
     {
-        $this->errors = [];
+        $data or $data = $_POST;
 
-        $ret = [];
+        $err = [];
         foreach ($rules as $field => $args) {
 
-            $v = &$this->data[$field];
+            $v = &$data[$field];
 
             $args = (array)$args;
 
             $method = $args[0];
-
             $args[0] = $v;
 
             $result = \call_user_func_array([$this, $method], $args);
 
-            if ($result || \end($args) === false) {
-                $ret[$field] = $v;
-            } else
-                $this->errors[] = $field;
+            if ($result) {
+                $this->data[$field] = $v;
+            } elseif (\end($args) !== false) {
+                $args[0] = $this->hints[$method];
+                $err[$field] = \call_user_func_array('sprintf', $args);
+            }
         }
 
-        if ($this->errors)
-            return [];
-
-        return $ret;
+        return $err;
     }
 
-    public function getError()
+    public function getData()
     {
-        return $this->errors;
-    }
-
-    public function getFirstError()
-    {
-        return \current($this->errors);
-    }
-
-    public function getLastError()
-    {
-        return \end($this->errors);
+        return $this->data;
     }
 
     /**
@@ -102,13 +103,11 @@ class Validator extends Result
     /**
      * email address
      *
-     * @static
-     *
      * @param $email
      *
      * @return bool
      */
-    static public function email($email)
+    public function email($email)
     {
         return (bool)filter_var($email, FILTER_VALIDATE_EMAIL);
     }
@@ -116,13 +115,11 @@ class Validator extends Result
     /**
      * IPv4 or Ipv6 address
      *
-     * @static
-     *
      * @param $ip
      *
      * @return bool
      */
-    static public function ip($ip)
+    public function ip($ip)
     {
         return (bool)filter_var($ip, FILTER_VALIDATE_IP);
     }
@@ -134,7 +131,7 @@ class Validator extends Result
      *
      * @return bool
      */
-    static public function required($val)
+    public function required($val)
     {
         return $val != null; //isset($val);
     }
@@ -142,13 +139,11 @@ class Validator extends Result
     /**
      * not empty
      *
-     * @static
-     *
      * @param $val
      *
      * @return bool
      */
-    static public function notEmpty($val)
+    public function notEmpty($val)
     {
         return !empty($val);
     }
@@ -156,14 +151,12 @@ class Validator extends Result
     /**
      * must match equal
      *
-     * @static
-     *
      * @param $val
      * @param $ref
      *
      * @return bool
      */
-    static public function equal($val, $ref)
+    public function equal($val, $ref)
     {
         return $val === $ref;
     }
@@ -171,14 +164,12 @@ class Validator extends Result
     /**
      * must not match equal
      *
-     * @static
-     *
      * @param $val
      * @param $ref
      *
      * @return bool
      */
-    static public function unequal($val, $ref)
+    public function unequal($val, $ref)
     {
         return $val !== $ref;
     }
@@ -186,13 +177,11 @@ class Validator extends Result
     /**
      * is numeric
      *
-     * @static
-     *
      * @param $val
      *
      * @return bool
      */
-    static public function num($val)
+    public function num($val)
     {
         return is_numeric($val);
     }
@@ -200,14 +189,12 @@ class Validator extends Result
     /**
      * Less than or Equivalent with
      *
-     * @static
-     *
      * @param $val
      * @param $ref
      *
      * @return bool
      */
-    static public function le($val, $ref)
+    public function max($val, $ref)
     {
         return $val <= $ref;
     }
@@ -215,14 +202,12 @@ class Validator extends Result
     /**
      * Greater than or Equivalent with
      *
-     * @static
-     *
      * @param $val
      * @param $ref
      *
      * @return bool
      */
-    static public function ge($val, $ref)
+    public function min($val, $ref)
     {
         return $val >= $ref;
     }
@@ -230,76 +215,51 @@ class Validator extends Result
     /**
      * range of number
      *
-     * @static
-     *
      * @param $val
      * @param $min
      * @param $max
      *
      * @return bool
      */
-    static public function between($val, $min, $max)
+    public function range($val, $min, $max)
     {
         return $val >= $min && $val <= $max;
     }
 
     /**
-     *  Less than or Equivalent with length
-     *
-     * @static
-     *
-     * @param $str
-     * @param $max
-     *
-     * @return bool
-     */
-    static public function lengthLE($str, $max)
-    {
-        return static::le(mb_strlen($str), $max);
-    }
-
-    /**
-     * Greater than or Equivalent with length
-     *
-     * @static
-     *
-     * @param $str
-     * @param $min
-     *
-     * @return bool
-     */
-    static public function lengthGE($str, $min)
-    {
-        return static::ge(mb_strlen($str), $min);
-    }
-
-    /**
      * range of length
      *
-     * @static
-     *
      * @param $str
      * @param $min
      * @param $max
-     *
      * @return bool
      */
-    static public function length($str, $min, $max)
+    public function length($str, $min, $max)
     {
-        return static::between(mb_strlen($str), $min, $max);
+        return $this->range(mb_strlen($str), $min, $max);
+    }
+
+    /**
+     * length match
+     *
+     * @param $str
+     * @param $ref
+     * @return bool
+     */
+    public function lengthEqual($str, $ref)
+    {
+        return mb_strlen($str) == $ref;
     }
 
     /**
      * regex match
-     *
-     * @static
      *
      * @param $val
      * @param $regex
      *
      * @return bool
      */
-    static public function match($val, $regex)
+    public function match($val, $regex)
     {
         return (bool)preg_match($regex, $val);
     }
@@ -307,13 +267,11 @@ class Validator extends Result
     /**
      * url
      *
-     * @static
-     *
      * @param $url
      *
      * @return bool
      */
-    static public function url($url)
+    public function url($url)
     {
         return (bool)filter_var($url, FILTER_VALIDATE_URL);
     }

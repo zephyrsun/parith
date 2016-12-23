@@ -31,6 +31,7 @@ class PDO extends DataSource
     public $link = null;
 
     public $table_name = '';
+    public $pk = 'id';
 
     public $sql = '';
     public $clauses = [];
@@ -57,7 +58,7 @@ class PDO extends DataSource
         //\PDO::ATTR_AUTOCOMMIT => false,
         //\PDO::ATTR_PERSISTENT => false,
 
-        \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
+        \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
 
         #overwrite 'options' if not using MySQL
         \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
@@ -66,8 +67,7 @@ class PDO extends DataSource
 
     /**
      * @param $options
-     * @return $this
-     * @throws \Exception
+     * @return \PDO
      */
     public function dial($options)
     {
@@ -274,14 +274,14 @@ class PDO extends DataSource
 
     /**
      * @param array $data
-     * @param string $modifier
+     * @param string $op
      *                 - INSERT INTO
      *                 - INSERT IGNORE INTO
      *                 - REPLACE INTO
      *
      * @return int
      */
-    public function insert(array $data, $modifier = 'INSERT INTO')
+    public function insert(array $data, $op = 'INSERT INTO')
     {
         $col = $value = [];
         foreach ($data as $k => $v) {
@@ -292,7 +292,7 @@ class PDO extends DataSource
             $this->params[] = $v;
         }
 
-        $this->sql = $modifier . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');';
+        $this->sql = $op . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');';
         if ($this->exec()) {
             if ($id = $this->getInsertId())
                 return $id;
@@ -341,6 +341,15 @@ class PDO extends DataSource
         return false;
     }
 
+    public function save($data)
+    {
+        if (isset($data[$this->pk])) {
+            return $this->where($this->pk, $data[$this->pk])->update($data);
+        }
+
+        return $this->insert($data);
+    }
+
     /**
      * increase a field
      *
@@ -375,16 +384,27 @@ class PDO extends DataSource
      */
     public function fetch($mode = 0, $mode_param = null)
     {
-        $this->sql = $this->getSelectClause();
-
+        $this->getSelectClause();
         if ($this->exec())
             return $this->_setFetchMode($mode, $mode_param)->fetch();
 
         return false;
     }
 
-    public function fetchColumn($col = 0)
+    /**
+     * $this->fetchColumn(0)
+     * $this->fetchColumn('id')
+     *
+     * @param int|string $col
+     * @return mixed
+     */
+    public function fetchColumn($col)
     {
+        if(!is_int($col)){
+            $this->select($col);
+            $col = 0;
+        }
+
         return $this->fetch(\PDO::FETCH_COLUMN, $col);
     }
 
@@ -392,12 +412,11 @@ class PDO extends DataSource
      * @param int $mode
      * @param mixed $mode_param
      *
-     * @return array
+     * @return mixed
      */
     public function fetchAll($mode = 0, $mode_param = null)
     {
-        $this->sql = $this->getSelectClause();
-
+        $this->getSelectClause();
         if ($this->exec())
             return $this->_setFetchMode($mode, $mode_param)->fetchAll();
 
@@ -444,10 +463,9 @@ class PDO extends DataSource
     }
 
     /**
-     * @param string $sql
-     * @param $params
-     *
-     * @return bool
+     * @param $sql
+     * @param array $params
+     * @return bool|\PDOStatement
      */
     public function query($sql, $params = [])
     {
@@ -469,11 +487,19 @@ class PDO extends DataSource
         //prevent Segmentation fault in some PHP version
         //if ($this->sth)
         //    $this->sth->closeCursor();
-        $this->sth = $this->link->prepare($this->sql);
 
-        $this->initial();
+        try {
+            $this->sth = $this->link->prepare($this->sql);
+            $this->initial();
 
-        return $this->sth->execute($this->last_params);
+            return $this->sth->execute($this->last_params);
+        } catch (\PDOException $e) {
+            $str = $e->getMessage() . PHP_EOL .
+                'SQL: ' . $e->getTrace()[0]['args'][0] . PHP_EOL .
+                'Params: "' . implode('","', $this->params) . '"' . PHP_EOL;
+
+            throw new \Exception($str);
+        }
     }
 
     public function setError($err)
@@ -540,9 +566,9 @@ class PDO extends DataSource
     {
         $c = $this->clauses;
 
-        return 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] .
-        $c['group'] . $c['having'] . $c['order'] .
-        $c['limit'] . $c['for_update'] . ';';
+        return $this->sql = 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] .
+            $c['group'] . $c['having'] . $c['order'] .
+            $c['limit'] . $c['for_update'] . ';';
     }
 
     public function selectForUpdate($nowait = false)

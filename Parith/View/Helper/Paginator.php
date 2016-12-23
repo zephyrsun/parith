@@ -57,11 +57,6 @@ class Paginator extends Result
         return $this->_page_total;
     }
 
-    public function all()
-    {
-        return $this->get();
-    }
-
     /**
      * @param $page
      *
