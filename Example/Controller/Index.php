@@ -3,7 +3,6 @@
 namespace Example\Controller;
 
 use Example\Data\Log;
-use Parith\DataSource\PDO;
 use Parith\Lib\URI;
 
 class Index extends Basic
@@ -17,9 +16,9 @@ class Index extends Basic
     }
 
     /**
-     * http://domain/Index/log
+     * http://domain/Index/databaseLog
      */
-    public function log()
+    public function databaseLog()
     {
         echo '<pre>';
 
