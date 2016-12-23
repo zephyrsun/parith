@@ -19,6 +19,11 @@ class Memcached extends DataSource
     static protected $ins_n = 0;
     static protected $ins_link = [];
 
+    /**
+     * @var \Memcached
+     */
+    public $link;
+
     public $options = [
         'host' => '127.0.0.1',
         'port' => 11211,
@@ -33,13 +38,14 @@ class Memcached extends DataSource
         \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
     ];
 
+
     /**
      * @param $servers
      *          [
      *              ['host' => '192.168.1.1', 'port' => 11211],
      *              ['host' => '192.168.1.2', 'port' => 11211],
      *          ];
-     * @return \Memcached
+     * @return $this
      * @throws \Exception
      */
     public function dial($servers)
@@ -51,23 +57,24 @@ class Memcached extends DataSource
 
         self::$ins_n++;
 
-        if ($link = &self::$ins_link[$key])
-            return $link;
+        if ($link = &self::$ins_link[$key]) {
+            $this->link = $link;
+        } else {
+            $this->link = $link = new \Memcached();
 
-        $link = new \Memcached();
+            foreach ($servers as $o) {
+                $o += $this->options;
 
-        foreach ($servers as $o) {
-            $o += $this->options;
+                $ret = $link->addServer($o['host'], $o['port'], $o['weight']);
 
-            $ret = $link->addServer($o['host'], $o['port'], $o['weight']);
+                if (!$ret)
+                    throw new \Exception("Fail to connect: {$o['host']}:{$o['port']}");
+            }
 
-            if (!$ret)
-                throw new \Exception("Fail to connect: {$o['host']}:{$o['port']}");
+            $link->setOptions($this->server_options);
         }
 
-        $link->setOptions($this->server_options);
-
-        return $link;
+        return $this;
     }
 
     public function closeAll()

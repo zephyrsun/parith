@@ -3,6 +3,7 @@
 namespace Example\Controller;
 
 use Example\Data\Log;
+use Parith\DataSource\PDO;
 use Parith\Lib\URI;
 
 class Index extends Basic

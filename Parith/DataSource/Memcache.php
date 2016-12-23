@@ -20,6 +20,11 @@ class Memcache extends DataSource
     static protected $ins_n = 0;
     static protected $ins_link = [];
 
+    /**
+     * @var \Memcached
+     */
+    public $link;
+
     public $options = [
         'host' => '127.0.0.1',
         'port' => 11211,
@@ -37,7 +42,7 @@ class Memcache extends DataSource
      *              ['host' => '192.168.1.1', 'port' => 11211],
      *              ['host' => '192.168.1.2', 'port' => 11211],
      *          ];
-     * @return \Memcache
+     * @return $this
      * @throws \Exception
      */
     public function dial($servers)
@@ -49,30 +54,31 @@ class Memcache extends DataSource
 
         self::$ins_n++;
 
-        if ($link = &self::$ins_link[$key])
-            return $link;
+        if ($link = &self::$ins_link[$key]) {
+            $this->link = $link;
+        } else {
+            $this->link = $link = new \Memcache();
 
-        $link = new \Memcache();
+            foreach ($servers as $o) {
+                $o += $this->options; //$this->option($options);
 
-        foreach ($servers as $o) {
-            $o += $this->options; //$this->option($options);
+                $r = $link->addServer(
+                    $o['host'],
+                    $o['port'],
+                    $o['persistent'],
+                    $o['weight'],
+                    $o['timeout'],
+                    $o['retry_interval'],
+                    $o['status'],
+                    $o['failure_callback']
+                );
 
-            $r = $link->addServer(
-                $o['host'],
-                $o['port'],
-                $o['persistent'],
-                $o['weight'],
-                $o['timeout'],
-                $o['retry_interval'],
-                $o['status'],
-                $o['failure_callback']
-            );
-
-            if (!$r)
-                throw new \Exception("Fail to connect: {$o['host']}:{$o['port']}");
+                if (!$r)
+                    throw new \Exception("Fail to connect: {$o['host']}:{$o['port']}");
+            }
         }
 
-        return $link;
+        return $this;
     }
 
     public function closeAll()

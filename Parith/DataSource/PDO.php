@@ -28,7 +28,7 @@ class PDO extends DataSource
     /**
      * @var \PDO
      */
-    public $link = null;
+    public $link;
 
     public $table_name = '';
     public $pk = 'id';
@@ -65,14 +65,17 @@ class PDO extends DataSource
         \PDO::MYSQL_ATTR_FOUND_ROWS => true, //1008
     ];
 
+    public function __construct()
+    {
+        $this->initial();
+    }
+
     /**
      * @param $options
-     * @return \PDO
+     * @return $this
      */
     public function dial($options)
     {
-        $this->initial();
-
         is_array($options) or $options = \Parith::getOption($options);
 
         $options += $this->options;
@@ -81,15 +84,18 @@ class PDO extends DataSource
 
         self::$ins_n++;
 
-        if ($link = &self::$ins_link[$dsn])
-            return $this->link = $link;
+        if ($link = &self::$ins_link[$dsn]) {
+            $this->link = $link;
+        } else {
+            $this->link = $link = new \PDO(
+                $dsn,
+                $options['username'],
+                $options['password'],
+                $options['options'] + $this->server_options
+            );
+        }
 
-        return $this->link = $link = new \PDO(
-            $dsn,
-            $options['username'],
-            $options['password'],
-            $options['options'] + $this->server_options
-        );
+        return $this;
     }
 
     /**
@@ -377,6 +383,40 @@ class PDO extends DataSource
     }
 
     /**
+     * shortcut for $this->fetch()
+     *
+     * $this->find(1)
+     * $this->find('user_id', 1)
+     *
+     * @param $id
+     * @param string $col
+     * @return mixed
+     */
+    public function find($id, $col = '')
+    {
+        $col ? $this->where($id, $col) : $this->where($this->pk, $id);
+
+        return $this->fetch();
+    }
+
+    /**
+     * shortcut for $this->fetchAll()
+     *
+     * $this->find(1)
+     * $this->find('user_id', 1)
+     *
+     * @param $id
+     * @param string $col
+     * @return mixed
+     */
+    public function findAll($id, $col = '')
+    {
+        $col ? $this->where($id, $col) : $this->where($this->pk, $id);
+
+        return $this->fetchAll();
+    }
+
+    /**
      * @param int $mode
      * @param mixed $mode_param
      *
@@ -400,7 +440,7 @@ class PDO extends DataSource
      */
     public function fetchColumn($col)
     {
-        if(!is_int($col)){
+        if (!is_int($col)) {
             $this->select($col);
             $col = 0;
         }
@@ -499,6 +539,8 @@ class PDO extends DataSource
                 'Params: "' . implode('","', $this->params) . '"' . PHP_EOL;
 
             throw new \Exception($str);
+        } catch (\Error $e) {
+            throw new \Exception('No database connection, please dial first.');
         }
     }
 

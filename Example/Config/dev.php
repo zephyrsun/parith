@@ -1,10 +1,10 @@
 <?php
 
-$db_ip = '127.0.0.1';
-$db_port = 3366;
+$db_ip = '10.0.0.250';
+$db_port = 3306;
 $db_username = 'root';
-$db_password = '';
-$db_name = 'example';
+$db_password = 'test';
+$db_name = 'imrobotic_business';
 
 return array(
     'namespace' => 'Example',

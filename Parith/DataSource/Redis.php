@@ -20,6 +20,11 @@ class Redis extends DataSource
     static protected $ins_n = 0;
     static protected $ins_link = [];
 
+    /**
+     * @var \Redis
+     */
+    public $link;
+
     public $options = [
         'host' => '127.0.0.1',
         'port' => 6379,
@@ -29,7 +34,7 @@ class Redis extends DataSource
 
     /**
      * @param $options
-     * @return \Redis
+     * @return $this
      * @throws \Exception
      */
     public function dial($options)
@@ -41,23 +46,24 @@ class Redis extends DataSource
 
         self::$ins_n++;
 
-        if ($link = &self::$ins_link[$key])
-            return $link;
+        if ($link = &self::$ins_link[$key]) {
+            $this->link = $link;
+        } else {
+            $this->link = $link = new \Redis();
 
-        $link = new \Redis();
+            $options += $this->options;
 
-        $options += $this->options;
+            $connected = $link->connect($options['host'], $options['port'], $options['timeout']);
+            if (!$connected)
+                throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
 
-        $connected = $link->connect($options['host'], $options['port'], $options['timeout']);
-        if (!$connected)
-            throw new \Exception("Fail to connect: {$options['host']}:{$options['port']}");
+//            if ($options['password'])
+//                $link->auth($options['password']);
 
-        if ($options['password'])
-            $link->auth($options['password']);
+//$link->setOption(\Redis::OPT_READ_TIMEOUT, -1);
+        }
 
-        //$link->setOption(\Redis::OPT_READ_TIMEOUT, -1);
-
-        return $link;
+        return $this;
     }
 
     public function closeAll()
