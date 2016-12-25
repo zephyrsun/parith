@@ -184,14 +184,15 @@ namespace Parith {
         static public function exceptionHandler(\Throwable $e)
         {
             $class = \Parith::getOption('error_class');
-            (new $class())->render($e);
-        }
 
-        static public function render(\Throwable $e)
-        {
             $str = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
             $str .= 'Trace: ' . PHP_EOL . $e->getTraceAsString();
 
+            (new $class())->render($e, $str);
+        }
+
+        public function render(\Throwable $e, string $str)
+        {
             echo "<pre>$str</pre>";
         }
     }
