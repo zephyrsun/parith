@@ -12,7 +12,7 @@ class Index extends Basic
      */
     public function index()
     {
-        $params = $this->routeParams('p1', 'p2');
+        $params = $this->routeParams(2);
         $params = http_build_query($params);
 
         $url = URI::url();

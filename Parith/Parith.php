@@ -151,18 +151,21 @@ namespace Parith {
     class Controller
     {
         /**
-         * @param \string[] ...$keys
-         * @return array|mixed
+         * list($p1, $p2) = $this->routeParams(2);
+         *
+         * @param int $num
+         * @return array
          */
-        public function routeParams(string ...$keys)
+        public function routeParams($num = 0)
         {
             $i = 2;
             $r = \Parith::getOption('route');
 
-            if (count($keys) > 1) {
+            if ($num > 0) {
+                $num += $i;
                 $ret = [];
-                foreach ($keys as $key)
-                    $ret[$key] = &$r[$i++];
+                for (; $i < $num; $i++)
+                    $ret[] = &$r[$i];
             } else {
                 $ret = &$r[$i];
             }
