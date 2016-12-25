@@ -150,6 +150,11 @@ namespace Parith {
 
     class Controller
     {
+        public function __call($name, $args)
+        {
+            throw new \Exception($name . ' not found.');
+        }
+
         /**
          * list($p1, $p2) = $this->routeParams(2);
          *

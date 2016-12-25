@@ -57,7 +57,7 @@ class URI
     {
         $uri or $uri = implode('/', \Parith::getOption('route'));
 
-        return trim(static::base() . $uri, '/');
+        return trim(static::base(), '/') . $uri;
     }
 
     static public function url()
