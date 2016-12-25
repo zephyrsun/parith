@@ -156,7 +156,7 @@ namespace Parith {
          * @param int $num
          * @return array
          */
-        public function routeParams($num = 0)
+        static public function routeParams($num = 0)
         {
             $i = 2;
             $r = \Parith::getOption('route');
