@@ -10,11 +10,8 @@ namespace Example\Controller;
 
 class Error extends Basic
 {
-    public function render(\Throwable $e)
+    public function render(\Throwable $e, string $str)
     {
-        $error = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
-        $error .= $e->getTraceAsString();
-
-        \respError("<pre>$error</pre>", 0);
+        echo "<pre>$str</pre>";
     }
 } 
