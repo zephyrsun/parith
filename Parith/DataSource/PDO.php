@@ -39,8 +39,6 @@ class PDO extends DataSource
     public $last_clauses = [];
     public $last_params = [];
 
-    public $error = [];
-
     public $options = [
         'driver' => 'mysql',
         'host' => '127.0.0.1',
@@ -192,6 +190,17 @@ class PDO extends DataSource
     }
 
     /**
+     * @param $clause
+     * @param $condition
+     * @param null $value
+     * @return $this
+     */
+    public function orWhere($clause, $condition, $value = null)
+    {
+        return $this->where($clause, $condition, $value, 'OR');
+    }
+
+    /**
      * @param $limit
      * @param int $offset
      * @return $this
@@ -299,14 +308,12 @@ class PDO extends DataSource
         }
 
         $this->sql = $op . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');';
-        if ($this->exec()) {
-            if ($id = $this->getInsertId())
-                return $id;
 
-            return $this->rowCount();
-        }
+        $this->exec();
+        if ($id = $this->link->lastInsertId())
+            return $id;
 
-        return 0;
+        return 1; //return $this->sth->rowCount();
     }
 
     /**
@@ -341,10 +348,7 @@ class PDO extends DataSource
 
         $this->sql = 'UPDATE ' . $this->clauses['table'] . ' SET ' . $data . $this->clauses['where'];
 
-        if ($this->exec() && $n = $this->rowCount())
-            return $n;
-
-        return false;
+        return $this->exec()->rowCount();
     }
 
     public function save($data)
@@ -376,10 +380,7 @@ class PDO extends DataSource
     {
         $this->sql = 'DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';';
 
-        if ($this->exec() && $n = $this->rowCount())
-            return $n;
-
-        return false;
+        return $this->exec()->rowCount();
     }
 
     /**
@@ -417,18 +418,12 @@ class PDO extends DataSource
     }
 
     /**
-     * @param int $mode
-     * @param mixed $mode_param
-     *
      * @return mixed
      */
-    public function fetch($mode = 0, $mode_param = null)
+    public function fetch()
     {
         $this->getSelectClause();
-        if ($this->exec())
-            return $this->_setFetchMode($mode, $mode_param)->fetch();
-
-        return false;
+        return $this->exec()->fetch();
     }
 
     /**
@@ -445,22 +440,16 @@ class PDO extends DataSource
             $col = 0;
         }
 
-        return $this->fetch(\PDO::FETCH_COLUMN, $col);
+        return $this->setFetchMode(\PDO::FETCH_COLUMN, $col)->fetch();
     }
 
     /**
-     * @param int $mode
-     * @param mixed $mode_param
-     *
-     * @return mixed
+     * @return array
      */
-    public function fetchAll($mode = 0, $mode_param = null)
+    public function fetchAll()
     {
         $this->getSelectClause();
-        if ($this->exec())
-            return $this->_setFetchMode($mode, $mode_param)->fetchAll();
-
-        return false;
+        return $this->exec()->fetchAll();
     }
 
     /**
@@ -505,21 +494,18 @@ class PDO extends DataSource
     /**
      * @param $sql
      * @param array $params
-     * @return bool|\PDOStatement
+     * @return \PDOStatement
      */
     public function query($sql, $params = [])
     {
         $this->sql = $sql;
         $this->params = $params;
 
-        if ($this->exec())
-            return $this->sth;
-
-        return false;
+        return $this->exec();
     }
 
     /**
-     * @return bool
+     * @return \PDOStatement
      * @throws \Exception
      */
     public function exec()
@@ -530,9 +516,13 @@ class PDO extends DataSource
 
         try {
             $this->sth = $this->link->prepare($this->sql);
+
+            $this->sth->execute($this->params);
+
             $this->initial();
 
-            return $this->sth->execute($this->last_params);
+            return $this->sth;
+
         } catch (\PDOException $e) {
             $str = $e->getMessage() . PHP_EOL .
                 'SQL: ' . $e->getTrace()[0]['args'][0] . PHP_EOL .
@@ -540,24 +530,8 @@ class PDO extends DataSource
 
             throw new \Exception($str);
         } catch (\Error $e) {
-            throw new \Exception('No database connection, please dial first.');
+            throw new \Exception('Database not connected, please dial first.');
         }
-    }
-
-    public function setError($err)
-    {
-        $this->error = [
-            'error' => $err,
-            'sql' => $this->sql,
-            'params' => $this->params,
-        ];
-
-        $this->initial();
-    }
-
-    public function getError()
-    {
-        return $this->error;
     }
 
     /**
@@ -625,47 +599,21 @@ class PDO extends DataSource
     }
 
     /**
-     * @param int $mode
-     * @param mixed $mode_param
-     *
+     * @param $mode
+     * @param $mode_param
      * @return \PDOStatement
      */
-    private function _setFetchMode($mode, $mode_param)
+    public function setFetchMode($mode, $mode_param)
     {
-        if ($mode) {
-            $mode_param === null
-                ? $this->sth->setFetchMode($mode)
-                : $this->sth->setFetchMode($mode, $mode_param);
-        }
+        $this->getSelectClause();
+
+        $this->exec();
+
+        $mode_param === null
+            ? $this->sth->setFetchMode($mode)
+            : $this->sth->setFetchMode($mode, $mode_param);
 
         return $this->sth;
-    }
-
-    /**
-     * @param $name
-     *
-     * @return int
-     */
-    public function getInsertId($name = null)
-    {
-        return $this->link->lastInsertId($name);
-    }
-
-    /**
-     * @return string
-     */
-    public function getQuery()
-    {
-        return [$this->sql, $this->last_params];
-        //return $this->sth->queryString;
-    }
-
-    /**
-     * @return int
-     */
-    public function rowCount()
-    {
-        return $this->sth->rowCount();
     }
 
     public function closeAll()

@@ -2,7 +2,7 @@
 
 namespace Example\Controller {
 
-    class Basic
+    class Basic extends \Parith\Controller
     {
         public function __construct()
         {

@@ -24,7 +24,7 @@ namespace {
         static public $options = [
             'namespace' => 'App',
             'error_class' => '\Parith\Error',
-            'route' => ['Controller', 'Index', 'index'],
+            'route' => ['Index', 'index'],
         ], $_ins = [];
 
         public function __construct(array $options = [])
@@ -90,28 +90,13 @@ namespace {
             set_error_handler('\Parith\Error::errorHandler');
             set_exception_handler('\Parith\Error::exceptionHandler');
 
-            $r = self::$options['route'];
+            $r = &self::$options['route'];
+            $u = &$_GET['URI'];
+            if ($u = $u ? \trim($u, '/') : '')
+                $r = \explode('/', $u) + $r;
 
-            if ($u = isset($_GET['URI']) ? \trim($_GET['URI'], '/') : '') {
-                $u = \explode('/', $u);
-                switch (\count($u)) {
-                    case 1:
-                        $r[1] = $u[0];
-                        break;
-                    case 2:
-                        $r[1] = $u[0];
-                        $r[2] = $u[1];
-                        break;
-
-                    default:
-                        $r = $u + $r;
-                }
-
-                $_ENV['URI'] = $r;
-            }
-
-            if (\import($class = self::$options['namespace'] . '\\' . $r[0] . '\\' . \ucfirst($r[1]))) {
-                return (new $class())->{$r[2]}();
+            if (\import($class = self::$options['namespace'] . '\\Controller\\' . \ucfirst($r[0]))) {
+                return (new $class())->{$r[1]}();
             }
 
             // echo $class . ' not found.';
@@ -162,6 +147,29 @@ namespace {
 }
 
 namespace Parith {
+
+    class Controller
+    {
+        /**
+         * @param \string[] ...$keys
+         * @return array|mixed
+         */
+        public function routeParams(string ...$keys)
+        {
+            $i = 2;
+            $r = \Parith::getOption('route');
+
+            if (count($keys) > 1) {
+                $ret = [];
+                foreach ($keys as $key)
+                    $ret[$key] = &$r[$i++];
+            } else {
+                $ret = &$r[$i];
+            }
+
+            return $ret;
+        }
+    }
 
     class Error
     {

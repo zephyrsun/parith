@@ -12,7 +12,20 @@ class Index extends Basic
      */
     public function index()
     {
-        respOk("<pre>Parith Framework is working on page: " . URI::url() . '</pre>', 'index');
+        $params = $this->routeParams('p1', 'p2');
+        $params = http_build_query($params);
+
+        $url = URI::url();
+
+        $str = "<p>Parith Framework is working on page: $url<p>";
+
+        if ($params) {
+            $str .= "<p>URL parameters: $params</p>";
+        } else {
+            $str .= "<p>Try to visit: <a href='$url/Hello/world'>$url/Hello/world<a></p>";
+        }
+
+        respOk("<pre>$str</pre>", 'index');
     }
 
     /**
