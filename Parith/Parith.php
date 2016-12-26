@@ -21,7 +21,7 @@ namespace {
 
     class Parith
     {
-        static public $options = [
+        static public $env = [
             'namespace' => 'App',
             'error_class' => '\Parith\Error',
             'route' => ['Index', 'index'],
@@ -29,7 +29,7 @@ namespace {
 
         public function __construct(array $options = [])
         {
-            self::$options = $options + self::$options;
+            self::$env = $options + self::$env;
 
             //recommend set in php.ini
             //\date_default_timezone_set(self::getOption('timezone'));
@@ -38,12 +38,12 @@ namespace {
             define('APP_TS', \time());
 
             //define APP_DIR
-            define('APP_DIR', BASE_DIR . self::$options['namespace'] . DIRECTORY_SEPARATOR);
+            define('APP_DIR', BASE_DIR . self::$env['namespace'] . DIRECTORY_SEPARATOR);
         }
 
-        static public function getOption($key)
+        static public function env($key)
         {
-            return isset(self::$options[$key]) ? self::$options[$key] : [];
+            return isset(self::$env[$key]) ? self::$env[$key] : [];
         }
 
         /**
@@ -90,12 +90,12 @@ namespace {
             set_error_handler('\Parith\Error::errorHandler');
             set_exception_handler('\Parith\Error::exceptionHandler');
 
-            $r = &self::$options['route'];
+            $r = &self::$env['route'];
             $u = &$_GET['URI'];
             if ($u = $u ? \trim($u, '/') : '')
                 $r = \explode('/', $u) + $r;
 
-            if (\import($class = self::$options['namespace'] . '\\Controller\\' . \ucfirst($r[0]))) {
+            if (\import($class = self::$env['namespace'] . '\\Controller\\' . \ucfirst($r[0]))) {
                 return (new $class())->{$r[1]}();
             }
 
@@ -164,7 +164,7 @@ namespace Parith {
         static public function routeParams($num = 0)
         {
             $i = 2;
-            $r = \Parith::getOption('route');
+            $r = \Parith::env('route');
 
             if ($num > 0) {
                 $num += $i;
@@ -191,7 +191,7 @@ namespace Parith {
 
         static public function exceptionHandler(\Throwable $e)
         {
-            $class = \Parith::getOption('error_class');
+            $class = \Parith::env('error_class');
 
             $str = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
             $str .= 'Trace: ' . PHP_EOL . $e->getTraceAsString();

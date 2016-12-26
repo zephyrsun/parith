@@ -42,7 +42,7 @@ class Redis extends DataSource
         if (is_array($options))
             $key = implode(':', $options);
         else
-            $options = \Parith::getOption($key = $options);
+            $options = \Parith::env($key = $options);
 
         self::$ins_n++;
 

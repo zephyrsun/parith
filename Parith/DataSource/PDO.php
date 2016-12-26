@@ -74,7 +74,7 @@ class PDO extends DataSource
      */
     public function dial($options)
     {
-        is_array($options) or $options = \Parith::getOption($options);
+        is_array($options) or $options = \Parith::env($options);
 
         $options += $this->options;
 

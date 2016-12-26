@@ -50,7 +50,7 @@ class Memcache extends DataSource
         if (is_array($servers))
             $key = implode(':', current($servers));
         else
-            $servers = \Parith::getOption($key = $servers);
+            $servers = \Parith::env($key = $servers);
 
         self::$ins_n++;
 

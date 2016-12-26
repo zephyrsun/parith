@@ -39,7 +39,7 @@ class Validator extends Result
 
     public function __construct()
     {
-        $this->hints = \Parith::getOption('validator') + $this->hints;
+        $this->hints = \Parith::env('validator') + $this->hints;
     }
 
     /**
