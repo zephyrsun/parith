@@ -33,7 +33,7 @@ class Cookie extends Result
      */
     public function __construct()
     {
-        $this->setOptions(\Parith::env('cookie'));
+        $this->setOptions(\Parith::getEnv('cookie'));
 
         $this->__ = &$_COOKIE;
     }

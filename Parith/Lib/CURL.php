@@ -30,7 +30,7 @@ class CURL extends Result
 
     public function __construct()
     {
-        $this->setOptions(\Parith::env('curl'));
+        $this->setOptions(\Parith::getEnv('curl'));
     }
 
     public function post($url, $data = [], array $options = [])

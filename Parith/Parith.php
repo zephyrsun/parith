@@ -41,7 +41,7 @@ namespace {
             define('APP_DIR', BASE_DIR . self::$env['namespace'] . DIRECTORY_SEPARATOR);
         }
 
-        static public function env($key)
+        static public function getEnv($key)
         {
             return isset(self::$env[$key]) ? self::$env[$key] : [];
         }
@@ -101,6 +101,11 @@ namespace {
 
             // echo $class . ' not found.';
             throw new \Exception($class . ' not found.');
+        }
+
+        static function pushRoute($route)
+        {
+            self::$env['route'][] = $route;
         }
 
         /**
@@ -164,7 +169,7 @@ namespace Parith {
         static public function routeParams($num = 0)
         {
             $i = 2;
-            $r = \Parith::env('route');
+            $r = \Parith::getEnv('route');
 
             if ($num > 0) {
                 $num += $i;
@@ -191,7 +196,7 @@ namespace Parith {
 
         static public function exceptionHandler(\Throwable $e)
         {
-            $class = \Parith::env('error_class');
+            $class = \Parith::getEnv('error_class');
 
             $str = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
             $str .= 'Trace: ' . PHP_EOL . $e->getTraceAsString();
@@ -273,9 +278,16 @@ namespace Parith {
         public function set($key, $value)
         {
             if (\is_array($key))
-                $this->__ = $key + $this->__;
+                $this->merge($key);
             elseif ($key)
                 $this->__set($key, $value);
+
+            return $this;
+        }
+
+        public function merge($arr)
+        {
+            $this->__ = $arr + $this->__;
 
             return $this;
         }
@@ -292,7 +304,7 @@ namespace Parith {
         /**
          * @return array
          */
-        public function toArray()
+        public function &toArray()
         {
             return $this->__;
         }

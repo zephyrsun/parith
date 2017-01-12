@@ -28,7 +28,7 @@ class View extends Result
      */
     public function __construct()
     {
-        $this->setOptions(\Parith::env('view'));
+        $this->setOptions(\Parith::getEnv('view'));
     }
 
     public function setOptions($options)

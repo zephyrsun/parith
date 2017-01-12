@@ -20,7 +20,7 @@ use Parith\Result;
 class Paginator extends Result
 {
     public $options = [
-        'per_page' => 10,
+        'size' => 10,
         'range' => 5,
         'class' => 'pagination',
         'id' => 'pagination',
@@ -31,16 +31,21 @@ class Paginator extends Result
 
     private
         $_total = 1,
-        $_page_total = 1,
+        $_page_num = 1,
         $_current = 1,
         $_uri = '';
 
     /**
+     * Paginator constructor.
      * @param $total
+     * @param $size
      */
-    public function __construct($total)
+    public function __construct($total, $size = 0)
     {
-        $this->setOptions(\Parith::env('paginator'));
+        $this->setOptions(\Parith::getEnv('paginator'));
+
+        if ($size > 0)
+            $this->options['size'] = $size;
 
         $this->_current = &$_GET['page'] or $this->_current = 1;
 
@@ -50,11 +55,6 @@ class Paginator extends Result
     public function getTotal()
     {
         return $this->_total;
-    }
-
-    public function getPageTotal()
-    {
-        return $this->_page_total;
     }
 
     /**
@@ -110,7 +110,7 @@ class Paginator extends Result
      */
     public function lastItem($end)
     {
-        if ($this->_page_total > $end)
+        if ($this->_page_num > $end)
             return $this->dots();
 
         return '';
@@ -164,7 +164,7 @@ class Paginator extends Result
 
         $range = $this->options['range'];
 
-        $total_page = $this->_page_total = ceil($this->_total / $this->options['per_page']);
+        $total_page = $this->_page_num = ceil($this->_total / $this->options['size']);
 
         $mid = floor($range / 2);
 

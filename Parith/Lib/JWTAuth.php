@@ -27,7 +27,7 @@ class JWTAuth extends Result
 
     public function __construct()
     {
-        $this->setOptions(\Parith::env('jwtauth'));
+        $this->setOptions(\Parith::getEnv('jwtauth'));
 
         $this->cookie = new Cookie();
         $this->token_key = $this->cookie->options['token_key'];

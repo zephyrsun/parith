@@ -19,57 +19,55 @@ namespace Parith\Lib;
 class URI
 {
     /**
-     * @static
-     *
-     * @param null $uri
-     *
+     * @param string $opt
      * @return string
      */
-    static public function base($uri = null)
+    static public function base($opt = '')
     {
-        $options = [
+        $default = [
             'scheme' => 'http',
             'host' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'],
             'port' => '',
-            'path' => '/'
+            'path' => ''
         ];
 
-        if ($uri) {
-            $uri = parse_url($uri) + $options;
+        if ($opt) {
+            $opt += $default;
 
-            if ($uri['port'])
-                $uri['port'] = ':' . $uri['port'];
+            if ($opt['port'])
+                $opt['port'] = ':' . $opt['port'];
         } else {
-            $uri = $options;
+            $opt = $default;
         }
 
-        return $uri['scheme'] . '://' . $uri['host'] . $uri['port'] . $uri['path'];
+        return $opt['scheme'] . '://' . $opt['host'] . $opt['port'] . $opt['path'];
     }
 
     /**
-     * @static
-     *
      * @param string $uri
-     *
+     * @param bool $ru
      * @return string
      */
-    static public function uri($uri = '')
+    static public function uri($uri = '', $ru = false)
     {
-        $uri or $uri = implode('/', \Parith::env('route'));
+        if ($uri)
+            $uri = '/' . ltrim($uri, '/');
 
-        return trim(static::base(), '/') . $uri;
+        $base = static::base($ru ? ['path' => '/' . $_GET['URI']] : '');
+        return $base . $uri;
     }
 
+    /**
+     * @return string
+     */
     static public function url()
     {
         return preg_replace('/\?.*/', '', self::uri());
     }
 
+
     /**
-     * @static
-     *
      * @param array $query
-     *
      * @return string
      */
     static public function query(array $query)

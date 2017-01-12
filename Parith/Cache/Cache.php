@@ -22,6 +22,6 @@ class Cache extends Result
 
     public function __construct()
     {
-        $this->setOptions(\Parith::env('cache'));
+        $this->setOptions(\Parith::getEnv('cache'));
     }
 }

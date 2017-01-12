@@ -46,6 +46,7 @@ class PDO extends DataSource
         'dbname' => '',
         'username' => 'root',
         'password' => '',
+        'charset' => 'utf8mb4',
         'options' => [],
     ];
 
@@ -56,7 +57,7 @@ class PDO extends DataSource
         //\PDO::ATTR_AUTOCOMMIT => false,
         //\PDO::ATTR_PERSISTENT => false,
 
-        \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+        //\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
 
         #overwrite 'options' if not using MySQL
         \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, //1000
@@ -74,11 +75,11 @@ class PDO extends DataSource
      */
     public function dial($options)
     {
-        is_array($options) or $options = \Parith::env($options);
+        is_array($options) or $options = \Parith::getEnv($options);
 
-        $options += $this->options;
+        $o = $options + $this->options;
 
-        $dsn = "{$options['driver']}:host={$options['host']};port={$options['port']};dbname={$options['dbname']}";
+        $dsn = "{$o['driver']}:host={$o['host']};port={$o['port']};dbname={$o['dbname']};charset={$o['charset']}";
 
         self::$ins_n++;
 
@@ -87,9 +88,9 @@ class PDO extends DataSource
         } else {
             $this->link = $link = new \PDO(
                 $dsn,
-                $options['username'],
-                $options['password'],
-                $options['options'] + $this->server_options
+                $o['username'],
+                $o['password'],
+                $o['options'] + $this->server_options
             );
         }
 
@@ -108,7 +109,7 @@ class PDO extends DataSource
             'fields' => '*',
             'table' => $this->table_name,
             'join' => '',
-            'where' => ' WHERE 1',
+            'where' => '',
             'group' => '',
             'having' => '',
             'order' => '',
@@ -153,6 +154,7 @@ class PDO extends DataSource
      * where('user_id', 'IN', [1, 2, 3])
      * where('email', 'LIKE', '%@abc.com', 'OR')
      * where('(age >= ? OR age <= ?)', [18, 30])
+     * where("(nickname LIKE ? OR nickname = ?)", ['%|sun|%', 'sun'])
      *
      * @param $clause
      * @param $condition
@@ -173,12 +175,17 @@ class PDO extends DataSource
                 $condition = '';
 
         } elseif ($condition == 'IN' || $condition == 'NOT IN') {
+
+            is_array($value) or $value = explode(',', $value);
             $in = '?' . str_repeat(',?', count($value) - 1);
             $condition = "$condition ($in)";
+
         } elseif ($condition)
             $condition .= ' ?';
 
-        $this->clauses['where'] .= " $glue $clause $condition";
+        $where = &$this->clauses['where'] or $where = ' WHERE 1';
+
+        $where .= " $glue $clause $condition";
 
         if (is_array($value)) {
             $this->params = array_merge($this->params, $value);
@@ -190,14 +197,11 @@ class PDO extends DataSource
     }
 
     /**
-     * @param $clause
-     * @param $condition
-     * @param null $value
-     * @return $this
+     * @return mixed
      */
-    public function orWhere($clause, $condition, $value = null)
+    public function getWhere()
     {
-        return $this->where($clause, $condition, $value, 'OR');
+        return $this->clauses['where'];
     }
 
     /**
@@ -273,6 +277,7 @@ class PDO extends DataSource
     }
 
     /**
+     * join('table2', ['id' => 'ref_id'], 'STRAIGHT_JOIN')
      * join('t2, t3, t4', 't2.a=t1.a AND t3.b=t1.b AND t4.c=t1.c', 'STRAIGHT_JOIN')
      *
      * @param $table
@@ -282,6 +287,19 @@ class PDO extends DataSource
      */
     public function join($table, $condition, $type = 'LEFT JOIN')
     {
+        if (is_array($condition)) {
+            $c = [];
+            $t2 = explode(' ', $table);
+            $t2 = end($t2);
+
+            $this->clauses['table'] .= ' a';
+
+            foreach ($condition as $key => $ref_key)
+                $c[] = "a.$key=$t2.$ref_key";
+
+            $condition = implode(' AND ', $c);
+        }
+
         $this->clauses['join'] .= " $type ($table) ON ($condition)";
 
         return $this;
@@ -387,7 +405,7 @@ class PDO extends DataSource
      * shortcut for $this->fetch()
      *
      * $this->find(1)
-     * $this->find('user_id', 1)
+     * $this->find(1, 'user_id')
      *
      * @param $id
      * @param string $col
@@ -395,7 +413,7 @@ class PDO extends DataSource
      */
     public function find($id, $col = '')
     {
-        $col ? $this->where($id, $col) : $this->where($this->pk, $id);
+        $col ? $this->where($col, $id) : $this->where($this->pk, $id);
 
         return $this->fetch();
     }
@@ -403,8 +421,8 @@ class PDO extends DataSource
     /**
      * shortcut for $this->fetchAll()
      *
-     * $this->find(1)
-     * $this->find('user_id', 1)
+     * $this->findAll(1)
+     * $this->findAll(1, 'user_id')
      *
      * @param $id
      * @param string $col
@@ -412,7 +430,7 @@ class PDO extends DataSource
      */
     public function findAll($id, $col = '')
     {
-        $col ? $this->where($id, $col) : $this->where($this->pk, $id);
+        $col ? $this->where($col, $id) : $this->where($this->pk, $id);
 
         return $this->fetchAll();
     }
@@ -429,13 +447,15 @@ class PDO extends DataSource
     /**
      * $this->fetchColumn(0)
      * $this->fetchColumn('id')
+     * $this->fetchColumn('GROUP_CONCAT(DISTINCT id)')
+     * $this->fetchColumn('SUM(num)')
      *
      * @param int|string $col
      * @return mixed
      */
     public function fetchColumn($col)
     {
-        if (!is_int($col)) {
+        if (!is_numeric($col)) {
             $this->select($col);
             $col = 0;
         }
@@ -474,9 +494,9 @@ class PDO extends DataSource
         $this->clauses = $this->last_clauses;
         $this->params = $this->last_params;
 
-        $count = $this->select('count(*)')->limit(1)->fetchColumn(0);
+        $count = $this->fetchColumn('COUNT(*)');
 
-        return (new Paginator($count))->set($list, null);
+        return (new Paginator($count, $size))->merge($list);
     }
 
     /**
@@ -525,37 +545,37 @@ class PDO extends DataSource
 
         } catch (\PDOException $e) {
             $str = $e->getMessage() . PHP_EOL .
-                'SQL: ' . $e->getTrace()[0]['args'][0] . PHP_EOL .
+                'SQL: ' . $this->sql . PHP_EOL .
                 'Params: "' . implode('","', $this->params) . '"' . PHP_EOL;
 
             throw new \Exception($str);
         } catch (\Error $e) {
-            throw new \Exception('Database not connected, please dial first.');
+            throw $e;
         }
     }
 
     /**
+     * @param callable $cb
      * @return bool
+     * @throws \Exception
      */
-    public function beginTransaction()
+    public function transaction(callable $cb)
     {
-        return $this->link->beginTransaction();
-    }
+        $r = $this->link->beginTransaction();
+        if ($r) {
+            try {
+                $cb();
 
-    /**
-     * @return bool
-     */
-    public function commit()
-    {
-        return $this->link->commit();
-    }
+                return $this->link->commit();
 
-    /**
-     * @return bool
-     */
-    public function rollback()
-    {
-        return $this->link->rollBack();
+            } catch (\Exception $e) {
+                $this->link->rollBack();
+
+                throw $e;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -568,11 +588,6 @@ class PDO extends DataSource
         $this->params += $params;
 
         return $this;
-    }
-
-    public function getWhere()
-    {
-        return $this->clauses['where'];
     }
 
     /**

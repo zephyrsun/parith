@@ -35,11 +35,13 @@ class Validator extends Result
         'lengthEqual' => 'Please enter a value length equal to %s.',
         'match' => 'Please enter a valid value.',
         'url' => 'Please enter a valid URL.',
+        'time' => 'Please enter a valid time.',
+        'inMap' => 'Please enter a valid value.',
     ];
 
     public function __construct()
     {
-        $this->hints = \Parith::env('validator') + $this->hints;
+        $this->hints = \Parith::getEnv('validator') + $this->hints;
     }
 
     /**
@@ -274,5 +276,24 @@ class Validator extends Result
     public function url($url)
     {
         return (bool)filter_var($url, FILTER_VALIDATE_URL);
+    }
+
+    /**
+     * @param $str
+     * @return bool
+     */
+    public function time($str)
+    {
+        return (bool)strtotime($str, \APP_TS);
+    }
+
+    /**
+     * @param $key
+     * @param $map
+     * @return bool
+     */
+    public function inMap($key, $map)
+    {
+        return isset($map[$key]);
     }
 }
