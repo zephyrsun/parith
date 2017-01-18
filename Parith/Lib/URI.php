@@ -19,10 +19,10 @@ namespace Parith\Lib;
 class URI
 {
     /**
-     * @param string $opt
+     * @param string $cfg
      * @return string
      */
-    static public function base($opt = '')
+    static public function base($cfg = '')
     {
         $default = [
             'scheme' => 'http',
@@ -31,16 +31,16 @@ class URI
             'path' => ''
         ];
 
-        if ($opt) {
-            $opt += $default;
+        if ($cfg) {
+            $cfg += $default;
 
-            if ($opt['port'])
-                $opt['port'] = ':' . $opt['port'];
+            if ($cfg['port'])
+                $cfg['port'] = ':' . $cfg['port'];
         } else {
-            $opt = $default;
+            $cfg = $default;
         }
 
-        return $opt['scheme'] . '://' . $opt['host'] . $opt['port'] . $opt['path'];
+        return $cfg['scheme'] . '://' . $cfg['host'] . $cfg['port'] . $cfg['path'];
     }
 
     /**
@@ -53,18 +53,15 @@ class URI
         if ($uri)
             $uri = '/' . ltrim($uri, '/');
 
-        $base = static::base($ru ? ['path' => '/' . $_GET['URI']] : '');
+        if ($ru) {
+            $cfg = ['path' => '/' . implode('/', \Parith::getEnv('route'))];
+        } else {
+            $cfg = '';
+        }
+
+        $base = static::base($cfg);
         return $base . $uri;
     }
-
-    /**
-     * @return string
-     */
-    static public function url()
-    {
-        return preg_replace('/\?.*/', '', self::uri());
-    }
-
 
     /**
      * @param array $query

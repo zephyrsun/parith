@@ -1,5 +1,5 @@
-<?php include '_header.php' ?>
+<?php $this->import('common/_header') ?>
     <div>
         <?php echo $d; ?>
     </div>
-<?php include '_footer.php' ?>
+<?php $this->import('common/_footer') ?>

@@ -15,14 +15,14 @@ class Index extends Basic
         $params = $this->routeParams(2);
         $params = http_build_query($params);
 
-        $url = URI::url();
+        $url = URI::uri('/Hello/world', true);
 
         $str = "<p>Parith Framework is working on page: $url<p>";
 
         if ($params) {
             $str .= "<p>URL parameters: $params</p>";
         } else {
-            $str .= "<p>Try to visit: <a href='$url/Hello/world'>$url/Hello/world<a></p>";
+            $str .= "<p>Try to visit: <a href='$url'>$url<a></p>";
         }
 
         respOk("<pre>$str</pre>", 'index');
