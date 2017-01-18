@@ -31,7 +31,9 @@ class PDO extends DataSource
     public $link;
 
     public $table_name = '';
+    public $table_alias = '';
     public $pk = 'id';
+    public $select = '*';
 
     public $sql = '';
     public $clauses = [];
@@ -106,15 +108,12 @@ class PDO extends DataSource
         $this->last_clauses = $this->clauses;
 
         $this->clauses = [
-            'fields' => '*',
-            'table' => $this->table_name,
             'join' => '',
             'where' => '',
             'group' => '',
             'having' => '',
             'order' => '',
             'limit' => '',
-            'for_update' => '',
         ];
 
         $this->params = [];
@@ -125,15 +124,15 @@ class PDO extends DataSource
     /**
      * fields for select
      *
-     * @param $fields
+     * @param $select
      *        - *
      *        - id,uid,ts
      *        - count(*)
      * @return $this
      */
-    public function select($fields)
+    public function select($select)
     {
-        $this->clauses['fields'] = $fields;
+        $this->select = $select;
 
         return $this;
     }
@@ -144,7 +143,18 @@ class PDO extends DataSource
      */
     public function table($table)
     {
-        $this->clauses['table'] = $table;
+        $this->table_name = $table;
+
+        return $this;
+    }
+
+    /**
+     * @param $alias
+     * @return $this
+     */
+    public function alias($alias)
+    {
+        $this->table_alias = $alias;
 
         return $this;
     }
@@ -179,9 +189,7 @@ class PDO extends DataSource
             is_array($value) or $value = explode(',', $value);
             $in = '?' . str_repeat(',?', count($value) - 1);
             $condition = "$condition ($in)";
-
-        } elseif ($condition)
-            $condition .= ' ?';
+        }
 
         $where = &$this->clauses['where'] or $where = ' WHERE 1';
 
@@ -189,7 +197,7 @@ class PDO extends DataSource
 
         if (is_array($value)) {
             $this->params = array_merge($this->params, $value);
-        } else {
+        } elseif ($value !== null) {
             $this->params[] = $value;
         }
 
@@ -278,7 +286,7 @@ class PDO extends DataSource
 
     /**
      * join('table2', ['id' => 'ref_id'], 'STRAIGHT_JOIN')
-     * join('t2, t3, t4', 't2.a=t1.a AND t3.b=t1.b AND t4.c=t1.c', 'STRAIGHT_JOIN')
+     * join('table2 t2', 't1.id=t2.ref_id', 'STRAIGHT_JOIN')
      *
      * @param $table
      * @param $condition
@@ -288,16 +296,15 @@ class PDO extends DataSource
     public function join($table, $condition, $type = 'LEFT JOIN')
     {
         if (is_array($condition)) {
-            $c = [];
             $t2 = explode(' ', $table);
             $t2 = end($t2);
 
-            $this->clauses['table'] .= ' a';
+            $t1 = $this->table_alias or $t1 = $this->table_name;
 
-            foreach ($condition as $key => $ref_key)
-                $c[] = "a.$key=$t2.$ref_key";
+            $k = key($condition);
+            $ref_k = current($condition);
 
-            $condition = implode(' AND ', $c);
+            $condition = "$t1.$k=$t2.$ref_k";
         }
 
         $this->clauses['join'] .= " $type ($table) ON ($condition)";
@@ -325,13 +332,13 @@ class PDO extends DataSource
             $this->params[] = $v;
         }
 
-        $this->sql = $op . ' ' . $this->clauses['table'] . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');';
+        $this->sql = $op . ' ' . $this->table_name . ' (' . \implode(', ', $col) . ') VALUES (' . \implode(', ', $value) . ');';
 
         $this->exec();
         if ($id = $this->link->lastInsertId())
             return $id;
 
-        return 1; //return $this->sth->rowCount();
+        return $this->sth->rowCount();
     }
 
     /**
@@ -350,21 +357,11 @@ class PDO extends DataSource
      */
     public function update($data)
     {
-        $params = [];
         if (is_array($data)) {
-            $value = [];
-            foreach ($data as $col => $val) {
-                $value[] = "`{$col}` = ?";
-                $params[] = $val;
-            }
-
-            // adjust order
-            $this->params = $params = array_merge($params, $this->params);
-
-            $data = \implode(', ', $value);
+            $data = \implode(', ', $this->convert($data));
         }
 
-        $this->sql = 'UPDATE ' . $this->clauses['table'] . ' SET ' . $data . $this->clauses['where'];
+        $this->sql = 'UPDATE ' . $this->table_name . ' SET ' . $data . $this->clauses['where'];
 
         return $this->exec()->rowCount();
     }
@@ -376,6 +373,21 @@ class PDO extends DataSource
         }
 
         return $this->insert($data);
+    }
+
+    protected function convert($data)
+    {
+        $value = [];
+        $params = [];
+        foreach ($data as $col => $val) {
+            $value[] = "`{$col}` = ?";
+            $params[] = $val;
+        }
+
+        // adjust order
+        $this->params = array_merge($params, $this->params);
+
+        return $value;
     }
 
     /**
@@ -396,7 +408,7 @@ class PDO extends DataSource
      */
     public function delete()
     {
-        $this->sql = 'DELETE FROM ' . $this->clauses['table'] . $this->clauses['where'] . ';';
+        $this->sql = 'DELETE FROM ' . $this->table_name . $this->clauses['where'] . ';';
 
         return $this->exec()->rowCount();
     }
@@ -405,15 +417,19 @@ class PDO extends DataSource
      * shortcut for $this->fetch()
      *
      * $this->find(1)
-     * $this->find(1, 'user_id')
+     * $this->find(['user_id' => 1])
      *
-     * @param $id
-     * @param string $col
+     * @param $value
      * @return mixed
      */
-    public function find($id, $col = '')
+    public function find($value)
     {
-        $col ? $this->where($col, $id) : $this->where($this->pk, $id);
+        if (is_array($value)) {
+            $value = \implode(' AND ', $this->convert($value));
+            $this->where($value, null);
+        } else {
+            $this->where($this->pk, $value);
+        }
 
         return $this->fetch();
     }
@@ -422,15 +438,19 @@ class PDO extends DataSource
      * shortcut for $this->fetchAll()
      *
      * $this->findAll(1)
-     * $this->findAll(1, 'user_id')
+     * $this->findAll(['user_id' => 1])
      *
-     * @param $id
-     * @param string $col
+     * @param $value
      * @return mixed
      */
-    public function findAll($id, $col = '')
+    public function findAll($value)
     {
-        $col ? $this->where($col, $id) : $this->where($this->pk, $id);
+        if (is_array($value)) {
+            $value = \implode(' AND ', $this->convert($value));
+            $this->where($value, null);
+        } else {
+            $this->where($this->pk, $value);
+        }
 
         return $this->fetchAll();
     }
@@ -526,6 +546,7 @@ class PDO extends DataSource
 
     /**
      * @return \PDOStatement
+     * @throws \Error
      * @throws \Exception
      */
     public function exec()
@@ -597,21 +618,26 @@ class PDO extends DataSource
     {
         $c = $this->clauses;
 
-        return $this->sql = 'SELECT ' . $c['fields'] . ' FROM ' . $c['table'] . $c['join'] . $c['where'] .
+        return $this->sql = 'SELECT ' . $this->select . ' FROM ' . $this->table_name . ' ' . $this->table_alias .
+            $c['join'] . $c['where'] .
             $c['group'] . $c['having'] . $c['order'] .
-            $c['limit'] . $c['for_update'] . ';';
+            $c['limit'] . ';';
     }
 
-    public function selectForUpdate($nowait = false)
-    {
-        $for_update = ' FOR UPDATE';
-        if ($nowait)
-            $for_update .= ' NOWAIT';
-
-        $this->clauses['for_update'] = $for_update;
-
-        return $this;
-    }
+    /**
+     * @param bool $nowait
+     * @return $this
+     */
+//    public function selectForUpdate($nowait = false)
+//    {
+//        $for_update = ' FOR UPDATE';
+//        if ($nowait)
+//            $for_update .= ' NOWAIT';
+//
+//        $this->clauses['for_update'] = $for_update;
+//
+//        return $this;
+//    }
 
     /**
      * @param $mode

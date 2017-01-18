@@ -238,7 +238,9 @@ class Validator extends Result
      */
     public function length($str, $min, $max)
     {
-        return $this->range(mb_strlen($str), $min, $max);
+        $l = is_array($str) ? count($str) : mb_strlen($str);
+
+        return $this->range($l, $min, $max);
     }
 
     /**
@@ -250,7 +252,9 @@ class Validator extends Result
      */
     public function lengthEqual($str, $ref)
     {
-        return mb_strlen($str) == $ref;
+        $l = is_array($str) ? count($str) : mb_strlen($str);
+
+        return $l == $ref;
     }
 
     /**

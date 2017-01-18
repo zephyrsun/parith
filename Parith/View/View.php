@@ -44,7 +44,7 @@ class View extends Result
      */
     public function render($__)
     {
-        $__ = $this->getSourceFile($__);
+        $__ = $this->import($__);
 
         \extract($this->toArray(), EXTR_SKIP);
 
@@ -79,7 +79,7 @@ class View extends Result
      * @return string
      * @throws \Exception
      */
-    public function getSourceFile($name)
+    public function import($name)
     {
         $name = $this->options['source_dir'] . \DIRECTORY_SEPARATOR . $name . '.' . $this->options['source_ext'];
 

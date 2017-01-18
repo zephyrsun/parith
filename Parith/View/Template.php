@@ -46,7 +46,7 @@ class Template extends View
      */
     public function render($__)
     {
-        $source = $this->getSourceFile($__);
+        $source = $this->import($__);
         $target = $this->cache->filename(\rawurlencode($__));
         if (File::isNewer($source, $target))
             File::touch($target, self::parse(\file_get_contents($source), $this->options['ldelim'], $this->options['rdelim']), false);
