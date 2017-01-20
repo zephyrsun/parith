@@ -173,9 +173,11 @@ class PDO extends DataSource
      *
      * @return $this
      */
-    public function where($clause, $condition, $value = null, $glue = 'AND')
+    public function where($clause, $condition = '', $value = null, $glue = 'AND')
     {
-        if ($value === null) {
+        if (is_array($clause)) {
+            $clause = \implode(' AND ', $this->convert($clause));
+        } elseif ($value === null) {
             $value = $condition;
 
             if (strpos($clause, '?') === false) {
@@ -425,8 +427,7 @@ class PDO extends DataSource
     public function find($value)
     {
         if (is_array($value)) {
-            $value = \implode(' AND ', $this->convert($value));
-            $this->where($value, null);
+            $this->where($value);
         } else {
             $this->where($this->pk, $value);
         }
@@ -446,8 +447,7 @@ class PDO extends DataSource
     public function findAll($value)
     {
         if (is_array($value)) {
-            $value = \implode(' AND ', $this->convert($value));
-            $this->where($value, null);
+            $this->where($value);
         } else {
             $this->where($this->pk, $value);
         }
