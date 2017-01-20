@@ -380,7 +380,7 @@ class PDO extends DataSource
         $value = [];
         $params = [];
         foreach ($data as $col => $val) {
-            $value[] = "`{$col}` = ?";
+            $value[] = "{$col} = ?";
             $params[] = $val;
         }
 
