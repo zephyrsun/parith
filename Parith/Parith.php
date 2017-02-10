@@ -194,7 +194,7 @@ namespace Parith {
             throw new \ErrorException($msg, $code, 0, $file, $line);
         }
 
-        static public function exceptionHandler($e)
+        static public function exceptionHandler(\Throwable $e)
         {
             $class = \Parith::getEnv('error_class');
 
@@ -204,7 +204,7 @@ namespace Parith {
             (new $class())->render($e, $str);
         }
 
-        public function render($e, $str)
+        public function render(\Throwable $e, $str)
         {
             echo "<pre>$str</pre>";
         }

@@ -10,7 +10,7 @@ namespace Example\Controller;
 
 class Error extends Basic
 {
-    public function render(\Throwable $e, string $str)
+    public function render(\Throwable $e, $str)
     {
         echo "<pre>$str</pre>";
     }
