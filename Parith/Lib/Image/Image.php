@@ -32,13 +32,30 @@ abstract class Image extends Result
         //$ext = explode('?', pathinfo($filename, PATHINFO_EXTENSION), 2);
         //return $ext[0];
         return preg_replace('/.+\.(\w+).*/', '$1', $filename);
+        //return strtolower(strrchr($filename, '.'));
     }
 
-    static public function checkExtension($filename)
+    static public function imageType($filename)
     {
         $ext = self::getExtension($filename);
 
-        return isset(static::$image_types[$ext]) ? $ext : '';
+        return isset(static::$image_types[$ext]) ? static::$image_types[$ext] : '';
+    }
+
+    public function calcCenter($src_w, $src_h, $width, $height)
+    {
+        $ratio_w = $src_w / $width;
+        $ratio_h = $src_h / $height;
+
+        if ($ratio_w > $ratio_h) {
+            $src_x = $src_w - $ratio_h * $width;
+            $src_y = 0;
+        } else {
+            $src_x = 0;
+            $src_y = $src_h - $ratio_w * $height;
+        }
+
+        return [$src_w - $src_x, $src_h - $src_y, $src_x / 2, $src_y / 2];
     }
 
     abstract public function width();

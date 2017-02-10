@@ -161,6 +161,7 @@ class PDO extends DataSource
 
     /**
      * where('gender', 'male')
+     * where(['gender' => 'male'])
      * where('user_id', 'IN', [1, 2, 3])
      * where('email', 'LIKE', '%@abc.com', 'OR')
      * where('(age >= ? OR age <= ?)', [18, 30])

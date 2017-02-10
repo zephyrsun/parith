@@ -19,48 +19,62 @@ namespace Parith\Lib;
 class URI
 {
     /**
-     * @param string $cfg
+     * @param string $uri
      * @return string
      */
-    static public function base($cfg = '')
+    static public function base($uri = '')
     {
         $default = [
             'scheme' => 'http',
             'host' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'],
             'port' => '',
-            'path' => ''
+            'path' => '',
+            'query' => '',
         ];
 
-        if ($cfg) {
-            $cfg += $default;
+        if ($uri) {
+            $uri += $default;
 
-            if ($cfg['port'])
-                $cfg['port'] = ':' . $cfg['port'];
+            if ($uri['port'])
+                $uri['port'] = ':' . $uri['port'];
+
+            if ($uri['query'])
+                $uri['path'] .= '?' . $uri['query'];
+
         } else {
-            $cfg = $default;
+            $uri = $default;
         }
 
-        return $cfg['scheme'] . '://' . $cfg['host'] . $cfg['port'] . $cfg['path'];
+        return $uri['scheme'] . '://' . $uri['host'] . $uri['port'] . $uri['path'];
     }
 
     /**
      * @param string $uri
-     * @param bool $ru
+     * @param string|array $query
      * @return string
      */
-    static public function uri($uri = '', $ru = false)
+    static public function uri($uri = '', $query = '')
     {
         if ($uri)
             $uri = '/' . ltrim($uri, '/');
 
-        if ($ru) {
-            $cfg = ['path' => '/' . implode('/', \Parith::getEnv('route'))];
-        } else {
-            $cfg = '';
+        $a = parse_url($_SERVER['REQUEST_URI']);
+        $a['path'] = $uri;
+
+        if ($query) {
+            if (is_array($query))
+                $query = http_build_query($query);
+
+            $q = &$a['query'];
+            $q .= ($q ? '&' : '') . $query;
         }
 
-        $base = static::base($cfg);
-        return $base . $uri;
+        return static::base($a);
+    }
+
+    static public function current()
+    {
+        return self::uri();
     }
 
     /**

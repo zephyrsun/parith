@@ -19,12 +19,11 @@ use Parith\Result;
 class Cookie extends Result
 {
     public $options = [
-        'expire' => 86400,
+        'expire' => 86400,//seconds
         'path' => '/',
         'domain' => '',
         'secure' => false,
         'httponly' => true,
-        'signer' => '\Parith\Lib\JWTAuth',
         'token_key' => 'token',
     ];
 
@@ -36,6 +35,13 @@ class Cookie extends Result
         $this->setOptions(\Parith::getEnv('cookie'));
 
         $this->__ = &$_COOKIE;
+    }
+
+    public function p3p()
+    {
+        \header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
+
+        return $this;
     }
 
     /**

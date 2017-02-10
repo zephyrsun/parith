@@ -34,25 +34,26 @@ class Imagick extends Image
 
     /**
      * @param $image
-     *
-     * @return Imagick
+     * @param string $type
+     * @return bool
      */
-    public function load($image)
+    public function load($image, $type = '')
     {
-        return $this->_load($image, $this->imagick);
+        return $this->_load($image, $type);
     }
 
     /**
      * @param $image
-     * @param \Imagick $imagick
-     * @return mixed
+     * @param string $type
+     * @return bool
      */
-    private function _load($image, $imagick)
+    private function _load($image, $type = '')
     {
-        if ($ext = $this->getExtension($image))
-            return $imagick->readImage($image);
+        $type or $type = $this->getExtension($image);
+        if ($type)
+            return $this->imagick->readImage($image);
 
-        return $imagick->readImageBlob($image);
+        return $this->imagick->readImageBlob($image);
     }
 
     public function width()
@@ -78,21 +79,12 @@ class Imagick extends Image
             $src_w = $this->width();
             $src_h = $this->height();
 
-            $ratio_w = $src_w / $width;
-            $ratio_h = $src_h / $height;
+            list($src_w, $src_h, $src_x, $src_y) = $this->calcCenter($src_w, $src_h, $width, $height);
 
-            if ($ratio_w > $ratio_h) {
-                $src_x = $src_w - $ratio_h * $width;
-                $src_y = 0;
-            } else {
-                $src_x = 0;
-                $src_y = $src_h - $ratio_w * $height;
-            }
-
-            $this->crop($src_w - $src_x, $src_h - $src_y, $src_x / 2, $src_y / 2);
+            $this->crop($src_w, $src_h, $src_x, $src_y);
         }
 
-        $this->imagick->resizeimage($width, $height, \Imagick::FILTER_LANCZOS, 1, false);
+        $this->imagick->resizeImage($width, $height, \Imagick::FILTER_LANCZOS, 1, false);
 
         return $this;
     }
@@ -207,7 +199,7 @@ class Imagick extends Image
      *
      * @return bool|string
      */
-    public function export($type, $quality = null, $render = true)
+    public function export($type, $quality = 60, $render = true)
     {
         $ext = $this->prepareSave($type, $quality);
         if (!$ext)
@@ -224,10 +216,10 @@ class Imagick extends Image
         return $blob;
     }
 
-    protected function prepareSave($filename, $quality)
+    protected function prepareSave($type, $quality)
     {
-        if (!$ext = $this->getExtension($filename))
-            $ext = $filename;
+        if (!$ext = $this->getExtension($type))
+            $ext = $type;
 
         $types = static::$image_types;
 

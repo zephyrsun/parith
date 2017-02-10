@@ -31,7 +31,7 @@ class Paginator extends Result
 
     private
         $_total = 1,
-        $_page_num = 1,
+        $_page_total = 1,
         $_current = 1,
         $_uri = '';
 
@@ -50,11 +50,18 @@ class Paginator extends Result
         $this->_current = &$_GET['page'] or $this->_current = 1;
 
         $this->_total = $total;
+
+        $this->_page_total = ceil($this->_total / $size);
     }
 
     public function getTotal()
     {
         return $this->_total;
+    }
+
+    public function getPageTotal()
+    {
+        return $this->_page_total;
     }
 
     /**
@@ -110,7 +117,7 @@ class Paginator extends Result
      */
     public function lastItem($end)
     {
-        if ($this->_page_num > $end)
+        if ($this->_page_total > $end)
             return $this->dots();
 
         return '';
@@ -155,7 +162,7 @@ class Paginator extends Result
      */
     public function __toString()
     {
-        $uri = URI::uri();
+        $uri = URI::current();
 
         //uri
         $this->_uri = preg_replace('/page=\d+/', 'page=__PAGE__', $uri, 1, $n);
@@ -164,18 +171,18 @@ class Paginator extends Result
 
         $range = $this->options['range'];
 
-        $total_page = $this->_page_num = ceil($this->_total / $this->options['size']);
+        $pt = $this->_page_total;
 
         $mid = floor($range / 2);
 
         $end = $this->_current + $mid;
-        if ($end > $total_page)
-            $end = $total_page;
+        if ($end > $pt)
+            $end = $pt;
 
         $start = $end - $range + 1;
         if ($start < 1) {
             $start = 1;
-            $end = min($range, $total_page);
+            $end = min($range, $pt);
         }
 
         $html = $this->previous() . $this->first($start);

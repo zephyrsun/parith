@@ -288,6 +288,9 @@ class Validator extends Result
      */
     public function time($str)
     {
+        if (is_numeric($str))
+            $str = date(DATE_ATOM, $str);
+
         return (bool)strtotime($str, \APP_TS);
     }
 

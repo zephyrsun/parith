@@ -62,12 +62,12 @@ class GD extends Image
 
     /**
      * @param $image
-     *
+     * @param string $type
      * @return bool
      */
-    public function load($image)
+    public function load($image, $type = '')
     {
-        $image = $this->_load($image);
+        $image = $this->_load($image, $type);
 
         if ($image) {
             $this->setImageData($image);
@@ -77,10 +77,12 @@ class GD extends Image
         return false;
     }
 
-    private function _load($image)
+    private function _load($image, $type = '')
     {
-        if ($ext = $this->checkExtension($image)) {
-            $call = 'imagecreatefrom' . static::$image_types[$ext];
+        $type or $type = $this->imageType($image);
+
+        if ($type) {
+            $call = 'imagecreatefrom' . $type;
             return @$call($image);
         }
 
@@ -113,20 +115,7 @@ class GD extends Image
         $src_y = 0;
 
         if ($center) {
-            $ratio_w = $src_w / $width;
-            $ratio_h = $src_h / $height;
-
-            if ($ratio_w > $ratio_h) {
-                $src_x = $src_w - $ratio_h * $width;
-
-                $src_w -= $src_x;
-                $src_x /= 2;
-            } else {
-                $src_y = $src_h - $ratio_w * $height;
-
-                $src_h -= $src_y;
-                $src_y /= 2;
-            }
+            list($src_w, $src_h, $src_x, $src_y) = $this->calcCenter($src_w, $src_h, $width, $height);
         }
 
         $image = $this->create($width, $height);
@@ -229,7 +218,7 @@ class GD extends Image
      *
      * @return bool|string
      */
-    public function export($type, $quality = null, $render = true)
+    public function export($type, $quality = 60, $render = true)
     {
         if ($render) {
             \header('Content-Type: image/' . $type);
@@ -247,16 +236,16 @@ class GD extends Image
         return false;
     }
 
-    protected function prepareSave($filename, $quality)
+    protected function prepareSave($type, $quality)
     {
         if (!$this->image)
             return false;
 
-        $ext = $this->getExtension($filename);
+        $ext = $this->getExtension($type);
 
         if (!$ext) {
-            $ext = $filename;
-            $filename = null;
+            $ext = $type;
+            $type = null;
         }
 
         $types = static::$image_types;
@@ -267,9 +256,9 @@ class GD extends Image
             return false;
 
         if ($quality === null)
-            $call($this->image, $filename);
+            $call($this->image, $type);
         else
-            $call($this->image, $filename, $quality);
+            $call($this->image, $type, $quality);
 
         return $ext;
     }

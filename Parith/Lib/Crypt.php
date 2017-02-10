@@ -19,15 +19,11 @@ use Parith\Result;
 class Crypt extends Result
 {
     public $options = array(
-        'secret' => 'PLEASE_CHANGE_ME',
-        'cipher' => \MCRYPT_RIJNDAEL_256,
-        'mode' => \MCRYPT_MODE_CBC,
-        'ttl' => 43200,
+        'secret' => '!!! PLEASE CONFIG !!!',
+        'algo' => 'aes-256-cbc',
     );
 
-    public $res, $key_size = 0, $iv_size = 0;
-
-    public $cookie, $token_key, $encoder;
+    public $iv_size, $cookie, $token_key, $ttl;
 
     /**
      * Crypt constructor.
@@ -38,22 +34,14 @@ class Crypt extends Result
 
         $this->cookie = new Cookie();
         $this->token_key = $this->cookie->options['token_key'];
+        $this->ttl = $this->cookie->options['expire'];
 
-        $this->encoder = new Base64Encoder();
-    }
-
-    public function setOptions($options)
-    {
-        parent::setOptions($options);
-
-        $this->res = \mcrypt_module_open($this->options['cipher'], '', $this->options['mode'], '');
-        $this->key_size = \mcrypt_enc_get_key_size($this->res);
-        $this->iv_size = \mcrypt_enc_get_iv_size($this->res);
+        $this->iv_size = openssl_cipher_iv_length($this->options['algo']);
     }
 
     public function setToken($key, $data)
     {
-        $key .= \APP_TS + $this->options['ttl'];
+        $key .= \APP_TS + $this->ttl;
         return $this->cookie->set($this->token_key, $key . '.' . $this->encrypt($key, $data));
     }
 
@@ -81,37 +69,33 @@ class Crypt extends Result
 
     public function encrypt($key, $data)
     {
+        $o = $this->options;
+
         $data = json_encode($data, \JSON_UNESCAPED_UNICODE);
+        $data = openssl_encrypt($data, $o['algo'], $this->hash($key), OPENSSL_RAW_DATA, $this->getIv($key));
 
-        $key = $this->hashKey($key);//$key is changed
-
-        mcrypt_generic_init($this->res, $key, $this->getIv($key));
-        $data = $this->encoder->encode(mcrypt_generic($this->res, $data));
-        mcrypt_generic_deinit($this->res);
-
-        return $data;
+        return (new Base64Encoder())->encode($data);
     }
 
     public function decrypt($key, $data)
     {
-        $key = $this->hashKey($key);
+        $o = $this->options;
 
-        mcrypt_generic_init($this->res, $key, $this->getIv($key));
-        $data = mdecrypt_generic($this->res, $this->encoder->decode($data));
-        mcrypt_generic_deinit($this->res);
+        $data = (new Base64Encoder())->decode($data);
+        $data = openssl_decrypt($data, $o['algo'], $this->hash($key), OPENSSL_RAW_DATA, $this->getIv($key));
 
-        return json_decode(rtrim($data, "\0"), true);
+        return json_decode($data, true); //return json_decode(rtrim($data, "\0"), true);
     }
 
-    public function hashKey($key)
+    public function hash($key)
     {
-        $key = hash_hmac('sha1', $key, $this->options['secret']);
-        return substr($key, 0, $this->key_size);
+        return hash_hmac('sha1', $key, $this->options['secret']);
     }
 
     public function getIv($key)
     {
-        $key2 = hash_hmac('sha1', $key, $this->options['secret']);
-        return substr(pack('h*', $key . $key2), 0, $this->iv_size);
+        $key = hash_hmac('sha1', $this->options['secret'], $key);
+        return substr($key, 0, $this->iv_size);
+        //return substr(pack('h*', $key2), 0, $this->iv_size);
     }
 }
