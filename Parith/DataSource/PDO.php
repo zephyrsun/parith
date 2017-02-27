@@ -512,12 +512,15 @@ class PDO extends DataSource
 
         $list = $this->fetchAll();
 
+        return (new Paginator($this->fetchCount(), $size))->merge($list);
+    }
+
+    public function fetchCount()
+    {
         $this->clauses = $this->last_clauses;
         $this->params = $this->last_params;
 
-        $count = $this->fetchColumn('COUNT(*)');
-
-        return (new Paginator($count, $size))->merge($list);
+        return $this->fetchColumn('COUNT(*)');
     }
 
     /**
