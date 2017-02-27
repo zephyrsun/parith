@@ -388,7 +388,7 @@ class PDO extends DataSource
         }
 
         // adjust order
-        $this->params = array_merge($params, $this->params);
+        $this->params = array_merge($this->params, $params);
 
         return $value;
     }
