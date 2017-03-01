@@ -222,8 +222,10 @@ class PDO extends DataSource
      */
     public function limit($limit, $offset = 0)
     {
-        if ($limit)
+        if ($limit > 0)
             $this->clauses['limit'] = ' LIMIT ' . $offset . ', ' . $limit;
+        elseif ($limit < 0)
+            $this->clauses['limit'] = '';
 
         return $this;
     }
@@ -481,7 +483,8 @@ class PDO extends DataSource
             $col = 0;
         }
 
-        return $this->setFetchMode(\PDO::FETCH_COLUMN, $col)->fetch();
+        $this->getSelectClause();
+        return $this->exec()->fetchColumn($col);
     }
 
     /**
@@ -519,6 +522,8 @@ class PDO extends DataSource
     {
         $this->clauses = $this->last_clauses;
         $this->params = $this->last_params;
+
+        $this->limit(-1);
 
         return $this->fetchColumn('COUNT(*)');
     }
