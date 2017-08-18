@@ -18,30 +18,41 @@ use \Parith\Result;
 
 class Validator extends Result
 {
-    public $data = [];
+    public $err = [];
 
-    public $hints = [
-        'email' => 'Please enter a valid email address.',
-        'ip' => 'Please enter a valid IP address.',
-        'required' => 'This field is required.',
-        'notEmpty' => 'This field cannot be empty.',
-        'equal' => 'Please enter the same value again.',
-        'unequal' => 'Please enter a different value.',
-        'num' => 'Please enter a valid number.',
-        'max' => 'Please enter a value less than or equal to %s.',
-        'min' => 'Please enter a value greater than or equal to %s.',
-        'range' => 'Please enter a value between %s and %s.',
-        'length' => 'Please enter a value between %s and %s characters long',
-        'lengthEqual' => 'Please enter a value length equal to %s.',
-        'match' => 'Please enter a valid value.',
-        'url' => 'Please enter a valid URL.',
-        'time' => 'Please enter a valid time.',
-        'inMap' => 'Please enter a valid value.',
+    public $options = [
+        'lang' => [
+            'email' => 'Please enter a valid email address.',
+            'ip' => 'Please enter a valid IP address.',
+            'required' => 'This field is required.',
+            'notEmpty' => 'This field cannot be empty.',
+            'equal' => 'Please enter the same value again.',
+            'unequal' => 'Please enter a different value.',
+            'num' => 'Please enter a valid number.',
+            'max' => 'Please enter a value less than or equal to %s.',
+            'min' => 'Please enter a value greater than or equal to %s.',
+            'range' => 'Please enter a value between %s and %s.',
+            'length' => 'Please enter a value between %s and %s characters long',
+            'lengthEqual' => 'Please enter a value length equal to %s.',
+            'match' => 'Please enter a valid value.',
+            'url' => 'Please enter a valid URL.',
+            'time' => 'Please enter a valid time.',
+            'inMap' => 'Please enter a valid value.',
+        ]
     ];
+
+    public $trans = ['/' => '／', '\\' => '∖'];
+
+    private $_data = [];
 
     public function __construct()
     {
-        $this->hints = \Parith::getEnv('validator') + $this->hints;
+        $this->options = \Parith::getEnv('validator') + $this->options;
+    }
+
+    public function getData()
+    {
+        return $this->_data;
     }
 
     /**
@@ -59,14 +70,14 @@ class Validator extends Result
      *
      * @return array
      */
-    public function check($data, array $rules)
+    public function check(array $rules, $data = [])
     {
         $data or $data = $_POST;
 
         $err = [];
-        foreach ($rules as $field => $args) {
+        foreach ($rules as $key => $args) {
 
-            $v = &$data[$field];
+            $v = &$data[$key];
 
             $args = (array)$args;
 
@@ -76,19 +87,19 @@ class Validator extends Result
             $result = \call_user_func_array([$this, $method], $args);
 
             if ($result) {
-                $this->data[$field] = $v;
-            } elseif (\end($args) !== false) {
-                $args[0] = $this->hints[$method];
-                $err[$field] = \call_user_func_array('sprintf', $args);
+                //$this->_data[$key] = preg_replace('/(<script>|<\/script>)/i', '', $v);
+                //$this->_data[$key] = strtr($v, $this->trans);
+                //$this->_data[$key] = is_array($v) ? $v : \htmlspecialchars($v);
+                $this->_data[$key] = $v;
+            } elseif (\end($args) === false) {
+                $this->_data[$key] = null;
+            } else {
+                $args[0] = $this->options['lang'][$method];
+                $err[$key] = \call_user_func_array('sprintf', $args);
             }
         }
 
         return $err;
-    }
-
-    public function getData()
-    {
-        return $this->data;
     }
 
     /**
@@ -123,7 +134,7 @@ class Validator extends Result
      */
     public function ip($ip)
     {
-        return (bool)filter_var($ip, FILTER_VALIDATE_IP);
+        return (bool)filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
     }
 
     /**

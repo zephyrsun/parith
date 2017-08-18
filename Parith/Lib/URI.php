@@ -50,31 +50,27 @@ class URI
 
     /**
      * @param string $uri
-     * @param string|array $query
+     * @param array $query
      * @return string
      */
-    static public function uri($uri = '', $query = '')
+    static public function uri($uri = null, array $query = [])
     {
-        if ($uri)
-            $uri = '/' . ltrim($uri, '/');
-
         $a = parse_url($_SERVER['REQUEST_URI']);
-        $a['path'] = $uri;
 
-        if ($query) {
-            if (is_array($query))
-                $query = http_build_query($query);
-
-            $q = &$a['query'];
-            $q .= ($q ? '&' : '') . $query;
+        if ($uri !== null) {
+            $uri = '/' . ltrim($uri, '/');
+            $a['path'] = $uri;
         }
 
-        return static::base($a);
-    }
+        if ($q = &$a['query']) {
+            parse_str($q, $q);
+        } else {
+            $q = [];
+        }
 
-    static public function current()
-    {
-        return self::uri();
+        $q = self::query($query + $q);
+
+        return static::base($a);
     }
 
     /**
@@ -83,10 +79,7 @@ class URI
      */
     static public function query(array $query)
     {
-        //if (\defined('PHP_QUERY_RFC3986'))
         return http_build_query($query, '', '&', \PHP_QUERY_RFC3986);
-
-        //return http_build_query($query, '', '&');
     }
 
 }

@@ -23,7 +23,7 @@ class Crypt extends Result
         'algo' => 'aes-256-cbc',
     );
 
-    public $iv_size, $cookie, $token_key, $ttl;
+    public $iv_size;
 
     /**
      * Crypt constructor.
@@ -32,39 +32,38 @@ class Crypt extends Result
     {
         $this->setOptions(\Parith::getEnv('crypt'));
 
-        $this->cookie = new Cookie();
-        $this->token_key = $this->cookie->options['token_key'];
-        $this->ttl = $this->cookie->options['expire'];
-
         $this->iv_size = openssl_cipher_iv_length($this->options['algo']);
     }
 
-    public function setToken($key, $data)
+    /**
+     * @param $data
+     * @param $key
+     * @return string
+     */
+    public function keyEncrypt($data, $key)
     {
-        $key .= \APP_TS + $this->ttl;
-        return $this->cookie->set($this->token_key, $key . '.' . $this->encrypt($key, $data));
+        return $key . '.' . $this->encrypt($key, $data);
     }
 
     /**
-     * @return array|mixed
+     * @param $data
+     * @return mixed
      */
-    public function getToken()
+    public function keyDecrypt($data)
     {
-        $token = $this->cookie->get($this->token_key);
-
-        $parts = explode('.', $token, 2);
+        $parts = explode('.', $data, 2);
         if (count($parts) != 2)
             return false;
 
         $key = $parts[0];
 
-        $data = $this->decrypt($key, $parts[1]);
-        //$expire = substr($parts[0], -10);
-        if (substr($key, -10) < \APP_TS) {
-            return false;
-        }
+        return $this->decrypt($key, $parts[1]);
 
-        return $data;
+//        if (substr($key, -10) < \APP_TS) {
+//            return false;
+//        }
+//
+//        return $data;
     }
 
     public function encrypt($key, $data)

@@ -25,7 +25,10 @@ class Cookie extends Result
         'secure' => false,
         'httponly' => true,
         'token_key' => 'token',
+        'encryptor' => '\Parith\Lib\Crypt',//'\Parith\Lib\JWTAuth'
     ];
+
+    public $enc;
 
     /**
      * Cookie constructor.
@@ -35,6 +38,8 @@ class Cookie extends Result
         $this->setOptions(\Parith::getEnv('cookie'));
 
         $this->__ = &$_COOKIE;
+
+        $this->enc = new $this->options['encryptor'];
     }
 
     public function p3p()
@@ -45,12 +50,44 @@ class Cookie extends Result
     }
 
     /**
+     * with encryptor
+     *
+     * @param $data
+     * @param string $key
+     * @return mixed
+     */
+    public function setToken($data, $key = ' ')
+    {
+        $key = \APP_TS . $key;
+        return $this->set($this->options['token_key'], $this->enc->keyEncrypt($data, $key));
+    }
+
+    /**
+     * with encryptor
+     *
+     * @return mixed
+     */
+    public function getToken()
+    {
+        $data = $this->get($this->options['token_key']);
+        if ($data)
+            return $this->enc->keyDecrypt($data);
+
+        return false;
+    }
+
+    public function deleteToken()
+    {
+        $this->delete($this->options['token_key']);
+    }
+
+    /**
      * @param string $key
      * @param mixed $value
      * @param int $expire could be negative
-     * @return bool
+     * @return $this
      */
-    public function set($key, $value, $expire = 0)
+    public function set($key, $value = null, $expire = 0)
     {
         $o = $this->options;
 
@@ -61,12 +98,14 @@ class Cookie extends Result
 
         parent::set($key, $value);
 
-        return setcookie($key, $value, $expire, $o['path'], $o['domain'], $o['secure'], $o['httponly']);
+        setcookie($key, $value, $expire, $o['path'], $o['domain'], $o['secure'], $o['httponly']);
+
+        return $this;
     }
 
     /**
-     * @param $key
-     * @return bool
+     * @param mixed $key
+     * @return $this
      */
     public function delete($key)
     {
@@ -74,11 +113,11 @@ class Cookie extends Result
 
         parent::delete($key);
 
-        return $ret;
+        return $this;
     }
 
     /**
-     * @return void
+     * @return $this
      */
     public function flush()
     {
@@ -86,5 +125,7 @@ class Cookie extends Result
             $this->delete($key);
 
         parent::flush();
+
+        return $this;
     }
 }

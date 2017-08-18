@@ -15,7 +15,7 @@
 namespace Parith\DataSource;
 
 
-class Memcache extends DataSource
+class Memcache
 {
     static protected $ins_n = 0;
     static protected $ins_link = [];
@@ -81,12 +81,16 @@ class Memcache extends DataSource
         return $this;
     }
 
-    public function closeAll()
+    public function __destruct()
     {
-        /**
-         * @var $link \Memcache
-         */
-        foreach (self::$ins_link as $link)
-            $link->close();
+        if (--static::$ins_n == 0) {
+            /**
+             * @var $link \Memcache
+             */
+            foreach (self::$ins_link as $link)
+                $link->close();
+
+            static::$ins_link = [];
+        }
     }
 }

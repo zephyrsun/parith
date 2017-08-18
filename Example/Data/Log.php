@@ -13,6 +13,7 @@ use Parith\DataSource\PDO;
  * `code` int(10) NOT NULL,
  * `srv_ip` varchar(50) NOT NULL DEFAULT '',
  * `client_ip` varchar(50) NOT NULL DEFAULT '',
+ * `user_agent` text NOT NULL,
  * `time` varchar(30) NOT NULL DEFAULT '',
  * PRIMARY KEY (`id`)
  * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -38,22 +39,23 @@ class Log extends PDO
             $data = json_encode($data, \JSON_UNESCAPED_UNICODE);
 
         return $this->insert([
-            'get' => isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : $_SERVER['REQUEST_URI'],
+            'get' => &$_SERVER['REQUEST_URI'],
             'post' => $_POST ? http_build_query($_POST) : file_get_contents('php://input'),
             'data' => $data,
             'code' => $code,
             'srv_ip' => &$_SERVER['SERVER_ADDR'],
             'client_ip' => \Parith\Lib\Request::getClientIp(),
+            'user_agent' => &$_SERVER['HTTP_USER_AGENT'],
             'time' => \date("Y-m-d H:i:s", \APP_TS), //time
         ]);
     }
 
     public function getList()
     {
-        $p = $this->paginate(20);
+        $p = $this->pagination(20);
 
-        print_r($p->getTotal() . "\n");
-        print_r($p->getPageTotal() . "\n");
+        print_r($p->total() . "\n");
+        print_r($p->pageNum() . "\n");
 
         foreach ($p as $row) {
             print_r($row);

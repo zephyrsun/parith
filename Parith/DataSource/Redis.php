@@ -15,7 +15,7 @@
 namespace Parith\DataSource;
 
 
-class Redis extends DataSource
+class Redis
 {
     static protected $ins_n = 0;
     static protected $ins_link = [];
@@ -66,12 +66,16 @@ class Redis extends DataSource
         return $this;
     }
 
-    public function closeAll()
+    public function __destruct()
     {
-        /**
-         * @var $link \Redis
-         */
-        foreach (self::$ins_link as $link)
-            $link->close();
+        if (--static::$ins_n == 0) {
+            /**
+             * @var $link \Redis
+             */
+            foreach (self::$ins_link as $link)
+                $link->close();
+
+            static::$ins_link = [];
+        }
     }
 }

@@ -18,6 +18,12 @@ use Parith\Result;
 
 abstract class Image extends Result
 {
+    const POS_TOP_LEFT = 1;
+    const POS_TOP_RIGHT = 2;
+    const POS_CENTER = 3;//default
+    const POS_BOTTOM_LEFT = 4;
+    const POS_BOTTOM_RIGHT = 5;
+
     static public $image_types = [
         'jpg' => 'jpeg',
         'jpeg' => 'jpeg',
@@ -71,6 +77,4 @@ abstract class Image extends Result
     abstract public function save($filename, $quality = null);
 
     abstract public function export($type, $quality = null, $render = true);
-
-    abstract public function watermark($image, $x = 0, $y = 0);
 }

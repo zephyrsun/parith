@@ -16,30 +16,25 @@ namespace Parith\Lib;
 
 use \Parith\Result;
 
-class File extends Result
+class File
 {
     /**
-     * @static
-     *
-     * @param string $dir
-     * @param string $mode
-     *
+     * @param $dir
+     * @param int $mode
      * @return bool
      */
-    static public function mkdir($dir, $mode = '0755')
+    static public function mkdir($dir, $mode = 0755)
     {
         if (\is_dir($dir))
             return true;
 
-        if (static::mkdir(\dirname($dir), $mode))
+        if (static::mkdir(\dirname($dir), $mode)) {
             return \mkdir($dir, $mode);
+        }
     }
 
     /**
-     * @static
-     *
-     * @param string $filename
-     *
+     * @param $filename
      * @return bool
      */
     static public function rm($filename)
@@ -58,46 +53,38 @@ class File extends Result
     }
 
     /**
-     * @static
-     *
-     * @param string $dir
-     * @param bool $r recursion
-     *
-     * @return array|bool
+     * @param $dir
+     * @param bool $r
+     * @param array $ret
+     * @return array
      */
-    static public function ls($dir, $r = false)
+    static public function ls($dir, $r = false, $ret = [])
     {
         if (\is_dir($dir) && $dh = \opendir($dir)) {
-            $ret = [];
             while (false != ($file = \readdir($dh))) {
                 if ($file != '.' && $file != '..') {
                     $file = $dir . \DIRECTORY_SEPARATOR . $file;
 
                     if (\is_file($file))
                         $ret[] = $file;
-                    elseif ($r && $sub = self::ls($file, $r))
+                    elseif ($r && $sub = self::ls($file, $r, $ret))
                         $ret = $sub + $ret;
                 }
             }
-
-            return $ret;
         }
 
-        return false;
+        return $ret;
     }
 
     /**
-     * @static
-     *
-     * @param       $filename
-     * @param mixed $data
+     * @param $filename
+     * @param $data
      * @param bool $php_code
-     *
      * @return int
      */
-    static public function touch($filename, $data, $php_code = false)
+    static public function touch($filename, $data)
     {
-        if ($php_code) {
+        if (is_array($data)) {
             $n = PHP_EOL;
             $data = "<?php{$n}return " . var_export($data, true) . ";{$n}?>";
         }
@@ -110,7 +97,7 @@ class File extends Result
     /**
      * @param $filename
      * @param bool $include
-     * @return mixed
+     * @return bool|mixed|string
      */
     static public function get($filename, $include = false)
     {
@@ -121,11 +108,8 @@ class File extends Result
     }
 
     /**
-     * @static
-     *
-     * @param string $file1
-     * @param string $file2
-     *
+     * @param $file1
+     * @param $file2
      * @return bool
      */
     static public function isNewer($file1, $file2)

@@ -14,16 +14,12 @@
 
 namespace Parith\View\Helper;
 
-use \Parith\Lib\URI;
-use Parith\Result;
 
-class Paginator extends Result
+class Paginator extends \Parith\Result
 {
     public $options = [
         'size' => 10,
         'range' => 5,
-        'class' => 'pagination',
-        'id' => 'pagination',
         'attributes' => ['class' => 'pagination'],
         'prev_text' => '&laquo;',
         'next_text' => '&raquo;',
@@ -31,7 +27,7 @@ class Paginator extends Result
 
     private
         $_total = 1,
-        $_page_total = 1,
+        $_page_num = 1,
         $_current = 1,
         $_uri = '';
 
@@ -51,17 +47,27 @@ class Paginator extends Result
 
         $this->_total = $total;
 
-        $this->_page_total = ceil($this->_total / $size);
+        $this->_page_num = ceil($this->_total / $size);
     }
 
-    public function getTotal()
+    public function total()
     {
         return $this->_total;
     }
 
-    public function getPageTotal()
+    public function pageNum()
     {
-        return $this->_page_total;
+        return $this->_page_num;
+    }
+
+    public function size()
+    {
+        return $this->options['size'];
+    }
+
+    public function currentPage()
+    {
+        return $this->_current;
     }
 
     /**
@@ -94,7 +100,7 @@ class Paginator extends Result
     public function previous()
     {
         if ($this->_current > 1)
-            return $this->tag($this->link($this->_current - 1), $this->options['prev_text']);
+            return $this->tag($this->link($this->_current - 1), $this->options['prev_text'], ['class' => 'page-prev']);
 
         return '';
     }
@@ -106,7 +112,7 @@ class Paginator extends Result
     public function first($start)
     {
         if ($start > 1)
-            return $this->tag($this->link(1), 1) . $this->dots();
+            return $this->tag($this->link(1), 1, ['class' => 'page-first']) . $this->dots();
 
         return '';
     }
@@ -117,7 +123,7 @@ class Paginator extends Result
      */
     public function lastItem($end)
     {
-        if ($this->_page_total > $end)
+        if ($this->_page_num > $end)
             return $this->dots();
 
         return '';
@@ -130,7 +136,7 @@ class Paginator extends Result
     public function nextItem($end)
     {
         if ($end > $this->_current)
-            return $this->tag($this->link($this->_current + 1), $this->options['next_text']);
+            return $this->tag($this->link($this->_current + 1), $this->options['next_text'], ['class' => 'page-next']);
 
         return '';
     }
@@ -152,26 +158,21 @@ class Paginator extends Result
         return $obj->__toString();
     }
 
-    public function render()
-    {
-        return $this->__toString();
-    }
-
     /**
+     * @param bool $domain
+     *          true: "http://yourdomain/?page=1"
+     *          false: "?page=1"
+     *
      * @return string
      */
-    public function __toString()
+    public function render($domain = true)
     {
-        $uri = URI::current();
-
         //uri
-        $this->_uri = preg_replace('/page=\d+/', 'page=__PAGE__', $uri, 1, $n);
-        if (!$n)
-            $this->_uri .= (strpos($uri, '?') > -1 ? '&' : '?') . 'page=__PAGE__';
+        $this->_uri = $domain ? \Parith\Lib\URI::uri(null, ['page' => '__PAGE__']) : '?page=__PAGE__';
 
         $range = $this->options['range'];
 
-        $pt = $this->_page_total;
+        $pt = $this->_page_num;
 
         $mid = floor($range / 2);
 
@@ -201,5 +202,13 @@ class Paginator extends Result
         $html .= $this->lastItem($end) . $this->nextItem($end);
 
         return HTML::tag('ul', $html, $this->options['attributes']);
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        $this->render();
     }
 }

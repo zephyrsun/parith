@@ -8,6 +8,7 @@ CREATE TABLE `logs` (
   `code` int(10) NOT NULL,
   `srv_ip` varchar(50) NOT NULL DEFAULT '',
   `client_ip` varchar(50) NOT NULL DEFAULT '',
+  `user_agent` text NOT NULL,
   `time` varchar(30) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -15,9 +15,10 @@ namespace Parith\DataSource;
 
 class MemcachedDB extends PDO
 {
-    public $mc_option = '';
-
-    public $mc = '';
+    /**
+     * @var Memcached
+     */
+    public $mc;
 
     /**
      * @var string primary key
@@ -27,6 +28,7 @@ class MemcachedDB extends PDO
     public function __construct()
     {
         $this->mc = new Memcached();
+        parent::__construct();
     }
 
     /**

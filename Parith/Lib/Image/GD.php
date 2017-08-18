@@ -30,8 +30,7 @@ class GD extends Image
 
     /**
      * @param $image
-     *
-     * @return Image
+     * @return $this
      */
     protected function setImageData($image)
     {
@@ -173,13 +172,11 @@ class GD extends Image
     }
 
     /**
-     * @param     $image
-     * @param int $x
-     * @param int $y
-     *
-     * @return GD
+     * @param $image
+     * @param int $pos
+     * @return $this
      */
-    public function watermark($image, $x = 0, $y = 0)
+    public function watermark($image, $pos = 0)
     {
         $image = $this->_load($image);
 
@@ -189,6 +186,28 @@ class GD extends Image
         $height = imagesy($image);
 
         imagealphablending($this->image, true);
+
+        switch ($pos) {
+            case self::POS_TOP_LEFT:
+                $x = 0;
+                $y = 0;
+                break;
+            case self::POS_TOP_RIGHT:
+                $x = $this->width() - $width;
+                $y = 0;
+                break;
+            case self::POS_BOTTOM_LEFT:
+                $x = 0;
+                $y = $this->height() - $height;
+                break;
+            case self::POS_BOTTOM_RIGHT:
+                $x = $this->width() - $width;
+                $y = $this->height() - $height;
+                break;
+            default:
+                $x = ($this->width() - $width) / 2;
+                $y = ($this->height() - $height) / 2;
+        }
 
         imagecopy($this->image, $image, $x, $y, 0, 0, $width, $height);
 

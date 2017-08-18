@@ -27,44 +27,28 @@ class JWTAuth extends Result
     public function __construct()
     {
         $this->setOptions(\Parith::getEnv('jwtauth'));
-
-        $this->cookie = new Cookie();
-        $this->token_key = $this->cookie->options['token_key'];
-        $this->ttl = $this->cookie->options['expire'];
     }
 
     /**
-     * @param $id
      * @param array $payload
-     * @return bool
+     * @param string $id
+     * @return string
      */
-    public function setToken($id, array $payload)
+    public function keyEncrypt(array $payload, $id = '')
     {
-        return $this->cookie->set($this->token_key, $this->sign($id, $payload));
+        return $this->sign($id, $payload);
     }
 
     /**
-     * @return array|bool
+     * @param $data
+     * @return mixed
      */
-    public function getToken()
+    public function keyDecrypt($data)
     {
-        $payload = $this->verify($this->cookie->get($this->token_key));
+        $payload = $this->verify($data);
         if ($payload && $payload['exp'] < \APP_TS) {
             return false;
         }
-
-        return $payload;
-    }
-
-    /**
-     * @param $payload
-     * @return array
-     */
-    public function refreshToken($payload)
-    {
-        $payload = $this->makePayload($payload['sub'], $payload);
-
-        $this->setToken(0, $payload);
 
         return $payload;
     }
@@ -77,13 +61,13 @@ class JWTAuth extends Result
     public function makePayload($id, array $payload)
     {
         return [
-            'sub' => $id, //Subscriber
-            'iss' => URI::base(), //Issuer
-            'iat' => \APP_TS, //Issued At
-            'exp' => \APP_TS + $this->ttl, //Expiration
-            'nbf' => \APP_TS, //Not Before
-            'jti' => md5("jti.$id." . \APP_TS), //unique id
-        ] + $payload;
+                'sub' => $id, //Subscriber
+                'iss' => URI::base(), //Issuer
+                'iat' => \APP_TS, //Issued At
+                'exp' => \APP_TS + $this->ttl, //Expiration
+                'nbf' => \APP_TS, //Not Before
+                'jti' => md5("jti.$id." . \APP_TS), //unique id
+            ] + $payload;
     }
 
     /**

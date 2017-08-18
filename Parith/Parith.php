@@ -100,7 +100,7 @@ namespace {
             }
 
             // echo $class . ' not found.';
-            throw new \Exception($class . ' not found.');
+            throw new \Exception($class . ' not found.', 404);
         }
 
         static function pushRoute($route)
@@ -157,7 +157,7 @@ namespace Parith {
     {
         public function __call($name, $args)
         {
-            throw new \Exception($name . ' not found.');
+            throw new \Exception($name . ' not found.', 404);
         }
 
         /**
@@ -194,17 +194,24 @@ namespace Parith {
             throw new \ErrorException($msg, $code, 0, $file, $line);
         }
 
-        static public function exceptionHandler(\Throwable $e)
+        /**
+         * @param \Throwable $e
+         */
+        static public function exceptionHandler($e)
         {
             $class = \Parith::getEnv('error_class');
 
             $str = $e->getMessage() . '|' . $e->getFile() . '|' . $e->getLine() . PHP_EOL;
             $str .= 'Trace: ' . PHP_EOL . $e->getTraceAsString();
 
-            (new $class())->render($e, $str);
+            (new $class())->render($e, "<pre>$str</pre>");
         }
 
-        public function render(\Throwable $e, $str)
+        /**
+         * @param \Throwable $e
+         * @param $str
+         */
+        public function render($e, $str)
         {
             echo "<pre>$str</pre>";
         }
@@ -275,7 +282,7 @@ namespace Parith {
          * @param $value
          * @return $this
          */
-        public function set($key, $value)
+        public function set($key, $value = null)
         {
             if (\is_array($key))
                 $this->merge($key);

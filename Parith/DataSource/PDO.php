@@ -15,7 +15,7 @@ namespace Parith\DataSource;
 
 use Parith\View\Helper\Paginator;
 
-class PDO extends DataSource
+class PDO
 {
     static protected $ins_n = 0;
     static protected $ins_link = [];
@@ -33,7 +33,6 @@ class PDO extends DataSource
     public $table_name = '';
     public $table_alias = '';
     public $pk = 'id';
-    public $select = '*';
 
     public $sql = '';
     public $clauses = [];
@@ -108,6 +107,7 @@ class PDO extends DataSource
         $this->last_clauses = $this->clauses;
 
         $this->clauses = [
+            'select' => '*',
             'join' => '',
             'where' => '',
             'group' => '',
@@ -132,7 +132,7 @@ class PDO extends DataSource
      */
     public function select($select)
     {
-        $this->select = $select;
+        $this->clauses['select'] = $select;
 
         return $this;
     }
@@ -163,9 +163,9 @@ class PDO extends DataSource
      * where('gender', 'male')
      * where(['gender' => 'male'])
      * where('user_id', 'IN', [1, 2, 3])
-     * where('email', 'LIKE', '%@abc.com', 'OR')
+     * where("(nickname LIKE ? OR nickname = ?)", ['%sun%', 'sun'])
      * where('(age >= ? OR age <= ?)', [18, 30])
-     * where("(nickname LIKE ? OR nickname = ?)", ['%|sun|%', 'sun'])
+     * where('email LIKE ? ', '%@abc.com', null, 'OR')
      *
      * @param $clause
      * @param $condition
@@ -177,8 +177,8 @@ class PDO extends DataSource
     public function where($clause, $condition = '', $value = null, $glue = 'AND')
     {
         if (is_array($clause)) {
-            $clause = \implode(' AND ', $this->convert($clause));
-        } elseif ($value === null) {
+            $clause = \implode(' AND ', $this->_convert($clause, false));
+        } elseif ($value === null && $condition !== '') {
             $value = $condition;
 
             if (strpos($clause, '?') === false) {
@@ -262,7 +262,7 @@ class PDO extends DataSource
                 if (\is_int($col)) {
                     $col = $expr;
                     $expr = 'ASC';
-                } elseif (-1 == $expr) {
+                } elseif ($expr < 0) {
                     $expr = 'DESC';
                 }
 
@@ -355,6 +355,11 @@ class PDO extends DataSource
         return $this->insert($data, 'REPLACE INTO');
     }
 
+    public function insertIgnore(array $data)
+    {
+        return $this->insert($data, 'INSERT IGNORE INTO');
+    }
+
     /**
      * @param array|string $data
      *
@@ -363,7 +368,7 @@ class PDO extends DataSource
     public function update($data)
     {
         if (is_array($data)) {
-            $data = \implode(', ', $this->convert($data));
+            $data = \implode(', ', $this->_convert($data, true));
         }
 
         $this->sql = 'UPDATE ' . $this->table_name . ' SET ' . $data . $this->clauses['where'];
@@ -380,17 +385,17 @@ class PDO extends DataSource
         return $this->insert($data);
     }
 
-    protected function convert($data)
+    private function _convert($data, $update)
     {
         $value = [];
         $params = [];
         foreach ($data as $col => $val) {
-            $value[] = "{$col} = ?";
+            $value[] = $update ? "`$col` = ?" : "$col = ?";
             $params[] = $val;
         }
 
         // adjust order
-        $this->params = array_merge($this->params, $params);
+        $this->params = $update ? array_merge($params, $this->params) : array_merge($this->params, $params);
 
         return $value;
     }
@@ -419,52 +424,23 @@ class PDO extends DataSource
     }
 
     /**
-     * shortcut for $this->fetch()
-     *
-     * $this->find(1)
-     * $this->find(['user_id' => 1])
-     *
-     * @param $value
+     * @param null $arg1
      * @return mixed
      */
-    public function find($value)
-    {
-        if (is_array($value)) {
-            $this->where($value);
-        } else {
-            $this->where($this->pk, $value);
-        }
-
-        return $this->fetch();
-    }
-
-    /**
-     * shortcut for $this->fetchAll()
-     *
-     * $this->findAll(1)
-     * $this->findAll(['user_id' => 1])
-     *
-     * @param $value
-     * @return mixed
-     */
-    public function findAll($value)
-    {
-        if (is_array($value)) {
-            $this->where($value);
-        } else {
-            $this->where($this->pk, $value);
-        }
-
-        return $this->fetchAll();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function fetch()
+    public function fetch($arg1 = null)
     {
         $this->getSelectClause();
-        return $this->exec()->fetch();
+        return $this->exec()->fetch($arg1);
+    }
+
+    /**
+     * @param null $arg1
+     * @return array
+     */
+    public function fetchAll($arg1 = null)
+    {
+        $this->getSelectClause();
+        return $this->exec()->fetchAll($arg1);
     }
 
     /**
@@ -488,44 +464,73 @@ class PDO extends DataSource
     }
 
     /**
+     * $this->groupBy('id')->fetchPair('id,count(id)')
+     *
+     * @param $col
      * @return array
      */
-    public function fetchAll()
+    public function fetchPair($col)
     {
-        $this->getSelectClause();
-        return $this->exec()->fetchAll();
+        $this->select($col);
+
+        return $this->fetchAll(\PDO::FETCH_KEY_PAIR);
+    }
+
+    public function fetchCount($latest = false)
+    {
+        if ($latest) {
+            $this->clauses = $this->last_clauses;
+            $this->params = $this->last_params;
+            $this->limit(-1);
+        }
+
+        return $this->fetchColumn('COUNT(*)');
     }
 
     /**
      * @param $size
      * @param string $col
-     * @return Paginator
+     * @param int $col_order
+     *            1: ASC
+     *            -1: DESC
+     *            "`time` DESC, `weight` ASC"
+     * @return $this
      */
-    public function paginate($size, $col = '')
+    public function page($size, $col = '', $col_order = 1)
     {
         if ($col) {
-            //use start id
-            $id = &$_GET[$col];
-            $this->where('col > ?', $id);
+            $id = &$_GET[$col] or $id = &$_POST[$col];
+
             $this->limit($size);
+
+            if ($col_order > 0) {
+                $this->orderBy($col)->where("$col > ?", $id);
+            } elseif ($col_order < 0) {
+                $this->orderBy("$col DESC");
+                if ($id)
+                    $this->where("$col < ?", $id);
+            } elseif (is_string($col_order) == 0) {//string
+                $this->orderBy($col_order);
+            }
+
         } else {
-            $page = &$_GET['page'];
+            $page = &$_GET['page'] or $page = &$_POST['page'];
             $this->limit($size, $page > 0 ? $size * ($page - 1) : 0);
         }
 
-        $list = $this->fetchAll();
-
-        return (new Paginator($this->fetchCount(), $size))->merge($list);
+        return $this;
     }
 
-    public function fetchCount()
+    /**
+     * @param $size
+     * @param string $col
+     * @param int $col_order 1:ASC or -1:DESC
+     * @return Paginator
+     */
+    public function pagination($size, $col = '', $col_order = 1)
     {
-        $this->clauses = $this->last_clauses;
-        $this->params = $this->last_params;
-
-        $this->limit(-1);
-
-        return $this->fetchColumn('COUNT(*)');
+        $list = $this->page($size, $col, $col_order)->fetchAll();
+        return (new Paginator($this->fetchCount(true), $size))->merge($list);
     }
 
     /**
@@ -627,7 +632,7 @@ class PDO extends DataSource
     {
         $c = $this->clauses;
 
-        return $this->sql = 'SELECT ' . $this->select . ' FROM ' . $this->table_name . ' ' . $this->table_alias .
+        return $this->sql = 'SELECT ' . $c['select'] . ' FROM ' . $this->table_name . ' ' . $this->table_alias .
             $c['join'] . $c['where'] .
             $c['group'] . $c['having'] . $c['order'] .
             $c['limit'] . ';';
@@ -666,12 +671,16 @@ class PDO extends DataSource
         return $this->sth;
     }
 
-    public function closeAll()
+    public function __destruct()
     {
-        /**
-         * @var $link \PDO
-         */
-        foreach (static::$ins_link as &$link)
-            $link = null;
+        if (--static::$ins_n == 0) {
+            /**
+             * @var $link \PDO
+             */
+            foreach (static::$ins_link as &$link)
+                $link = null;
+
+            static::$ins_link = [];
+        }
     }
 }

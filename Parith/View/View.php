@@ -44,11 +44,8 @@ class View extends Result
      */
     public function render($__)
     {
-        $__ = $this->import($__);
-
-        \extract($this->toArray(), EXTR_SKIP);
-
-        include $__;
+        //\extract($this->toArray(), EXTR_SKIP);
+        $this->import($__);
     }
 
     /**
@@ -76,15 +73,20 @@ class View extends Result
 
     /**
      * @param $name
+     * @param bool $include
      * @return string
      * @throws \Exception
      */
-    public function import($name)
+    public function import($name, $include = true)
     {
         $name = $this->options['source_dir'] . \DIRECTORY_SEPARATOR . $name . '.' . $this->options['source_ext'];
 
-        if (\is_file($name))
+        if (\is_file($name)) {
+            if ($include)
+                include $name;
+
             return $name;
+        }
 
         throw new \Exception("View file '$name' not found");
     }

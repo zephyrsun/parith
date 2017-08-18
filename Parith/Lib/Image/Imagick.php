@@ -164,8 +164,7 @@ class Imagick extends Image
      */
     public function watermark($image, $x = 0, $y = 0)
     {
-        $imagick = new \Imagick();
-        $this->_load($image, $imagick);
+        $imagick = new \Imagick($image);
 
         $imagick->setImageAlphaChannel(\Imagick::ALPHACHANNEL_OPAQUE);
 
