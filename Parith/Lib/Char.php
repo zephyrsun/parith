@@ -37,6 +37,26 @@ class Char
         return $hash;
     }
 
+    static public function nonce($length = 16)
+    {
+        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        $c_len = strlen($chars);
+        $str = '';
+        for ($i = 0; $i < $length; $i++) {
+            $str .= substr($chars, mt_rand(0, $c_len - 1), 1);
+        }
+        return $str;
+    }
+
+    static public function split($str, $l, $enc = 'UTF-8')
+    {
+        $arr = [];
+        $len = mb_strlen($str, $enc);
+        for ($i = 0; $i < $len; $i += $l)
+            $arr[] = mb_substr($str, $i, $l, $enc);
+        return $arr;
+    }
+
     /**
      * @static
      *
@@ -67,7 +87,7 @@ class Char
      * @param callable $filter
      * @return array
      */
-    static public function toArray($str, $delimiter = ',', callable $filter = '')
+    static public function toArray($str, $delimiter = ',', callable $filter = null)
     {
         $arr = \explode($delimiter, $str);
 

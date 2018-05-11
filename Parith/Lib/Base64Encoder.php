@@ -11,6 +11,7 @@
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
+
 namespace Parith\Lib;
 
 class Base64Encoder

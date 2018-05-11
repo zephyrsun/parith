@@ -41,6 +41,7 @@ class View extends Result
 
     /**
      * @param $__
+     * @throws \Exception
      */
     public function render($__)
     {
@@ -55,14 +56,13 @@ class View extends Result
      */
     public function assign($key, $val = null)
     {
-        $this->set($key, $val);
-
-        return $this;
+        return $this->set($key, $val);
     }
 
     /**
      * @param $name
      * @return string
+     * @throws \Exception
      */
     public function fetch($name)
     {

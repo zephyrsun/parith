@@ -29,7 +29,7 @@ class Paginator extends \Parith\Result
         $_total = 1,
         $_page_num = 1,
         $_current = 1,
-        $_uri = '';
+        $_url = '';
 
     /**
      * Paginator constructor.
@@ -40,14 +40,15 @@ class Paginator extends \Parith\Result
     {
         $this->setOptions(\Parith::getEnv('paginator'));
 
-        if ($size > 0)
+        if ($size > 0) {
             $this->options['size'] = $size;
+            $this->_page_num = ceil($this->_total / $size);
+        }
 
         $this->_current = &$_GET['page'] or $this->_current = 1;
 
         $this->_total = $total;
 
-        $this->_page_num = ceil($this->_total / $size);
     }
 
     public function total()
@@ -77,7 +78,7 @@ class Paginator extends \Parith\Result
      */
     public function link($page)
     {
-        return str_replace('__PAGE__', $page, $this->_uri);
+        return str_replace('__PAGE__', $page, $this->_url);
     }
 
     /**
@@ -167,8 +168,8 @@ class Paginator extends \Parith\Result
      */
     public function render($domain = true)
     {
-        //uri
-        $this->_uri = $domain ? \Parith\Lib\URI::uri(null, ['page' => '__PAGE__']) : '?page=__PAGE__';
+        //url
+        $this->_url = $domain ? \Parith\Lib\URL::uri(null, ['page' => '__PAGE__']) : '?page=__PAGE__';
 
         $range = $this->options['range'];
 

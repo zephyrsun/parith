@@ -11,6 +11,7 @@
  * @license   http://www.parith.net/license
  * @link      http://www.parith.net/
  */
+
 namespace Parith\Lib;
 
 use Parith\Result;
@@ -62,7 +63,7 @@ class JWTAuth extends Result
     {
         return [
                 'sub' => $id, //Subscriber
-                'iss' => URI::base(), //Issuer
+                'iss' => URL::base(), //Issuer
                 'iat' => \APP_TS, //Issued At
                 'exp' => \APP_TS + $this->ttl, //Expiration
                 'nbf' => \APP_TS, //Not Before

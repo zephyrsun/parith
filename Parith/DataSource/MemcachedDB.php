@@ -68,7 +68,7 @@ class MemcachedDB extends PDO
         $ret = $this->where($this->pk, $key)->update($data);
         if ($ret) {
             $data = $this->where($this->pk, $key)->fetch();
-            if ($data){
+            if ($data) {
                 $mc = $this->mc->dial($key);
                 $mc->set($k, $data, $expiration);
             }

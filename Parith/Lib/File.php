@@ -76,6 +76,17 @@ class File
         return $ret;
     }
 
+    static public function cache($filename, callable $cb, $expire)
+    {
+        if (\is_file($filename) && \APP_TS - \filemtime($filename) <= $expire)
+            return include $filename;
+
+        self::touch($filename, $data = $cb());
+
+        return $data;
+    }
+
+
     /**
      * @param $filename
      * @param $data

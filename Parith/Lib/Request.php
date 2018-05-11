@@ -60,6 +60,16 @@ class Request extends \Parith\Result
         return (bool)\preg_match('/' . $ua . '/i', $_SERVER['HTTP_USER_AGENT'], $match);
     }
 
+    static public function getHost()
+    {
+        return (self::isSSL() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+    }
+
+    static public function getUrl()
+    {
+        return self::getHost() . $_SERVER['REQUEST_URI'];
+    }
+
     /**
      * @return bool
      */

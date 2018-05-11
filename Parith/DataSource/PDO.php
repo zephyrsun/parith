@@ -13,8 +13,6 @@
 
 namespace Parith\DataSource;
 
-use Parith\View\Helper\Paginator;
-
 class PDO
 {
     static protected $ins_n = 0;
@@ -182,7 +180,7 @@ class PDO
             $value = $condition;
 
             if (strpos($clause, '?') === false) {
-                $clause = "`$clause`";
+                //$clause = "`$clause`";
                 $condition = '= ?';
             } else
                 $condition = '';
@@ -222,9 +220,9 @@ class PDO
      */
     public function limit($limit, $offset = 0)
     {
-        if ($limit > 0)
-            $this->clauses['limit'] = ' LIMIT ' . $offset . ', ' . $limit;
-        elseif ($limit < 0)
+        if ($limit > 0) {
+            $this->clauses['limit'] = $offset > 0 ? ' LIMIT ' . $offset . ', ' . $limit : ' LIMIT ' . $limit;
+        } elseif ($limit < 0)
             $this->clauses['limit'] = '';
 
         return $this;
@@ -325,6 +323,8 @@ class PDO
      *                 - REPLACE INTO
      *
      * @return int
+     * @throws \Error
+     * @throws \Exception
      */
     public function insert(array $data, $op = 'INSERT INTO')
     {
@@ -349,21 +349,30 @@ class PDO
     /**
      * @param array $data
      * @return int
+     * @throws \Error
+     * @throws \Exception
      */
     public function replace(array $data)
     {
         return $this->insert($data, 'REPLACE INTO');
     }
 
+    /**
+     * @param array $data
+     * @return int
+     * @throws \Error
+     * @throws \Exception
+     */
     public function insertIgnore(array $data)
     {
         return $this->insert($data, 'INSERT IGNORE INTO');
     }
 
     /**
-     * @param array|string $data
-     *
+     * @param $data
      * @return int
+     * @throws \Error
+     * @throws \Exception
      */
     public function update($data)
     {
@@ -371,11 +380,17 @@ class PDO
             $data = \implode(', ', $this->_convert($data, true));
         }
 
-        $this->sql = 'UPDATE ' . $this->table_name . ' SET ' . $data . $this->clauses['where'];
+        $this->sql = 'UPDATE ' . $this->table_name . ' SET ' . $data . $this->clauses['where'] . $this->clauses['limit'];
 
         return $this->exec()->rowCount();
     }
 
+    /**
+     * @param $data
+     * @return int
+     * @throws \Error
+     * @throws \Exception
+     */
     public function save($data)
     {
         if (isset($data[$this->pk])) {
@@ -407,6 +422,8 @@ class PDO
      * @param int $num
      *
      * @return int
+     * @throws \Error
+     * @throws \Exception
      */
     public function increment($field, $num)
     {
@@ -415,6 +432,8 @@ class PDO
 
     /**
      * @return int
+     * @throws \Error
+     * @throws \Exception
      */
     public function delete()
     {
@@ -426,6 +445,8 @@ class PDO
     /**
      * @param null $arg1
      * @return mixed
+     * @throws \Error
+     * @throws \Exception
      */
     public function fetch($arg1 = null)
     {
@@ -436,6 +457,8 @@ class PDO
     /**
      * @param null $arg1
      * @return array
+     * @throws \Error
+     * @throws \Exception
      */
     public function fetchAll($arg1 = null)
     {
@@ -443,21 +466,28 @@ class PDO
         return $this->exec()->fetchAll($arg1);
     }
 
+
     /**
      * $this->fetchColumn(0)
      * $this->fetchColumn('id')
      * $this->fetchColumn('GROUP_CONCAT(DISTINCT id)')
      * $this->fetchColumn('SUM(num)')
      *
-     * @param int|string $col
+     * @param $col
+     * @param $fetch_all
      * @return mixed
+     * @throws \Error
+     * @throws \Exception
      */
-    public function fetchColumn($col)
+    public function fetchColumn($col, $fetch_all = false)
     {
         if (!is_numeric($col)) {
             $this->select($col);
             $col = 0;
         }
+
+        if ($fetch_all)
+            return $this->fetchAll(\PDO::FETCH_COLUMN);
 
         $this->getSelectClause();
         return $this->exec()->fetchColumn($col);
@@ -468,6 +498,8 @@ class PDO
      *
      * @param $col
      * @return array
+     * @throws \Error
+     * @throws \Exception
      */
     public function fetchPair($col)
     {
@@ -476,6 +508,12 @@ class PDO
         return $this->fetchAll(\PDO::FETCH_KEY_PAIR);
     }
 
+    /**
+     * @param bool $latest
+     * @return mixed
+     * @throws \Error
+     * @throws \Exception
+     */
     public function fetchCount($latest = false)
     {
         if ($latest) {
@@ -489,33 +527,24 @@ class PDO
 
     /**
      * @param $size
-     * @param string $col
-     * @param int $col_order
+     * @param string $key
+     * @param int $key_order
      *            1: ASC
      *            -1: DESC
-     *            "`time` DESC, `weight` ASC"
      * @return $this
      */
-    public function page($size, $col = '', $col_order = 1)
+    public function pageByKey($size, $key, $key_order = 1)
     {
-        if ($col) {
-            $id = &$_GET[$col] or $id = &$_POST[$col];
+        $id = &$_GET[$key] or $id = &$_POST[$key] or $id = 0;
 
-            $this->limit($size);
+        $this->limit($size);
 
-            if ($col_order > 0) {
-                $this->orderBy($col)->where("$col > ?", $id);
-            } elseif ($col_order < 0) {
-                $this->orderBy("$col DESC");
-                if ($id)
-                    $this->where("$col < ?", $id);
-            } elseif (is_string($col_order) == 0) {//string
-                $this->orderBy($col_order);
-            }
-
-        } else {
-            $page = &$_GET['page'] or $page = &$_POST['page'];
-            $this->limit($size, $page > 0 ? $size * ($page - 1) : 0);
+        if ($key_order > 0) {
+            $this->orderBy($key)->where("$key > ?", $id);
+        } elseif ($key_order < 0) {
+            $this->orderBy("$key DESC");
+            if ($id)
+                $this->where("$key < ?", $id);
         }
 
         return $this;
@@ -523,14 +552,24 @@ class PDO
 
     /**
      * @param $size
-     * @param string $col
-     * @param int $col_order 1:ASC or -1:DESC
-     * @return Paginator
+     * @return PDO
      */
-    public function pagination($size, $col = '', $col_order = 1)
+    public function page($size)
     {
-        $list = $this->page($size, $col, $col_order)->fetchAll();
-        return (new Paginator($this->fetchCount(true), $size))->merge($list);
+        $page = &$_GET['page'] or $page = &$_POST['page'];
+        return $this->limit($size, $page > 0 ? $size * ($page - 1) : 0);
+    }
+
+    /**
+     * @param $size
+     * @return \Parith\View\Helper\Paginator
+     * @throws \Error
+     * @throws \Exception
+     */
+    public function pagination($size)
+    {
+        $list = $this->page($size)->fetchAll();
+        return (new \Parith\View\Helper\Paginator($this->fetchCount(true), $size))->merge($list);
     }
 
     /**
@@ -549,6 +588,8 @@ class PDO
      * @param $sql
      * @param array $params
      * @return \PDOStatement
+     * @throws \Error
+     * @throws \Exception
      */
     public function query($sql, $params = [])
     {
@@ -579,9 +620,9 @@ class PDO
             return $this->sth;
 
         } catch (\PDOException $e) {
-            $str = $e->getMessage() . PHP_EOL .
-                'SQL: ' . $this->sql . PHP_EOL .
-                'Params: "' . implode('","', $this->params) . '"' . PHP_EOL;
+            $str = 'SQL: ' . $this->sql . PHP_EOL .
+                'Params: "' . implode('","', $this->params) . '"' . PHP_EOL .
+                $e->getMessage() . PHP_EOL;
 
             throw new \Exception($str);
         } catch (\Error $e) {
@@ -657,6 +698,8 @@ class PDO
      * @param $mode
      * @param $mode_param
      * @return \PDOStatement
+     * @throws \Error
+     * @throws \Exception
      */
     public function setFetchMode($mode, $mode_param)
     {

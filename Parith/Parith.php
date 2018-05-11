@@ -164,7 +164,7 @@ namespace Parith {
          * list($p1, $p2) = $this->routeParams(2);
          *
          * @param int $num
-         * @return array
+         * @return array|string
          */
         static public function routeParams($num = 0)
         {
@@ -186,6 +186,13 @@ namespace Parith {
 
     class Error
     {
+        /**
+         * @param $code
+         * @param $msg
+         * @param $file
+         * @param $line
+         * @throws \ErrorException
+         */
         static public function errorHandler($code, $msg, $file, $line)
         {
             if ($code & error_reporting() == 0)
@@ -195,7 +202,7 @@ namespace Parith {
         }
 
         /**
-         * @param \Throwable $e
+         * @param $e
          */
         static public function exceptionHandler($e)
         {

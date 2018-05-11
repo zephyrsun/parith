@@ -28,9 +28,9 @@ class CURL extends Result
         CURLOPT_CONNECTTIMEOUT => 30,
     ];
 
-    public function __construct()
+    public function __construct(array $options = [])
     {
-        $this->setOptions(\Parith::getEnv('curl'));
+        $this->setOptions($options + \Parith::getEnv('curl'));
     }
 
     public function post($url, $data = [], array $options = [])
@@ -54,7 +54,6 @@ class CURL extends Result
      */
     public function get($url, $data = [], array $options = [])
     {
-
         if ($data) {
             if (is_array($data))
                 $data = http_build_query($data);
@@ -96,7 +95,7 @@ class CURL extends Result
 
         $options[CURLOPT_URL] = $url;
 
-        curl_setopt_array($ch, $this->params = $options + $this->options);
+        curl_setopt_array($ch, $options + $this->options);
 
         $result = curl_exec($ch);
 
@@ -112,8 +111,48 @@ class CURL extends Result
         return $this->error;
     }
 
-    public function getParams()
+    function multiGet($urls = [], array $options = [])
     {
-        return $this->params;
+        $mh = curl_multi_init();
+
+        $channels = [];
+
+        foreach ($urls as $url) {
+            $channels[$url] = $ch = curl_init();
+
+            $options[CURLOPT_URL] = $url;
+
+            curl_setopt_array($ch, $options + $this->options);
+            curl_multi_add_handle($mh, $ch);
+        }
+
+        $active = null;
+        // wait for performing request
+        do {
+            $mr = curl_multi_exec($mh, $active);
+        } while (CURLM_CALL_MULTI_PERFORM == $mr);
+
+        while ($active && $mr == CURLM_OK) {
+            // wait for network
+            if (curl_multi_select($mh, 0.5) > -1) {
+                // pull in new data;
+                do {
+                    $mr = curl_multi_exec($mh, $active);
+                } while (CURLM_CALL_MULTI_PERFORM == $mr);
+            }
+        }
+
+        $ret = [];
+        if ($mr == CURLM_OK) {
+            foreach ($channels as $url => $ch) {
+                $ret[$url] = curl_multi_getcontent($ch);
+                curl_multi_remove_handle($mh, $ch);
+                curl_close($ch);
+            }
+        }
+
+        curl_multi_close($mh);
+
+        return $ret;
     }
 }
